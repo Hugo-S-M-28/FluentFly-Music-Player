@@ -1,0 +1,346 @@
+<ui:FluentWindow x:Class="FluentFlyoutWPF.Windows.EditTrackWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
+                 mc:Ignorable="d"
+                 Title="{DynamicResource Edit_WindowTitle}"
+                 Icon="pack://application:,,,/Resources/FluentFlyout2.ico"
+                 Height="620"
+                 Width="520"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 ResizeMode="NoResize"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 Background="{DynamicResource ApplicationBackgroundBrush}">
+
+    <ui:FluentWindow.Resources>
+        <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <ui:TitleBar Title="{DynamicResource Edit_WindowTitle}"
+                     VerticalAlignment="Top"/>
+
+        <Grid Margin="0,32,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header con arte del álbum y resumen -->
+            <Grid Grid.Row="0"
+                  Margin="28,28,28,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Arte del álbum con overlay de cambiar -->
+                <Border x:Name="AlbumArtBorder"
+                        Width="120"
+                        Height="120"
+                        CornerRadius="12"
+                        ClipToBounds="True"
+                        Background="{DynamicResource ControlFillColorDefaultBrush}"
+                        Margin="0,0,20,0"
+                        Cursor="Hand"
+                        MouseLeftButtonDown="AlbumArt_Click"
+                        ToolTip="{DynamicResource Edit_ChangeArtTooltip}">
+                    <Grid>
+                        <ui:SymbolIcon Symbol="MusicNote124"
+                                       Opacity="0.15"
+                                       FontSize="36"/>
+                        <Image x:Name="AlbumArtImage"
+                               Stretch="UniformToFill"/>
+                        <!-- Overlay hover -->
+                        <Border x:Name="ArtOverlay"
+                                Background="#60000000"
+                                Opacity="0">
+                            <StackPanel VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ImageEdit24"
+                                               Foreground="White"
+                                               FontSize="24"/>
+                                <TextBlock Text="{DynamicResource Edit_ChangeArtOverlay}"
+                                           Foreground="White"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Info resumen -->
+                <StackPanel Grid.Column="1"
+                            VerticalAlignment="Center">
+                    <ui:TextBlock x:Name="HeaderTitle"
+                                  FontTypography="Subtitle"
+                                  Text="{DynamicResource Edit_HeaderSummary}"
+                                  TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="HeaderArtist"
+                               FontSize="13"
+                               Opacity="0.6"
+                               Margin="0,4,0,8"
+                               TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Orientation="Horizontal"
+                                Opacity="0.5">
+                        <ui:SymbolIcon Symbol="MusicNote124"
+                                       FontSize="12"
+                                       Margin="0,0,4,0"/>
+                        <TextBlock x:Name="HeaderFileInfo"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"
+                                Opacity="0.5"
+                                Margin="0,2,0,0">
+                        <ui:SymbolIcon Symbol="Clock24"
+                                       FontSize="12"
+                                       Margin="0,0,4,0"/>
+                        <TextBlock x:Name="HeaderDuration"
+                                   FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <!-- Formulario de edición -->
+            <TabControl Grid.Row="1"
+                        Margin="20,10,20,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <TabItem Header="{DynamicResource Edit_TabMetadata}"
+                         IsSelected="True">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="8,10,8,0">
+                            <ui:TextBlock Text="{DynamicResource Edit_FileInfoSection}"
+                                          FontTypography="BodyStrong"
+                                          Margin="0,0,0,12"
+                                          Opacity="0.8"/>
+
+                            <ui:Card Padding="20">
+                                <StackPanel>
+                                    <!-- Título -->
+                                    <TextBlock Text="{DynamicResource Edit_TitleLabel}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Opacity="0.7"
+                                               Margin="0,0,0,6"/>
+                                    <ui:TextBox x:Name="TitleBox"
+                                                PlaceholderText="{DynamicResource Edit_TitlePlaceholder}"
+                                                Icon="{ui:SymbolIcon MusicNote124}"
+                                                Margin="0,0,0,20"/>
+
+                                    <!-- Artista -->
+                                    <TextBlock Text="{DynamicResource Edit_ArtistLabel}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Opacity="0.7"
+                                               Margin="0,0,0,6"/>
+                                    <ui:TextBox x:Name="ArtistBox"
+                                                PlaceholderText="{DynamicResource Edit_ArtistPlaceholder}"
+                                                Icon="{ui:SymbolIcon Person24}"
+                                                Margin="0,0,0,20"/>
+
+                                    <!-- Colaboradores -->
+                                    <TextBlock Text="{DynamicResource Edit_CollaboratorsLabel}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Opacity="0.7"
+                                               Margin="0,0,0,6"/>
+                                    <ui:TextBox x:Name="CollaboratorsBox"
+                                                PlaceholderText="{DynamicResource Edit_CollaboratorsPlaceholder}"
+                                                Icon="{ui:SymbolIcon People24}"
+                                                Margin="0,0,0,20"/>
+
+                                    <!-- Álbum -->
+                                    <TextBlock Text="{DynamicResource Edit_AlbumLabel}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Opacity="0.7"
+                                               Margin="0,0,0,6"/>
+                                    <ui:TextBox x:Name="AlbumBox"
+                                                PlaceholderText="{DynamicResource Edit_AlbumPlaceholder}"
+                                                Icon="{ui:SymbolIcon Album24}"
+                                                Margin="0,0,0,20"/>
+
+                                    <!-- Fila doble: Número de pista + Género -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="16"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{DynamicResource Edit_TrackNumberLabel}"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Opacity="0.7"
+                                                       Margin="0,0,0,6"/>
+                                            <ui:TextBox x:Name="TrackNumberBox"
+                                                        PlaceholderText="#"
+                                                        Icon="{ui:SymbolIcon NumberRow24}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{DynamicResource Edit_GenreLabel}"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Opacity="0.7"
+                                                       Margin="0,0,0,6"/>
+                                            <ui:TextBox x:Name="GenreBox"
+                                                        PlaceholderText="{DynamicResource Edit_GenrePlaceholder}"
+                                                        Icon="{ui:SymbolIcon Tag24}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ui:Card>
+
+                            <!-- Nota informativa -->
+                            <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                                    BorderThickness="4,1,1,1"
+                                    CornerRadius="4"
+                                    Padding="12"
+                                    Margin="0,16,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Info24"
+                                                   FontSize="16"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"/>
+                                    <TextBlock Text="{DynamicResource Edit_InfoNote}"
+                                               FontSize="12"
+                                               Opacity="0.7"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem x:Name="LyricsTab"
+                         Header="{DynamicResource Edit_TabLyrics}">
+                    <Grid Margin="8,10,8,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ui:InfoBar Title="{DynamicResource Edit_LyricsFormatInfo}"
+                                    Message="{DynamicResource Edit_LyricsFormatMsg}"
+                                    IsOpen="True"
+                                    Margin="0,0,0,12"
+                                    Severity="Informational"/>
+
+                        <ui:TextBox x:Name="LyricsBox"
+                                    Grid.Row="1"
+                                    AcceptsReturn="True"
+                                    AcceptsTab="True"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto"
+                                    ClearButtonEnabled="False"
+                                    VerticalAlignment="Stretch"
+                                    VerticalContentAlignment="Top"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                                    Background="Transparent"
+                                    Padding="12"
+                                    PlaceholderText="{DynamicResource Edit_LyricsPlaceholder}"
+                                    FontFamily="Consolas, Monospace"
+                                    PreviewKeyDown="LyricsBox_PreviewKeyDown"/>
+
+                        <WrapPanel Grid.Row="2"
+                                   Orientation="Horizontal"
+                                   Margin="0,12,0,0">
+                            <ui:Button x:Name="PlayPauseButton"
+                                       Icon="{ui:SymbolIcon Play24}"
+                                       Click="PlayPause_Click"
+                                       Margin="0,0,8,8"/>
+                            <ui:Button Content="{DynamicResource Edit_SyncCurrentTime}"
+                                       Icon="{ui:SymbolIcon Clock24}"
+                                       Click="SyncLyrics_Click"
+                                       Margin="0,0,8,8"/>
+                            <ui:Button Content="{DynamicResource Edit_LoadLrc}"
+                                       Icon="{ui:SymbolIcon DocumentAdd24}"
+                                       Click="LoadLrc_Click"
+                                       Margin="0,0,12,8"/>
+
+                            <!-- Sync/Shift Section -->
+                            <Border Width="1" 
+                                    Background="{DynamicResource SurfaceStrokeColorDefaultBrush}" 
+                                    Margin="0,4,12,12"/>
+
+                            <TextBlock Text="{DynamicResource Edit_ShiftLyricsTitle}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8"
+                                       FontWeight="SemiBold"
+                                       Opacity="0.8"/>
+
+                            <ui:Button x:Name="AutoSyncButton"
+                                       Icon="{ui:SymbolIcon Wand24}"
+                                       Click="AutoSync_Click"
+                                       Margin="0,0,8,8"
+                                       ToolTip="{DynamicResource Edit_AutoSyncTip}"/>
+
+                            <ui:Button Content="{DynamicResource Edit_ShiftLyrics_Backward}"
+                                       Click="ShiftLyricsBackward_Click"
+                                       Margin="0,0,4,8"
+                                       ToolTip="{DynamicResource Edit_ShiftLyricsTip}"/>
+
+                            <ui:Button Content="{DynamicResource Edit_ShiftLyrics_Forward}"
+                                       Click="ShiftLyricsForward_Click"
+                                       Margin="0,0,8,8"
+                                       ToolTip="{DynamicResource Edit_ShiftLyricsTip}"/>
+
+                        </WrapPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <!-- Botones de acción -->
+            <Border Grid.Row="2"
+                    BorderThickness="0,1,0,0"
+                    BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                    Padding="28,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Botón abrir ubicación -->
+                    <ui:Button Grid.Column="0"
+                               Content="{DynamicResource Edit_OpenLocation}"
+                               Icon="{ui:SymbolIcon FolderOpen24}"
+                               Click="OpenLocation_Click"
+                               Appearance="Transparent"
+                               Padding="12,8"/>
+
+                    <!-- Cancelar y Guardar -->
+                    <ui:Button Grid.Column="2"
+                               Content="{DynamicResource Edit_Cancel}"
+                               Click="Cancel_Click"
+                               Margin="0,0,8,0"
+                               Padding="24,8"/>
+                    <ui:Button Grid.Column="3"
+                               Content="{DynamicResource Edit_Save}"
+                               Appearance="Primary"
+                               Click="Save_Click"
+                               Padding="24,8"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>
