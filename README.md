@@ -1,7 +1,7 @@
 # FluentFlyout - Reproductor de Música Moderno
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg?logo=dotnet&logoColor=white)
-![FluentFlyout Header](fluent_flyout_header_1776988665377.png)
+![FluentFlyout Header](logo-change.png)
 
 ## 🎵 Descripción
 
@@ -16,7 +16,7 @@ La aplicación no solo funciona como un reproductor interno, sino que también a
 
 ## 🙏 Reconocimiento al Creador Original
 
-Este proyecto es una evolución y mejora de **[FluentFlyout](https://github.com/unchihugo/FluentFlyout)**, desarrollado originalmente por **[unchihugo](https://github.com/unchihugo)**. 
+Este proyecto es una evolución y mejora de **[FluentFlyout](https://github.com/unchihugo/FluentFlyout)**, desarrollado originalmente por **[unchihugo](https://github.com/unchihugo)**.
 
 Queremos dar todo el crédito al autor original por la idea innovadora y la base técnica que hizo posible este reproductor. Si te gusta esta aplicación, por favor considera darle una estrella a su repositorio original para apoyar su trabajo.
 
@@ -223,6 +223,7 @@ Desde el panel de **Configuración**, puedes ajustar:
 ## 🙏 Agradecimientos Especiales
 
 Quiero expresar mi más profunda gratitud a:
+
 - **[unchihugo](https://github.com/unchihugo)**: Por crear el proyecto original y permitir que la comunidad aprenda de su código. Su trabajo en la integración con SMTC fue la piedra angular de esta versión.
 - **Comunidad de Código Abierto**: Por las librerías como `MicaWPF` y `WPF-UI` que elevan el estándar visual de las aplicaciones Windows.
 
