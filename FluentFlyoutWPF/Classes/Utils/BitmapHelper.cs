@@ -209,18 +209,34 @@ internal static class BitmapHelper
         if (!SettingsManager.Current.UseAlbumArtAsAccentColor || hashCode == 0)
         {
             // control color (buttons, etc.)
-            var accent = (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorSecondary");
-            if (!accent.IsFrozen)
-                accent = accent.Clone();
-            accent.Freeze();
+            var accent = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorSecondary") as SolidColorBrush;
+            if (accent != null)
+            {
+                if (!accent.IsFrozen)
+                    accent = accent.Clone();
+                accent.Freeze();
+            }
+            else
+            {
+                accent = new SolidColorBrush(Colors.RoyalBlue); // Fallback
+                accent.Freeze();
+            }
 
             // accent color (for non-control elements)
-            var accent2 = (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary");
-            if (!accent2.IsFrozen)
-                accent2 = accent2.Clone();
-            accent2.Freeze();
+            var accent2 = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary") as SolidColorBrush;
+            if (accent2 != null)
+            {
+                if (!accent2.IsFrozen)
+                    accent2 = accent2.Clone();
+                accent2.Freeze();
+            }
+            else
+            {
+                accent2 = new SolidColorBrush(Colors.DeepSkyBlue); // Fallback
+                accent2.Freeze();
+            }
 
-            _currentDominantColors = [accent, accent2];
+            _currentDominantColors = [accent!, accent2!];
             return _currentDominantColors;
         }
 

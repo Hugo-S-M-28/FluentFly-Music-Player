@@ -182,7 +182,7 @@ public partial class HomePage : Page
 
         _viewModel.IsPlaying = MusicPlayerService.Instance.IsPlaying;
         _viewModel.IsShuffleEnabled = MusicPlayerService.Instance.IsShuffleEnabled;
-        _viewModel.RepeatMode = (ViewModels.RepeatMode)MusicPlayerService.Instance.RepeatMode;
+        _viewModel.RepeatMode = MusicPlayerService.Instance.RepeatMode;
         _viewModel.Volume = MusicPlayerService.Instance.Volume;
 
         UpdateLyrics();
@@ -404,7 +404,7 @@ public partial class HomePage : Page
             Classes.RepeatMode.One => Classes.RepeatMode.None,
             _ => Classes.RepeatMode.None
         };
-        _viewModel.RepeatMode = (ViewModels.RepeatMode)MusicPlayerService.Instance.RepeatMode;
+        _viewModel.RepeatMode = MusicPlayerService.Instance.RepeatMode;
         UpdateShuffleRepeatVisuals();
     }
 

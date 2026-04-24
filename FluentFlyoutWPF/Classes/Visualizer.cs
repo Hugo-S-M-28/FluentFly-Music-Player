@@ -62,6 +62,7 @@ namespace FluentFlyoutWPF.Classes
         private System.Timers.Timer? _captureWatchdog;
         private DateTime _lastDataAvailableUtc = DateTime.MinValue;
         private int _restartInProgress; // 0=false, 1=true (Interlocked)
+        private readonly object _barValuesLock = new(); // Lock for thread-safe access to _barValues
 
         private readonly struct BarGeometry
         {
@@ -262,9 +263,15 @@ namespace FluentFlyoutWPF.Classes
                 {
                     if (_isRunning)
                     {
-                        for (int i = 0; i < _barValues.Length; i++)
+                        lock (_barValuesLock)
                         {
-                            _barValues[i] = 0;
+                            if (_barValues != null)
+                            {
+                                for (int i = 0; i < _barValues.Length; i++)
+                                {
+                                    _barValues[i] = 0;
+                                }
+                            }
                         }
                         UpdateBitmap();
 
@@ -447,20 +454,20 @@ namespace FluentFlyoutWPF.Classes
 
             if (_barValues != null)
             {
-                for (int i = 0; i < BarCount; i++)
+                lock (_barValuesLock)
                 {
-                    if (currentBars[i] > _barValues[i])
+                    for (int i = 0; i < BarCount; i++)
                     {
-                        // Jump up quickly
-                        _barValues[i] = currentBars[i];
-                    }
-                    else
-                    {
-                        // Fall down slowly
-                        //_barValues[i] = (_barValues[i] * 0.9f) + (currentBars[i] * 0.1f);
-                        _barValues[i] = (_barValues[i] * 0.92f) + (currentBars[i] * 0.08f);
-                        //_barValues[i] = (_barValues[i] * 0.7f) + (currentBars[i] * 0.3f); // could be options for smoothening
-                        //_barValues[i] = (_barValues[i] * 0.6f) + (currentBars[i] * 0.4f);
+                        if (currentBars[i] > _barValues[i])
+                        {
+                            // Jump up quickly
+                            _barValues[i] = currentBars[i];
+                        }
+                        else
+                        {
+                            // Fall down slowly
+                            _barValues[i] = (_barValues[i] * 0.92f) + (currentBars[i] * 0.08f);
+                        }
                     }
                 }
             }
@@ -537,7 +544,13 @@ namespace FluentFlyoutWPF.Classes
             {
                 int barX = offsetX + i * (barWidth + BarSpacing);
 
-                float val = _barValues != null && i < _barValues.Length ? _barValues[i] : 0f;
+                float val = 0f;
+                lock (_barValuesLock)
+                {
+                    if (_barValues != null && i < _barValues.Length)
+                        val = _barValues[i];
+                }
+
                 int barHeight = GetBarHeight(val, barBaseline);
 
                 if (barHeight <= 0)

@@ -2,6 +2,7 @@ using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF.Classes.Utils;
 using MicaWPF.Controls;
+using NLog;
 using System;
 using System.Windows;
 using System.Windows.Media.Animation;
@@ -11,6 +12,7 @@ namespace FluentFlyoutWPF.Classes;
 
 public static class FlyoutAnimationService
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public static int GetDuration()
     {
         int msDuration = SettingsManager.Current.FlyoutAnimationSpeed switch
@@ -47,10 +49,24 @@ public static class FlyoutAnimationService
     {
         var eventTriggers = window.Triggers[0] as EventTrigger;
         var beginStoryboard = eventTriggers?.Actions[0] as BeginStoryboard;
-        if (beginStoryboard == null) return;
+        if (beginStoryboard == null)
+        {
+            Logger.Error("FlyoutAnimationService: Failed to find BeginStoryboard in window triggers. Check XAML structure.");
+            return;
+        }
         var storyboard = beginStoryboard.Storyboard;
 
-        DoubleAnimation moveAnimation = (DoubleAnimation)storyboard.Children[0];
+        if (storyboard.Children.Count < 4)
+        {
+            Logger.Error("FlyoutAnimationService: Storyboard missing children for polished animation. Check XAML structure.");
+            return;
+        }
+
+        var moveAnimation = (DoubleAnimation)storyboard.Children[0];
+        var opacityAnimation = (DoubleAnimation)storyboard.Children[1];
+        var scaleXAnimation = (DoubleAnimation)storyboard.Children[2];
+        var scaleYAnimation = (DoubleAnimation)storyboard.Children[3];
+
         var monitor = selectedMonitor != null ? selectedMonitor.Value : GetSelectedMonitor();
         var workArea = monitor.workArea;
 
@@ -70,65 +86,44 @@ public static class FlyoutAnimationService
             {
                 window_left = workArea.Left + 16;
                 moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height - 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height + 4;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top + workArea.Height - windowRect.Height + 10;
             }
             else if (position == 1)
             {
                 window_left = workArea.Left + workArea.Width / 2 - windowRect.Width / 2;
                 moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height - 80;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height - 60;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top + workArea.Height - windowRect.Height - 70;
             }
             else if (position == 2)
             {
                 window_left = workArea.Left + workArea.Width - windowRect.Width - 16;
                 moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height - 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height + 4;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top + workArea.Height - windowRect.Height + 10;
             }
             else if (position == 3)
             {
                 window_left = workArea.Left + 16;
                 moveAnimation.To = workArea.Top + 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + -4;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top - 10;
             }
             else if (position == 4)
             {
                 window_left = workArea.Left + workArea.Width / 2 - windowRect.Width / 2;
                 moveAnimation.To = workArea.Top + 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + -4;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top - 10;
             }
             else if (position == 5)
             {
                 window_left = workArea.Left + workArea.Width - windowRect.Width - 16;
                 moveAnimation.To = workArea.Top + 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                    moveAnimation.From = moveAnimation.To;
-                else
-                    moveAnimation.From = workArea.Top + -4;
+                moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top - 10;
             }
         }
         else
         {
             window_left = workArea.Left + workArea.Width / 2 - windowRect.Width / 2;
             moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height - 16;
-            if (SettingsManager.Current.FlyoutAnimationSpeed == 0)
-                moveAnimation.From = moveAnimation.To;
-            else
-                moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height + 4;
+            moveAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.To : workArea.Top + workArea.Height - windowRect.Height + 10;
         }
 
         WindowHelper.SetPosition(window, window_left, moveAnimation.From!.Value);
@@ -138,15 +133,25 @@ public static class FlyoutAnimationService
         moveAnimation.To *= 96.0 / dpiScale;
 
         int msDuration = GetDuration();
+        var easing = GetEasingStyle(true);
 
-        DoubleAnimation opacityAnimation = (DoubleAnimation)storyboard.Children[1];
-        if (SettingsManager.Current.FlyoutAnimationSpeed != 0) opacityAnimation.From = 0;
+        opacityAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0;
         opacityAnimation.To = 1;
         opacityAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        opacityAnimation.EasingFunction = easing;
 
-        if (SettingsManager.Current.FlyoutAnimationEasingStyle == 0) moveAnimation.EasingFunction = opacityAnimation.EasingFunction = null;
-        else moveAnimation.EasingFunction = opacityAnimation.EasingFunction = GetEasingStyle(true);
         moveAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        moveAnimation.EasingFunction = easing;
+
+        scaleXAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0.95;
+        scaleXAnimation.To = 1.0;
+        scaleXAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        scaleXAnimation.EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseOut };
+
+        scaleYAnimation.From = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0.95;
+        scaleYAnimation.To = 1.0;
+        scaleYAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        scaleYAnimation.EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseOut };
 
         storyboard.Begin(window);
         WindowHelper.SetVisibility(window, true);
@@ -160,7 +165,13 @@ public static class FlyoutAnimationService
         if (beginStoryboard == null) return;
         var storyboard = beginStoryboard.Storyboard;
 
-        DoubleAnimation moveAnimation = (DoubleAnimation)storyboard.Children[0];
+        if (storyboard.Children.Count < 4) return;
+
+        var moveAnimation = (DoubleAnimation)storyboard.Children[0];
+        var opacityAnimation = (DoubleAnimation)storyboard.Children[1];
+        var scaleXAnimation = (DoubleAnimation)storyboard.Children[2];
+        var scaleYAnimation = (DoubleAnimation)storyboard.Children[3];
+
         var monitor = selectedMonitor != null ? selectedMonitor.Value : GetSelectedMonitor();
         var workArea = monitor.workArea;
         var windowRect = WindowHelper.GetPlacement(window);
@@ -172,27 +183,23 @@ public static class FlyoutAnimationService
             if (position == 0 || position == 2)
             {
                 moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height - 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed != 0)
-                    moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height + 4;
+                moveAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.From : workArea.Top + workArea.Height - windowRect.Height + 10;
             }
             else if (position == 1)
             {
                 moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height - 80;
-                if (SettingsManager.Current.FlyoutAnimationSpeed != 0)
-                    moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height - 60;
+                moveAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.From : workArea.Top + workArea.Height - windowRect.Height - 70;
             }
             else if (position == 3 || position == 4 || position == 5)
             {
                 moveAnimation.From = workArea.Top + 16;
-                if (SettingsManager.Current.FlyoutAnimationSpeed != 0)
-                    moveAnimation.To = workArea.Top + -4;
+                moveAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.From : workArea.Top - 10;
             }
         }
         else
         {
             moveAnimation.From = workArea.Top + workArea.Height - windowRect.Height - 16;
-            if (SettingsManager.Current.FlyoutAnimationSpeed != 0)
-                moveAnimation.To = workArea.Top + workArea.Height - windowRect.Height + 4;
+            moveAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? moveAnimation.From : workArea.Top + workArea.Height - windowRect.Height + 10;
         }
 
         double closeDpiScale = monitor.dpiY > 0 ? monitor.dpiY : 96.0;
@@ -201,15 +208,25 @@ public static class FlyoutAnimationService
             moveAnimation.To *= 96.0 / closeDpiScale;
 
         int msDuration = GetDuration();
+        var easing = GetEasingStyle(false);
 
-        DoubleAnimation opacityAnimation = (DoubleAnimation)storyboard.Children[1];
         opacityAnimation.From = 1;
-        if (SettingsManager.Current.FlyoutAnimationSpeed != 0) opacityAnimation.To = 0;
+        opacityAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0;
         opacityAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        opacityAnimation.EasingFunction = easing;
 
-        if (SettingsManager.Current.FlyoutAnimationEasingStyle == 0) moveAnimation.EasingFunction = opacityAnimation.EasingFunction = null;
-        else moveAnimation.EasingFunction = opacityAnimation.EasingFunction = GetEasingStyle(false);
         moveAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        moveAnimation.EasingFunction = easing;
+
+        scaleXAnimation.From = 1.0;
+        scaleXAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0.95;
+        scaleXAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        scaleXAnimation.EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseIn };
+
+        scaleYAnimation.From = 1.0;
+        scaleYAnimation.To = SettingsManager.Current.FlyoutAnimationSpeed == 0 ? 1 : 0.95;
+        scaleYAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(msDuration));
+        scaleYAnimation.EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseIn };
 
         storyboard.Begin(window);
     }

@@ -247,4 +247,15 @@ public class EqualizerService : INotifyPropertyChanged
         }
         ActivePresetName = "Normal";
     }
+
+    /// <summary>
+    /// Disposes resources - unsubscribes from band PropertyChanged events to prevent memory leaks.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (var band in Bands)
+        {
+            band.PropertyChanged -= OnBandPropertyChanged;
+        }
+    }
 }

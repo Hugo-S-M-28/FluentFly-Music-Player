@@ -648,6 +648,12 @@ public partial class UserSettings : ObservableObject
     [ObservableProperty]
     public partial bool LibraryLyricsFilterEnabled { get; set; } = false;
 
+    /// <summary>
+    /// Whether the playlist sidebar is visible in the library
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LibraryPlaylistVisible { get; set; } = false;
+
     [XmlIgnore]
     private bool _initializing = true;
 
@@ -730,6 +736,7 @@ public partial class UserSettings : ObservableObject
         LibrarySearchText = string.Empty;
         LibrarySelectedTab = 0;
         LibraryLyricsFilterEnabled = false;
+        LibraryPlaylistVisible = false;
     }
 
     /// <summary>

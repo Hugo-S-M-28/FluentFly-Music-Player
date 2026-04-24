@@ -18,34 +18,41 @@ public class LyricsService
 
     public List<LyricLine> ParseLrc(string filePath)
     {
-        var lyrics = new List<LyricLine>();
-        if (!File.Exists(filePath)) return lyrics;
+        if (!File.Exists(filePath)) return new List<LyricLine>();
 
         try
         {
-            // Read lines using Default encoding which handles common localized formats
-            var lines = File.ReadAllLines(filePath, System.Text.Encoding.UTF8);
-            foreach (var line in lines)
-            {
-                var match = LyricsRegex.Match(line.Trim());
-                if (match.Success)
-                {
-                    if (TimeSpan.TryParse("00:" + match.Groups["time"].Value, out var time))
-                    {
-                        lyrics.Add(new LyricLine
-                        {
-                            Time = time,
-                            Text = match.Groups["text"].Value.Trim()
-                        });
-                    }
-                }
-            }
+            var text = File.ReadAllText(filePath, System.Text.Encoding.UTF8);
+            return ParseLrcText(text);
         }
         catch (Exception ex)
         {
             NLog.LogManager.GetCurrentClassLogger().Error(ex, "Failed to parse .lrc file");
+            return new List<LyricLine>();
         }
+    }
 
+    public List<LyricLine> ParseLrcText(string lrcText)
+    {
+        var lyrics = new List<LyricLine>();
+        if (string.IsNullOrWhiteSpace(lrcText)) return lyrics;
+
+        var lines = lrcText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var line in lines)
+        {
+            var match = LyricsRegex.Match(line.Trim());
+            if (match.Success)
+            {
+                if (TimeSpan.TryParse("00:" + match.Groups["time"].Value, out var time))
+                {
+                    lyrics.Add(new LyricLine
+                    {
+                        Time = time,
+                        Text = match.Groups["text"].Value.Trim()
+                    });
+                }
+            }
+        }
         return lyrics.OrderBy(l => l.Time).ToList();
     }
 

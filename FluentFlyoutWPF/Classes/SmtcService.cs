@@ -54,6 +54,8 @@ public class SmtcService
 
                     _smtc.ButtonPressed += Smtc_ButtonPressed;
                     _smtc.PlaybackPositionChangeRequested += Smtc_PlaybackPositionChangeRequested;
+                    _smtc.ShuffleEnabledChangeRequested += Smtc_ShuffleEnabledChangeRequested;
+                    _smtc.AutoRepeatModeChangeRequested += Smtc_AutoRepeatModeChangeRequested;
                 }
             });
         }
@@ -61,6 +63,19 @@ public class SmtcService
         {
             Logger.Warn(ex, "Failed to initialize SMTC. Expected in non-interactive sessions.");
         }
+    }
+
+    public event EventHandler<bool>? ShuffleChangeRequested;
+    public event EventHandler<MediaPlaybackAutoRepeatMode>? RepeatModeChangeRequested;
+
+    private void Smtc_ShuffleEnabledChangeRequested(SystemMediaTransportControls sender, ShuffleEnabledChangeRequestedEventArgs args)
+    {
+        ShuffleChangeRequested?.Invoke(this, args.RequestedShuffleEnabled);
+    }
+
+    private void Smtc_AutoRepeatModeChangeRequested(SystemMediaTransportControls sender, AutoRepeatModeChangeRequestedEventArgs args)
+    {
+        RepeatModeChangeRequested?.Invoke(this, args.RequestedAutoRepeatMode);
     }
 
     private void Smtc_PlaybackPositionChangeRequested(SystemMediaTransportControls sender, PlaybackPositionChangeRequestedEventArgs args)
@@ -150,5 +165,12 @@ public class SmtcService
             _smtc.UpdateTimelineProperties(timelineProperties);
         }
         catch { /* SMTC updates can be finicky */ }
+    }
+
+    public void UpdateShuffleRepeat(bool isShuffle, MediaPlaybackAutoRepeatMode repeatMode)
+    {
+        if (_smtc == null) return;
+        _smtc.ShuffleEnabled = isShuffle;
+        _smtc.AutoRepeatMode = repeatMode;
     }
 }

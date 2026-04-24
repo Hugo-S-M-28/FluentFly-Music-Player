@@ -188,6 +188,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
                     }
                 }
                 OnPropertyChanged(nameof(IsShuffleEnabled));
+                UpdateSmtcShuffleRepeat();
                 QueueChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -202,6 +203,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             {
                 _repeatMode = value;
                 OnPropertyChanged(nameof(RepeatMode));
+                UpdateSmtcShuffleRepeat();
             }
         }
     }
@@ -261,6 +263,16 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         SmtcService.Instance.NextRequested += (s, e) => System.Windows.Application.Current.Dispatcher.Invoke(() => PlayNext());
         SmtcService.Instance.PreviousRequested += (s, e) => System.Windows.Application.Current.Dispatcher.Invoke(() => PlayPrevious());
         SmtcService.Instance.PositionChangeRequested += (s, pos) => System.Windows.Application.Current.Dispatcher.Invoke(() => Seek(pos));
+        SmtcService.Instance.ShuffleChangeRequested += (s, shuffle) => System.Windows.Application.Current.Dispatcher.Invoke(() => IsShuffleEnabled = shuffle);
+        SmtcService.Instance.RepeatModeChangeRequested += (s, mode) => System.Windows.Application.Current.Dispatcher.Invoke(() => 
+        {
+            RepeatMode = mode switch
+            {
+                MediaPlaybackAutoRepeatMode.Track => RepeatMode.One,
+                MediaPlaybackAutoRepeatMode.List => RepeatMode.All,
+                _ => RepeatMode.None
+            };
+        });
 
         // Listen for metadata updates from external editing windows
         LibraryManager.Instance.TrackMetadataUpdated += (s, track) => 
@@ -295,6 +307,19 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         };
     }
 
+    private void UpdateSmtcShuffleRepeat()
+    {
+        if (!SettingsManager.Current.SystemMediaControlEnabled) return;
+        
+        var smtcRepeat = _repeatMode switch
+        {
+            RepeatMode.One => MediaPlaybackAutoRepeatMode.Track,
+            RepeatMode.All => MediaPlaybackAutoRepeatMode.List,
+            _ => MediaPlaybackAutoRepeatMode.None
+        };
+        SmtcService.Instance.UpdateShuffleRepeat(_isShuffleEnabled, smtcRepeat);
+    }
+
 
 
     private void LoadLyrics(TrackModel? track)
@@ -303,10 +328,23 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         _currentLyrics.Clear();
         if (track == null) return;
 
+        // Try to find external .lrc file first
         var lrcPath = _lyricsService.FindLrcFile(track.FilePath);
         if (lrcPath != null)
         {
             _currentLyrics = _lyricsService.ParseLrc(lrcPath);
+        }
+        
+        // If no external lyrics, try to parse internal lyrics from metadata
+        if (_currentLyrics.Count == 0 && !string.IsNullOrWhiteSpace(track.Lyrics))
+        {
+            _currentLyrics = _lyricsService.ParseLrcText(track.Lyrics);
+            
+            // If still no lines (maybe it was plain text), create a single line at 0:00
+            if (_currentLyrics.Count == 0 && !string.IsNullOrWhiteSpace(track.Lyrics))
+            {
+                _currentLyrics.Add(new LyricLine { Time = TimeSpan.Zero, Text = track.Lyrics });
+            }
         }
     }
 

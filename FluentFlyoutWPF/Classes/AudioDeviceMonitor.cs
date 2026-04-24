@@ -40,8 +40,8 @@ namespace FluentFlyoutWPF.Classes
             {
                 _deviceEnumerator = new MMDeviceEnumerator();
                 _notificationClient = new AudioDeviceNotificationClient();
-                _notificationClient.DefaultDeviceChanged += OnDefaultDeviceChanged;
                 _deviceEnumerator.RegisterEndpointNotificationCallback(_notificationClient);
+                _notificationClient.DefaultDeviceChanged += OnDefaultDeviceChanged;
                 
                 Logger.Info("Audio device monitoring initialized");
             }

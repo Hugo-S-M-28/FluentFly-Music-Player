@@ -4,7 +4,6 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
       xmlns:models="clr-namespace:FluentFlyoutWPF.Models"
       xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
       xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
@@ -165,9 +164,10 @@
 
                     <ui:Button x:Name="SortDirectionBtn"
                                Click="SortDirectionBtn_Click"
-                               Padding="4"
+                               Padding="0"
                                Width="32"
                                Height="32"
+                               Appearance="Transparent"
                                ToolTip="{DynamicResource Lib_SortDirection}">
                         <ui:SymbolIcon x:Name="SortDirectionIcon"
                                 Symbol="ArrowSortUp24"/>
@@ -177,13 +177,16 @@
 
                     <!-- Lyrics Filter -->
                     <ToggleButton x:Name="LyricsFilterBtn"
-                                  IsChecked="{Binding LibraryLyricsFilterEnabled}"
+                                  IsChecked="{Binding LibraryLyricsFilterEnabled, Mode=TwoWay}"
                                   Click="LyricsFilterBtn_Click"
                                   Width="32"
                                   Height="32"
                                   Padding="0"
+                                  Background="Transparent"
+                                  BorderThickness="0"
                                   ToolTip="{DynamicResource Lib_LyricsFilterTooltip}">
-                        <ui:SymbolIcon Symbol="TextBulletListLtr24"/>
+                        <ui:SymbolIcon Symbol="TextBulletListLtr24" 
+                                       Opacity="{Binding LibraryLyricsFilterEnabled, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
                     </ToggleButton>
                 </StackPanel>
 
@@ -308,13 +311,15 @@
 
                         <!-- Toggle Playlist Button -->
                         <ToggleButton x:Name="TogglePlaylistBtn"
+                                      IsChecked="{Binding LibraryPlaylistVisible, Mode=TwoWay}"
                                       Width="36"
-                                Height="36"
-                                Padding="0"
-                                Background="Transparent"
-                                BorderThickness="0"
+                                      Height="36"
+                                      Padding="0"
+                                      Background="Transparent"
+                                      BorderThickness="0"
                                       ToolTip="{DynamicResource Lib_ToggleList}">
-                            <ui:SymbolIcon Symbol="Collections24"/>
+                            <ui:SymbolIcon Symbol="Collections24"
+                                           Opacity="{Binding LibraryPlaylistVisible, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
                         </ToggleButton>
                     </StackPanel>
                 </Grid>
@@ -662,7 +667,7 @@
                                       Grid.Column="1"
                                       Width="340"
                                       VerticalAlignment="Stretch"
-                                      Visibility="{Binding ElementName=TogglePlaylistBtn, Path=IsChecked, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                      Visibility="{Binding LibraryPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
         </Grid>
     </Grid>
 </Page>

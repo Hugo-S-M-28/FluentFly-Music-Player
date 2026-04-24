@@ -82,6 +82,8 @@ public partial class MainWindow : MicaWindow
     private bool? _lastIsPlaying = null;
 
     internal static volatile bool ExplorerRestarting = false;
+    
+    public NowPlayingViewModel NowPlaying { get; } = new();
 
     public MainWindow()
     {
@@ -121,13 +123,16 @@ public partial class MainWindow : MicaWindow
                 using (EventWaitHandle settingsEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "FluentFlyout_OpenSettings"))
                 {
                     // Fix: Check cancellation token to allow graceful shutdown
+                    WaitHandle[] waitHandles = [settingsEvent, _settingsListenerCts.Token.WaitHandle];
                     while (!_settingsListenerCts.IsCancellationRequested)
                     {
-                        // Wait with timeout to periodically check cancellation token
-                        if (settingsEvent.WaitOne(100))
+                        int index = WaitHandle.WaitAny(waitHandles, 100);
+                        if (index == 0) // settingsEvent
                         {
                             Application.Current.Dispatcher.Invoke(() => { SettingsWindow.ShowInstance(); });
                         }
+                        // If index == 1, it's the cancellation token, loop will exit
+                        // If index == WaitHandle.WaitTimeout, loop continues
                     }
                 }
             }
@@ -159,7 +164,7 @@ public partial class MainWindow : MicaWindow
         }
 
         // display tray icon if enabled
-        if (!SettingsManager.Current.NIconHide)
+        if (!SettingsManager.Current.NIconHide && nIcon != null)
         {
             nIcon.Visibility = Visibility.Visible;
         }
@@ -220,8 +225,17 @@ public partial class MainWindow : MicaWindow
                 var version = Package.Current.Id.Version;
                 SettingsManager.Current.LastKnownVersion = $"v{version.Major}.{version.Minor}.{version.Build}";
             }
-            catch
+            catch (InvalidOperationException ex)
             {
+                // Only catch specific exception when running outside MSIX container
+                // This is expected in debug mode or when running as standalone exe
+                Logger.Warn(ex, "Failed to detect package version (running outside MSIX container)");
+                SettingsManager.Current.LastKnownVersion = "debug";
+            }
+            catch (Exception ex)
+            {
+                // Catch any other unexpected exceptions but still log them
+                Logger.Error(ex, "Unexpected error detecting package version");
                 SettingsManager.Current.LastKnownVersion = "debug";
             }
 
@@ -870,14 +884,10 @@ public partial class MainWindow : MicaWindow
                     
                     if (trackChanged)
                     {
-                        SongTitle.Text = track.Title;
-                        SongArtist.Text = track.FullArtistDisplay;
-                        
                         if (track.AlbumArt == null && !string.IsNullOrEmpty(track.AlbumArtPath))
                             track.AlbumArt = LibraryManager.Instance.GetAlbumArt(track);
                         
                         var image = track.AlbumArt;
-                        SongImage.ImageSource = image;
 
                         BitmapHelper.SetCurrentBitmap(image);
                         BitmapHelper.GetDominantColors(1);
@@ -905,9 +915,6 @@ public partial class MainWindow : MicaWindow
 
                     if (_seekBarEnabled)
                     {
-                        Seekbar.Maximum = MusicPlayerService.Instance.TotalDuration.TotalSeconds;
-                        SeekbarMaxDuration.Text = MusicPlayerService.Instance.TotalDuration.ToString(@"mm\:ss");
-
                         if (!_mediaSessionSupportsSeekbar)
                         {
                             _mediaSessionSupportsSeekbar = true;
@@ -935,9 +942,6 @@ public partial class MainWindow : MicaWindow
 
             if (focusedSession == null)
             {
-                SongTitle.Text = "No media playing";
-                SongArtist.Text = string.Empty;
-                SongImage.ImageSource = null;
                 SymbolPlayPause.Symbol = Wpf.Ui.Controls.SymbolRegular.Stop16;
                 ControlPlayPause.IsEnabled = false;
                 ControlPlayPause.Opacity = 0.35;
@@ -961,10 +965,7 @@ public partial class MainWindow : MicaWindow
 
             if (extTrackChanged && songInfo != null)
             {
-                SongTitle.Text = songInfo.Title;
-                SongArtist.Text = songInfo.Artist;
                 var image = BitmapHelper.GetThumbnail(songInfo.Thumbnail);
-                SongImage.ImageSource = image;
 
                 var croppedImage = BitmapHelper.CropToSquare(image);
                 BackgroundImageStyle1.Source = BackgroundImageStyle2.Source = BackgroundImageStyle3.Source = croppedImage;
@@ -1090,41 +1091,56 @@ public partial class MainWindow : MicaWindow
             if (SettingsManager.Current.CompactLayout) // compact layout
             {
                 Height = 64 + extraHeight;
-                Width = 400;
+                Width = 440;
                 MainStackPanel.Margin = new Thickness(12, 4, 12, 4);
-                BodyStackPanel.Orientation = Orientation.Horizontal;
-                BodyStackPanel.Width = 300;
-                ControlsStackPanel.Margin = new Thickness(0);
-                ControlsStackPanel.Width = 104;
+                
                 MediaIdStackPanel.Visibility = Visibility.Collapsed;
+                SongImageBorder.Height = 48;
+                SongImageBorder.Width = 48;
                 SongImageBorder.Margin = new Thickness(0);
-                SongImageBorder.Height = 36;
-                SongInfoStackPanel.Margin = new Thickness(8, 0, 0, 0);
-                SongInfoStackPanel.Width = 182;
-                if (SettingsManager.Current.MediaFlyoutAlwaysDisplay)
-                {
-                    SongInfoStackPanel.Width -= 36;
-                    ControlsStackPanel.Width += 44;
-                }
+
+                // In compact mode: Title/Artist and Controls side-by-side
+                Grid.SetRow(SongInfoStackPanel, 0);
+                Grid.SetColumn(SongInfoStackPanel, 0);
+                Grid.SetColumnSpan(SongInfoStackPanel, 1);
+                
+                Grid.SetRow(ControlsStackPanel, 0);
+                Grid.SetColumn(ControlsStackPanel, 1);
+                Grid.SetColumnSpan(ControlsStackPanel, 1);
+                ControlsStackPanel.Margin = new Thickness(12, 0, 0, 0);
+                ControlsStackPanel.VerticalAlignment = VerticalAlignment.Center;
+
+                BodyGrid.Width = double.NaN;
+                BodyGrid.Margin = new Thickness(12, 0, 0, 0);
             }
             else // normal layout
             {
                 Height = 112 + extraHeight;
                 Width = 310 - 72 + extraWidth;
                 MainStackPanel.Margin = new Thickness(12);
-                BodyStackPanel.Orientation = Orientation.Vertical;
-                BodyStackPanel.Width = 194 - 72 + extraWidth;
-                ControlsStackPanel.Margin = new Thickness(12, 8, 0, 0);
-                ControlsStackPanel.Width = 184 - 72 + extraWidth;
-                // Only show MediaIdStackPanel when PlayerInfo is enabled;
-                // the internal player path hides it to give Repeat/Shuffle room.
+
+                SongImageBorder.Height = 78;
+                SongImageBorder.Width = 78;
+                SongImageBorder.Margin = new Thickness(0);
+
+                // In normal mode: Title/Artist on top, Controls below
+                Grid.SetRow(SongInfoStackPanel, 0);
+                Grid.SetColumn(SongInfoStackPanel, 0);
+                Grid.SetColumnSpan(SongInfoStackPanel, 2);
+                
+                Grid.SetRow(ControlsStackPanel, 1);
+                Grid.SetColumn(ControlsStackPanel, 0);
+                Grid.SetColumnSpan(ControlsStackPanel, 2);
+                ControlsStackPanel.Margin = new Thickness(0, 8, 0, 0);
+                ControlsStackPanel.VerticalAlignment = VerticalAlignment.Top;
+
+                BodyGrid.Width = 182 - 72 + extraWidth;
+                BodyGrid.Margin = new Thickness(12, 0, 0, 0);
+
+                // Only show MediaIdStackPanel when PlayerInfo is enabled
                 MediaIdStackPanel.Visibility = SettingsManager.Current.PlayerInfoEnabled
                     ? Visibility.Visible
                     : Visibility.Collapsed;
-                SongImageBorder.Margin = new Thickness(6);
-                SongImageBorder.Height = 78;
-                SongInfoStackPanel.Margin = new Thickness(12, 0, 0, 0);
-                SongInfoStackPanel.Width = 182 - 72 + extraWidth;
             }
 
             if (SettingsManager.Current.CenterTitleArtist)

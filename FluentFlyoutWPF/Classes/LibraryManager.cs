@@ -252,7 +252,9 @@ public class LibraryManager : IDisposable
                 Album = album,
                 Duration = duration,
                 TrackNumber = trackNumber,
-                Genre = genre
+                Genre = genre,
+                Lyrics = file.Tag?.Lyrics ?? string.Empty,
+                HasLyrics = !string.IsNullOrWhiteSpace(file.Tag?.Lyrics)
             };
 
             // Check for lyrics file (.lrc)
@@ -418,21 +420,23 @@ public class LibraryManager : IDisposable
     {
         try
         {
-            var lrcPath = Path.ChangeExtension(track.FilePath, ".lrc");
-            
-            // Simple validation: if it contains [mm:ss.xx], it's LRC
+            // 1. Save to internal tags
+            await Task.Run(() =>
+            {
+                using var file = TagLib.File.Create(track.FilePath);
+                file.Tag.Lyrics = lyricsText;
+                file.Save();
+            });
+
+            // 2. Save to external .lrc if it contains timestamps
             if (lyricsText.Contains("[") && lyricsText.Contains("]"))
             {
-                await File.WriteAllTextAsync(lrcPath, lyricsText, System.Text.Encoding.UTF8);
-            }
-            else
-            {
-                // If it's just plain text, we could either save it as plain text or try to make it LRC with 0 timestamps
-                // For now, let's just save it as is.
+                var lrcPath = Path.ChangeExtension(track.FilePath, ".lrc");
                 await File.WriteAllTextAsync(lrcPath, lyricsText, System.Text.Encoding.UTF8);
             }
 
             track.Lyrics = lyricsText;
+            track.HasLyrics = !string.IsNullOrWhiteSpace(lyricsText);
             TrackLyricsUpdated?.Invoke(this, track);
             return true;
         }

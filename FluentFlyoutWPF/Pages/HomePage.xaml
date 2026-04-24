@@ -29,8 +29,8 @@
 
         <!-- Estilo para botones de transporte secundarios (Prev, Next, etc) -->
         <Style x:Key="IconButtonStyle"
-                TargetType="mica:Button"
-                BasedOn="{StaticResource {x:Type mica:Button}}">
+                TargetType="ui:Button"
+                BasedOn="{StaticResource {x:Type ui:Button}}">
             <Setter Property="Padding"
                     Value="0"/>
             <Setter Property="Background"
@@ -45,31 +45,22 @@
                     Value="42"/>
             <Setter Property="CornerRadius"
                     Value="8"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver"
-                        Value="True">
-                    <Setter Property="Background"
-                            Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                    <Setter Property="BorderBrush"
-                            Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Appearance"
+                    Value="Transparent"/>
         </Style>
 
         <!-- Estilo para el botón de Play/Pause principal -->
         <Style x:Key="PlayButtonStyle"
-                TargetType="mica:Button"
-                BasedOn="{StaticResource {x:Type mica:Button}}">
+                TargetType="ui:Button"
+                BasedOn="{StaticResource {x:Type ui:Button}}">
             <Setter Property="Width"
                     Value="56"/>
             <Setter Property="Height"
                     Value="56"/>
             <Setter Property="Padding"
                     Value="0"/>
-            <Setter Property="Background"
-                    Value="{DynamicResource AccentFillColorDefaultBrush}"/>
-            <Setter Property="Foreground"
-                    Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+            <Setter Property="Appearance"
+                    Value="Primary"/>
             <Setter Property="BorderThickness"
                     Value="0"/>
             <Setter Property="CornerRadius"
@@ -80,9 +71,9 @@
                     <Setter Property="RenderTransform">
                         <Setter.Value>
                             <ScaleTransform ScaleX="1.05"
-                                    ScaleY="1.05"
-                                    CenterX="28"
-                                    CenterY="28"/>
+                                     ScaleY="1.05"
+                                     CenterX="28"
+                                     CenterY="28"/>
                         </Setter.Value>
                     </Setter>
                 </Trigger>
@@ -177,19 +168,19 @@
             <StackPanel Grid.Column="1" 
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
-                <mica:Button x:Name="ShuffleButton"
+                <ui:Button x:Name="ShuffleButton"
                         Style="{StaticResource IconButtonStyle}"
                         Click="ShuffleButton_Click"
                         ToolTip="{DynamicResource Home_Shuffle}">
                     <ui:SymbolIcon Symbol="ArrowShuffle24"/>
-                </mica:Button>
-                <mica:Button x:Name="RepeatButton"
+                </ui:Button>
+                <ui:Button x:Name="RepeatButton"
                         Style="{StaticResource IconButtonStyle}"
                         Click="RepeatButton_Click"
                         ToolTip="{DynamicResource Home_Repeat}"
                         Margin="8,0,0,0">
                     <ui:SymbolIcon Symbol="ArrowRepeatAll24"/>
-                </mica:Button>
+                </ui:Button>
             </StackPanel>
         </Grid>
 
@@ -545,21 +536,21 @@
 
                 <!-- Botones de transporte -->
                 <StackPanel Orientation="Horizontal">
-                    <mica:Button Style="{StaticResource IconButtonStyle}"
+                    <ui:Button Style="{StaticResource IconButtonStyle}"
                             Click="PreviousButton_Click">
                         <ui:SymbolIcon x:Name="PreviousIcon" Symbol="Previous24"/>
-                    </mica:Button>
-                    <mica:Button x:Name="PlayPauseButton"
+                    </ui:Button>
+                    <ui:Button x:Name="PlayPauseButton"
                             Style="{StaticResource PlayButtonStyle}"
                             Click="PlayPauseButton_Click"
                             Margin="12,0">
                         <ui:SymbolIcon x:Name="PlayPauseIcon"
                                 Symbol="Play24"/>
-                    </mica:Button>
-                    <mica:Button Style="{StaticResource IconButtonStyle}"
+                    </ui:Button>
+                    <ui:Button Style="{StaticResource IconButtonStyle}"
                             Click="NextButton_Click">
                         <ui:SymbolIcon x:Name="NextIcon" Symbol="Next24"/>
-                    </mica:Button>
+                    </ui:Button>
                     <ToggleButton x:Name="TogglePlaylistBtn"
                             Style="{StaticResource IconToggleButtonStyle}"
                             Margin="16,0,0,0"
@@ -611,13 +602,13 @@
                             ValueChanged="VolumeSlider_ValueChanged"
                             Value="{Binding Volume, Mode=TwoWay}"/>
                     
-                    <mica:Button x:Name="EqualizerButton"
+                    <ui:Button x:Name="EqualizerButton"
                                  Style="{StaticResource IconButtonStyle}"
                                  Click="EqualizerButton_Click"
                                  Margin="16,0,0,0"
                                  ToolTip="{DynamicResource Eq_Title}">
                         <ui:SymbolIcon Symbol="Settings24"/>
-                    </mica:Button>
+                    </ui:Button>
 
                     <Image x:Name="VisualizerContainer"
                             Width="120"
