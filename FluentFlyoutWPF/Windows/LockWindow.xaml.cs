@@ -1,4 +1,4 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
+// Copyright © 2024-2026 The FluentFlyout Authors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using FluentFlyout.Classes;
@@ -18,7 +18,6 @@ namespace FluentFlyoutWPF.Windows;
 public partial class LockWindow : MicaWindow
 {
     private CancellationTokenSource cts;
-    private MainWindow _mainWindow = (MainWindow)Application.Current.MainWindow;
     private bool _isHiding = true;
     private MonitorInfo _openedMonitor;
 
@@ -58,7 +57,7 @@ public partial class LockWindow : MicaWindow
             double targetShackleAngle = isOn ? 0.0 : 25.0;
             double targetShackleBounceY = 0.0;
 
-            int msDuration = (int)(MainWindow.getDuration() / 1.5);
+            int msDuration = (int)(FlyoutAnimationService.GetDuration() / 1.5);
 
             if (SettingsManager.Current.LockKeysAnimated)
             {
@@ -145,7 +144,7 @@ public partial class LockWindow : MicaWindow
         {
             _isHiding = false;
             _openedMonitor = GetPreferredTargetDisplay();
-            _mainWindow.OpenAnimation(this, true, _openedMonitor);
+            FlyoutAnimationService.OpenAnimation(this, true, _openedMonitor);
         }
         cts.Cancel();
         cts = new CancellationTokenSource();
@@ -156,10 +155,10 @@ public partial class LockWindow : MicaWindow
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(SettingsManager.Current.LockKeysDuration, token);
-                _mainWindow.CloseAnimation(this, true, _openedMonitor);
+                FlyoutAnimationService.CloseAnimation(this, true, _openedMonitor);
                 _isHiding = true;
-                await Task.Delay(MainWindow.getDuration());
-                if (_isHiding == false) return;
+                await Task.Delay(FlyoutAnimationService.GetDuration());
+                if (!_isHiding) return; // Flyout was re-opened during the close animation wait
 
                 WindowHelper.SetVisibility(this, false);
                 break;

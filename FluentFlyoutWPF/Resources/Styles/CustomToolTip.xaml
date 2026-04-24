@@ -4,13 +4,19 @@
     xmlns:controls="clr-namespace:Wpf.Ui.Controls;assembly=Wpf.Ui">
     <!-- copied and modified from WPF-UI for the ToolTip -->
     <Style TargetType="{x:Type ToolTip}">
-        <Setter Property="TextElement.FontSize" Value="11" />
-        <Setter Property="TextBlock.LineHeight" Value="11" />
-        <Setter Property="MaxWidth" Value="400" />
+        <Setter Property="TextElement.FontSize"
+                Value="11"/>
+        <Setter Property="TextBlock.LineHeight"
+                Value="11"/>
+        <Setter Property="MaxWidth"
+                Value="400"/>
 
-        <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
-        <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ToolTipForeground}"/>
+        <Setter Property="Background"
+                Value="{DynamicResource ToolTipBackground}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ToolTipBorderBrush}"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -33,7 +39,7 @@
                                     Direction="270"
                                     Opacity="0.25"
                                     ShadowDepth="5"
-                                    Color="#202020" />
+                                    Color="#202020"/>
                             </Border.Effect>
                             <ContentPresenter
                                 Margin="4"
@@ -41,7 +47,8 @@
                                 VerticalAlignment="Top">
                                 <ContentPresenter.Resources>
                                     <Style TargetType="{x:Type TextBlock}">
-                                        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+                                        <Setter Property="TextWrapping"
+                                                Value="WrapWithOverflow"/>
                                     </Style>
                                 </ContentPresenter.Resources>
                             </ContentPresenter>
@@ -51,5 +58,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
 </ResourceDictionary>

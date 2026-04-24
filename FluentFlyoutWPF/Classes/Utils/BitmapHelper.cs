@@ -1,4 +1,4 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
+// Copyright © 2024-2026 The FluentFlyout Authors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using FluentFlyout.Classes.Settings;
@@ -124,6 +124,22 @@ internal static class BitmapHelper
         }
     }
 
+    internal static void SetCurrentBitmap(BitmapImage? image)
+    {
+        if (image == null)
+        {
+            _currentHashCode = 0;
+            _currentHashCodeContext.Value = 0;
+            return;
+        }
+
+        // Use a simple hash for the image if it doesn't have one
+        int hashCode = image.GetHashCode();
+        _thumbnailCache.Set(hashCode, image);
+        _currentHashCode = hashCode;
+        _currentHashCodeContext.Value = hashCode;
+    }
+
     internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference? thumbnail, int maxThumbnailSize = _maxThumbnailSize)
     {
         if (thumbnail == null)
@@ -140,25 +156,25 @@ internal static class BitmapHelper
             _currentHashCodeContext.Value = hashCode;
             return cachedImage;
         }
-
-        BitmapImage image = new();
         using (var imageStream = thumbnail.OpenReadAsync().GetAwaiter().GetResult().AsStreamForRead())
         {
             // initialize the BitmapImage
+            imageStream.Position = 0;
+            BitmapImage image = new();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.DecodePixelWidth = maxThumbnailSize;
             image.StreamSource = imageStream;
             image.EndInit();
+            image.Freeze();
+
+            // add bitmap to thumbnail cache
+            _thumbnailCache.Set(hashCode, image);
+
+            _currentHashCode = hashCode;
+            _currentHashCodeContext.Value = hashCode;
+            return image;
         }
-        image.Freeze();
-
-        // add bitmap to thumbnail cache with empty brush
-        _thumbnailCache.Set(hashCode, image);
-
-        _currentHashCode = hashCode;
-        _currentHashCodeContext.Value = hashCode;
-        return image;
     }
 
     internal static CroppedBitmap? CropToSquare(BitmapImage? sourceImage)
@@ -193,18 +209,34 @@ internal static class BitmapHelper
         if (!SettingsManager.Current.UseAlbumArtAsAccentColor || hashCode == 0)
         {
             // control color (buttons, etc.)
-            var accent = (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorSecondary");
-            if (!accent.IsFrozen)
-                accent = accent.Clone();
-            accent.Freeze();
+            var accent = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorSecondary") as SolidColorBrush;
+            if (accent != null)
+            {
+                if (!accent.IsFrozen)
+                    accent = accent.Clone();
+                accent.Freeze();
+            }
+            else
+            {
+                accent = new SolidColorBrush(Colors.RoyalBlue); // Fallback
+                accent.Freeze();
+            }
 
             // accent color (for non-control elements)
-            var accent2 = (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary");
-            if (!accent2.IsFrozen)
-                accent2 = accent2.Clone();
-            accent2.Freeze();
+            var accent2 = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary") as SolidColorBrush;
+            if (accent2 != null)
+            {
+                if (!accent2.IsFrozen)
+                    accent2 = accent2.Clone();
+                accent2.Freeze();
+            }
+            else
+            {
+                accent2 = new SolidColorBrush(Colors.DeepSkyBlue); // Fallback
+                accent2.Freeze();
+            }
 
-            _currentDominantColors = [accent, accent2];
+            _currentDominantColors = [accent!, accent2!];
             return _currentDominantColors;
         }
 

@@ -1,6 +1,3 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF;
 using MicaWPF.Core.Enums;
@@ -10,6 +7,8 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Tray.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyoutWPF.Classes.Messages;
 
 namespace FluentFlyout.Classes;
 
@@ -39,7 +38,7 @@ internal static class ThemeManager
         SettingsManager.Current.AppTheme = theme;
         SettingsManager.SaveSettings();
 
-        if (SettingsManager.Current.MediaFlyoutAcrylicWindowEnabled) { WindowBlurHelper.EnableBlur(Application.Current.MainWindow); }
+        if (SettingsManager.Current.MediaFlyoutAcrylicWindowEnabled) { WeakReferenceMessenger.Default.Send(new ToggleBlurMessage()); }
         UpdateTaskbarWidget();
     }
 
@@ -88,7 +87,7 @@ internal static class ThemeManager
     private static void UnWatchThemeChanges()
     {
         // check if window is loaded
-        if (Application.Current.MainWindow.IsLoaded == false) return;
+        if (Application.Current.MainWindow?.IsLoaded != true) return;
 
         SystemThemeWatcher.UnWatch(Application.Current.MainWindow);
     }
@@ -98,24 +97,7 @@ internal static class ThemeManager
     /// </summary>
     public static void UpdateTrayIcon()
     {
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-            if (Application.Current.MainWindow.FindName("nIcon") is NotifyIcon nIcon)
-            {
-                if (SettingsManager.Current.NIconSymbol == true)
-                {
-                    var iconUri = new Uri(WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark
-                        ? "pack://application:,,,/Resources/TrayIcons/FluentFlyoutWhite.png"
-                        : "pack://application:,,,/Resources/TrayIcons/FluentFlyoutBlack.png");
-                    nIcon.Icon = new BitmapImage(iconUri);
-                }
-                else
-                {
-                    var iconUi = new Uri("pack://application:,,,/Resources/FluentFlyout2.ico");
-                    nIcon.Icon = new BitmapImage(iconUi);
-                }
-            }
-        });
+        WeakReferenceMessenger.Default.Send(new RecreateTrayIconMessage());
     }
 
     /// <summary>
@@ -123,12 +105,6 @@ internal static class ThemeManager
     /// </summary>
     public static void UpdateTaskbarWidget()
     {
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-            if (Application.Current.MainWindow is not MainWindow mainWindow)
-                return;
-
-            mainWindow.taskbarWindow?.Widget?.ApplyWindowsTheme();
-        });
+        WeakReferenceMessenger.Default.Send(new ApplyTaskbarWidgetThemeMessage());
     }
 }

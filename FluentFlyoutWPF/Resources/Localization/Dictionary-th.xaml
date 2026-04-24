@@ -1,33 +1,346 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
-    <system:String x:Key="TitleText">การตั้งค่า FluentFlyout</system:String>
-    <system:String x:Key="HomeTitle">หน้าหลัก</system:String>
-    <system:String x:Key="Enabled">เปิดใช้งานแล้ว</system:String>
-    <system:String x:Key="Disabled">ปิดใช้งานอยู่</system:String>
-    <system:String x:Key="MediaFlyoutTitle">Flyout สื่อ</system:String>
-    <system:String x:Key="MediaFlyoutDescription">ขณะฟังสื่อ ให้กดปุ่มควบคุมสื่อหรือปุ่มปรับระดับเสียง (เล่น/หยุดชั่วคราว, เพิ่ม/ลดเสียง ฯลฯ) บนแป้นพิมพ์เพื่อแสดงเมนูย่อย ซึ่งจะแสดงข้อมูลสื่อ พร้อมด้วยปุ่มควบคุมการเล่นและอื่นๆ</system:String>
-    <system:String x:Key="TextBlockText1">เปิดใช้งาน Flyout สื่อ</system:String>
-    <system:String x:Key="TextBlockText3">แสดง flyout เมื่อกดปุ่มควบคุมสื่อ</system:String>
-    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">ยกเว้นปุ่มปรับระดับเสียง</system:String>
-    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">ไม่แสดง flyout เมื่อกดปุ่มเพิ่ม/ลดเสียง</system:String>
-    <system:String x:Key="TextBlockText2">เลือกจากรูปแบบการเบลอพื้นหลังแบบทันสมัยที่มีให้เลือก</system:String>
-    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> ไม่มี</system:String>
-    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> สไตล์ที่ 1 (Cover Glow)</system:String>
-    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> สไตล์ที่ 2 (Rising Glow)</system:String>
-    <system:String x:Key="BackgroundBlurOption4" xml:space="preserve"> สไตล์ที่ 3 (เบลอ)</system:String>
-    <system:String x:Key="BackgroundBlurTitle">พื้นหลังเบลอ</system:String>
-    <system:String x:Key="AcrylicWindowTitle">หน้าต่างอะคริลิก</system:String>
-    <system:String x:Key="AcrylicWindowDescription">ใช้เอฟเฟ็กต์เบลอแบบอะคริลิกโปร่งใสกับส่วนที่เลื่อนออกมา (ปิดใช้งานจะกลับไปเป็น Mica)</system:String>
-    <system:String x:Key="CompactLayoutTitle">เลย์เอาต์แบบแน่น</system:String>
-    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">รูปแบบที่เรียบง่ายและไม่เกะกะ
-ซ่อนข้อมูลการเล่นซ้ำ การสุ่ม และตัวเล่น</system:String>
-    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> มุมล่างด้านซ้าย</system:String>
-    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> มุมล่างตรงกลาง</system:String>
-    <system:String x:Key="PositionBottomRight" xml:space="preserve"> มุมล่างด้านขวา</system:String>
-    <system:String x:Key="PositionTopLeft" xml:space="preserve"> มุมบนด้านซ้าย</system:String>
-    <system:String x:Key="PositionTopCenter" xml:space="preserve"> มุมบนตรงกลาง</system:String>
-    <system:String x:Key="PositionTopRight" xml:space="preserve"> มุมบนด้านขวา</system:String>
-    <system:String x:Key="FlyoutStayDurationDescription">(ค่าเริ่มต้น: 3000 ms)</system:String>
-    <system:String x:Key="MillisecondsUnit">ms</system:String>
-    <system:String x:Key="MediaFlyoutAlwaysDisplay">แสดงผลไว้เสมอ</system:String>
-    <system:String x:Key="ShowMediaPlayerNameTitle">แสดงชื่อของสื่อที่เล่นอยู่</system:String>
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="AboutContributorsDescription">ขอขอบคุณบุคคลที่ยอดเยี่ยมทุกคนที่มีส่วนร่วมในการพัฒนาและความสำเร็จของ FluentFlyout!</system:String>
+    <system:String x:Key="AboutContributorsTitle">❤️ พบกับผู้มีส่วนร่วมของเรา</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout สร้างขึ้นโดยใช้แพ็กเกจโอเพนซอร์สดังต่อไปนี้:</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesTitle">ใบอนุญาตโอเพนซอร์ส</system:String>
+    <system:String x:Key="AboutPremiumTitle">เกี่ยวกับ Premium</system:String>
+    <system:String x:Key="AboutTitle">เกี่ยวกับ</system:String>
+    <system:String x:Key="AcrylicBlurOpacityDescription">ปรับเอฟเฟกต์ความโปร่งใสในหน้าต่างแบบ Acrylic (ค่าเริ่มต้น: 175)</system:String>
+    <system:String x:Key="AcrylicBlurOpacityPerk">ความโปร่งใสของ Acrylic Blur</system:String>
+    <system:String x:Key="AcrylicBlurOpacityTitle">ความโปร่งใสของ Acrylic Blur</system:String>
+    <system:String x:Key="AcrylicWindowDescription">ใช้เอฟเฟกต์เบลอแบบอะคริลิกโปร่งใสกับหน้าต่าง (ปิดเพื่อกลับไปใช้ Mica)</system:String>
+    <system:String x:Key="AcrylicWindowTitle">หน้าต่างอะคริลิก</system:String>
+    <system:String x:Key="AdvancedSettingsTitle">การตั้งค่าขั้นสูง</system:String>
+    <system:String x:Key="AllFuturePremiumFeatures">ฟีเจอร์ Premium ทั้งหมดในอนาคต</system:String>
+    <system:String x:Key="AnimationDurationScaleDescription">ความเร็วของแอนิเมชันหน้าต่าง (ค่าเริ่มต้น: 1x)</system:String>
+    <system:String x:Key="AnimationDurationScaleTitle">ระดับระยะเวลาแอนิเมชัน</system:String>
+    <system:String x:Key="AnimationEasingStyleDescription">(ค่าเริ่มต้น: Quadratic)</system:String>
+    <system:String x:Key="AnimationEasingStyleTitle">รูปแบบการผ่อนปรนแอนิเมชัน</system:String>
+    <system:String x:Key="AnimationSettingsDescription">ปรับแต่งแอนิเมชันตามที่คุณต้องการ</system:String>
+    <system:String x:Key="AnimationSettingsTitle">การตั้งค่าแอนิเมชัน</system:String>
+    <system:String x:Key="AnimationSpeedOff">ปิด</system:String>
+    <system:String x:Key="AppLanguageDescription">หากไม่มีภาษาของคุณในรายการหรือยังไม่สมบูรณ์ จะถูกกำหนดเป็นภาษาอังกฤษโดยค่าเริ่มต้น
+คุณสามารถช่วยสนับสนุนการแปลได้ที่:</system:String>
+    <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
+    <system:String x:Key="AppLanguageTitle">ภาษาของแอป</system:String>
+    <system:String x:Key="AppThemeDark"> มืด</system:String>
+    <system:String x:Key="AppThemeDefault"> เริ่มต้นตาม Windows</system:String>
+    <system:String x:Key="AppThemeLight"> สว่าง</system:String>
+    <system:String x:Key="AppThemeTitle">ธีมของแอป</system:String>
+    <system:String x:Key="AppearanceBehaviorSectionTitle">ลักษณะและการทำงาน</system:String>
+    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> ไม่มี</system:String>
+    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> สไตล์ 1 (Cover Glow)</system:String>
+    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> สไตล์ 2 (Rising Glow)</system:String>
+    <system:String x:Key="BackgroundBlurOption4" xml:space="preserve"> สไตล์ 3 (เบลอ)</system:String>
+    <system:String x:Key="BackgroundBlurTitle">เบลอพื้นหลัง</system:String>
+    <system:String x:Key="BackupRestoreCardTitle">สำรองและกู้คืนการตั้งค่าของคุณ</system:String>
+    <system:String x:Key="BackupRestoreSectionTitle">สำรองข้อมูลและกู้คืน</system:String>
+    <system:String x:Key="BuyMeCoffeeLink">เลี้ยงกาแฟฉัน</system:String>
+    <system:String x:Key="CenterTitleArtistDescription">จัดข้อความให้อยู่ตรงกลางแทนการจัดชิดซ้าย</system:String>
+    <system:String x:Key="CenterTitleArtistTitle">จัดชื่อเพลงและศิลปินให้อยู่ตรงกลาง</system:String>
+    <system:String x:Key="CheckingForUpdates">กำลังตรวจสอบการอัปเดต...</system:String>
+    <system:String x:Key="CloseButton">ปิด</system:String>
+    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">เลย์เอาต์ที่บางลงและรบกวนสายตาน้อยลง
+ซ่อนการเล่นซ้ำ สุ่มเพลง และข้อมูลผู้เล่น</system:String>
+    <system:String x:Key="CompactLayoutTitle">เลย์เอาต์ขนาดกะทัดรัด</system:String>
+    <system:String x:Key="DefaultLockLayoutPosition">ค่าเริ่มต้น (จอภาพเป้าหมาย)</system:String>
+    <system:String x:Key="DevelopersTitle">นักพัฒนา</system:String>
+    <system:String x:Key="DisableOnFullscreenDescription">ป้องกันไม่ให้เกม DirectX ในโหมดเต็มหน้าจอถูกย่อขนาดเมื่อหน้าต่างแอปแสดงขึ้น</system:String>
+    <system:String x:Key="DisableOnFullscreenTitle">ปิดเมื่อตรวจพบโปรแกรม DirectX แบบเต็มหน้าจอ</system:String>
+    <system:String x:Key="Disabled">ปิดใช้งาน</system:String>
+    <system:String x:Key="EasingCubic" xml:space="preserve"> Cubic</system:String>
+    <system:String x:Key="EasingLinear" xml:space="preserve"> Linear</system:String>
+    <system:String x:Key="EasingQuadratic" xml:space="preserve"> Quadratic</system:String>
+    <system:String x:Key="EasingSine" xml:space="preserve"> Sine</system:String>
+    <system:String x:Key="Edit_AlbumLabel">อัลบั้ม</system:String>
+    <system:String x:Key="Edit_AlbumPlaceholder">ชื่ออัลบั้ม</system:String>
+    <system:String x:Key="Edit_ArtFilter">รูปภาพ|*.jpg;*.jpeg;*.png;*.bmp;*.webp|ไฟล์ทั้งหมด|*.*</system:String>
+    <system:String x:Key="Edit_ArtistLabel">ศิลปิน</system:String>
+    <system:String x:Key="Edit_ArtistPlaceholder">ชื่อศิลปิน</system:String>
+    <system:String x:Key="Edit_Cancel">ยกเลิก</system:String>
+    <system:String x:Key="Edit_ChangeArtOverlay">เปลี่ยน</system:String>
+    <system:String x:Key="Edit_ChangeArtTooltip">คลิกเพื่อเปลี่ยนปก</system:String>
+    <system:String x:Key="Edit_CollaboratorsLabel">ผู้ร่วมงาน</system:String>
+    <system:String x:Key="Edit_CollaboratorsPlaceholder">ศิลปินรับเชิญ (คั่นด้วย ;)</system:String>
+    <system:String x:Key="Edit_ErrorTitle">ข้อผิดพลาด</system:String>
+    <system:String x:Key="Edit_FileInfoSection">ข้อมูลไฟล์เสียง</system:String>
+    <system:String x:Key="Edit_GenreLabel">ประเภทเพลง</system:String>
+    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock ฯลฯ</system:String>
+    <system:String x:Key="Edit_HeaderSummary">แก้ไขข้อมูลเมตา</system:String>
+    <system:String x:Key="Edit_InfoNote">การเปลี่ยนแปลงจะถูกบันทึกไว้อย่างถาวรในไฟล์เสียงต้นฉบับ</system:String>
+    <system:String x:Key="Edit_LoadLrc">โหลดไฟล์</system:String>
+    <system:String x:Key="Edit_LrcLoadError">ไม่สามารถโหลดไฟล์ที่เลือกได้</system:String>
+    <system:String x:Key="Edit_LyricsFormatInfo">รูปแบบ LRC</system:String>
+    <system:String x:Key="Edit_LyricsFormatMsg">ป้อนเนื้อเพลงในรูปแบบ [mm:ss.xx]Text เพื่อการซิงโครไนซ์อัตโนมัติ</system:String>
+    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] เนื้อเพลงที่นี่...</system:String>
+    <system:String x:Key="Edit_Ok">ตกลง</system:String>
+    <system:String x:Key="Edit_OpenLocation">เปิดตำแหน่งที่ตั้ง</system:String>
+    <system:String x:Key="Edit_Save">บันทึกการเปลี่ยนแปลง</system:String>
+    <system:String x:Key="Edit_SaveErrorMsg">ไม่สามารถบันทึกการเปลี่ยนแปลงได้ ตรวจสอบให้แน่ใจว่าไฟล์ไม่ได้ถูกใช้งานโดยโปรแกรมอื่น</system:String>
+    <system:String x:Key="Edit_SelectArtTitle">เลือกรูปหน้าปก</system:String>
+    <system:String x:Key="Edit_SelectLrcTitle">เลือกไฟล์เนื้อเพลง</system:String>
+    <system:String x:Key="Edit_SyncCurrentTime">ซิงค์เวลาปัจจุบัน</system:String>
+    <system:String x:Key="Edit_SyncLyricsTip">แทรกเวลาปัจจุบันของผู้เล่นที่ตำแหน่งเคอร์เซอร์</system:String>
+    <system:String x:Key="Edit_TabLyrics">เนื้อเพลง (.lrc)</system:String>
+    <system:String x:Key="Edit_TabMetadata">ข้อมูลเมตา</system:String>
+    <system:String x:Key="Edit_TitleLabel">ชื่อเพลง</system:String>
+    <system:String x:Key="Edit_TitlePlaceholder">ป้อนชื่อเพลง</system:String>
+    <system:String x:Key="Edit_TrackNumberLabel">ลำดับเพลง #</system:String>
+    <system:String x:Key="Edit_UnknownArtist">ไม่ทราบศิลปิน</system:String>
+    <system:String x:Key="Edit_Untitled">ไม่มีชื่อ</system:String>
+    <system:String x:Key="Edit_WindowTitle">แก้ไขข้อมูลแทร็ก</system:String>
+    <system:String x:Key="EnableInsertKeyDescription">กำหนดว่าการกดปุ่ม Insert/Overwrite จะแสดงหน้าต่างแอปหรือไม่</system:String>
+    <system:String x:Key="EnableInsertKeyTitle">เปิดใช้งานปุ่ม Insert</system:String>
+    <system:String x:Key="EnableLockKeysDescription">แสดงว่าปุ่มล็อกเฉพาะ (Caps/Num/Scroll) เปิดหรือปิดอยู่</system:String>
+    <system:String x:Key="EnableLockKeysTitle">เปิดใช้งานหน้าต่างปุ่มล็อก</system:String>
+    <system:String x:Key="EnableNextUpDescription">แสดงรายการถัดไปเมื่อเพลง/วิดีโอจบลง</system:String>
+    <system:String x:Key="EnableNextUpTitle">เปิดใช้งานหน้าต่าง "ถัดไป"</system:String>
+    <system:String x:Key="Enabled">เปิดใช้งาน</system:String>
+    <system:String x:Key="EnjoyingAppText" xml:space="preserve">ชอบแอปนี้ไหม? ให้ดาวเราบน GitHub
+หรือเขียนรีวิวใน Microsoft Store!</system:String>
+    <system:String x:Key="Eq_Enable">เปิดใช้งานอีควอไลเซอร์</system:String>
+    <system:String x:Key="Eq_Presets">ค่าที่กำหนดไว้</system:String>
+    <system:String x:Key="Eq_Title">อีควอไลเซอร์</system:String>
+    <system:String x:Key="Error_RestoreSettings">กู้คืนการตั้งค่าไม่สำเร็จ</system:String>
+    <system:String x:Key="ExportFailed">ส่งออกไม่สำเร็จ</system:String>
+    <system:String x:Key="ExportSettings">ส่งออกการตั้งค่า</system:String>
+    <system:String x:Key="ExportSuccessful">ส่งออกสำเร็จ</system:String>
+    <system:String x:Key="ExternalMediaSectionTitle">การรวมสื่อภายนอก</system:String>
+    <system:String x:Key="FailedToExportSettings">ไม่สามารถส่งออกการตั้งค่าได้ ตรวจสอบบันทึกเพื่อดูรายละเอียด</system:String>
+    <system:String x:Key="FailedToImportSettings">ไม่สามารถนำเข้าการตั้งค่าได้ ตรวจสอบบันทึกเพื่อดูรายละเอียด</system:String>
+    <system:String x:Key="FeaturesLayoutSectionTitle">คุณสมบัติและเลย์เอาต์</system:String>
+    <system:String x:Key="FlyoutPositionTitle">ตำแหน่งหน้าต่าง</system:String>
+    <system:String x:Key="FlyoutStayDurationDescription">(ค่าเริ่มต้น: 3000 ms)</system:String>
+    <system:String x:Key="FlyoutStayDurationTitle">ระยะเวลาการแสดงหน้าต่าง</system:String>
+    <system:String x:Key="General_Loading">กำลังโหลด...</system:String>
+    <system:String x:Key="General_No">ไม่</system:String>
+    <system:String x:Key="General_Ok">ตกลง</system:String>
+    <system:String x:Key="General_Yes">ใช่</system:String>
+    <system:String x:Key="GitHubRepoLink">GitHub Repository</system:String>
+    <system:String x:Key="HideTrayIconDescription">เข้าสู่การตั้งค่าโดยรันโปรแกรมสองครั้ง</system:String>
+    <system:String x:Key="HideTrayIconPerk">ซ่อนไอคอนในถาดระบบ</system:String>
+    <system:String x:Key="HideTrayIconTitle">ซ่อนไอคอนในถาดระบบโดยสมบูรณ์</system:String>
+    <system:String x:Key="HomeDashboardTitle">แดชบอร์ด</system:String>
+    <system:String x:Key="HomeTitle">หน้าแรก</system:String>
+    <system:String x:Key="HomeUpdateDescription">ดูว่ามีอะไรใหม่บ้าง</system:String>
+    <system:String x:Key="Home_LyricsNotAvailable">ไม่มีเนื้อเพลง</system:String>
+    <system:String x:Key="Home_Repeat">เล่นซ้ำ</system:String>
+    <system:String x:Key="Home_SelectSongToSeeLyrics">เลือกเพลงเพื่อดูเนื้อเพลง</system:String>
+    <system:String x:Key="Home_Shuffle">สุ่มเพลง</system:String>
+    <system:String x:Key="Home_Title">เครื่องเล่นเพลง</system:String>
+    <system:String x:Key="ImportFailed">นำเข้าไม่สำเร็จ</system:String>
+    <system:String x:Key="ImportSettings">นำเข้าการตั้งค่า</system:String>
+    <system:String x:Key="ImportSettingsWarning">สิ่งนี้จะแทนที่การตั้งค่าปัจจุบันทั้งหมดของคุณ คุณต้องการดำเนินการต่อหรือไม่?</system:String>
+    <system:String x:Key="ImportSuccessful">นำเข้าสำเร็จ</system:String>
+    <system:String x:Key="InternalMusicPlayerSectionTitle">เครื่องเล่นเพลงภายใน</system:String>
+    <system:String x:Key="InternalPlayerEnabledDescription">ใช้ FluentFlyout เป็นเครื่องเล่นเพลงท้องถิ่นที่เป็นอิสระ</system:String>
+    <system:String x:Key="InternalPlayerEnabledTitle">เปิดใช้งานเครื่องเล่นเพลงภายใน</system:String>
+    <system:String x:Key="LastChecked">ตรวจสอบล่าสุดเมื่อ: {0}</system:String>
+    <system:String x:Key="LaunchOnStartupDescription">เริ่มโปรแกรมแบบย่อขนาดไว้ในถาดระบบเมื่อเข้าสู่ระบบ Windows</system:String>
+    <system:String x:Key="LaunchOnStartupTitle">รันเมื่อเริ่มต้นระบบ</system:String>
+    <system:String x:Key="LegacyTaskbarWidthDescription">ใช้ระบบความกว้างของทาสก์บาร์แบบเก่าสำหรับวิดเจ็ต</system:String>
+    <system:String x:Key="LegacyTaskbarWidthTitle">ระบบความกว้างทาสก์บาร์แบบดั้งเดิม</system:String>
+    <system:String x:Key="Lib_Albums">อัลบั้ม</system:String>
+    <system:String x:Key="Lib_AppearanceTitle">ลักษณะของไลบรารี</system:String>
+    <system:String x:Key="Lib_Artists">ศิลปิน</system:String>
+    <system:String x:Key="Lib_ContextMenu_AddToQueue">เพิ่มลงในคิว</system:String>
+    <system:String x:Key="Lib_ContextMenu_Edit">แก้ไขข้อมูล</system:String>
+    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">เปิดตำแหน่งไฟล์</system:String>
+    <system:String x:Key="Lib_ContextMenu_Play">เล่น</system:String>
+    <system:String x:Key="Lib_Folders">โฟลเดอร์</system:String>
+    <system:String x:Key="Lib_GridSizeDescription">ขนาดกริด (อัลบั้ม)</system:String>
+    <system:String x:Key="Lib_GridSizeTitle">ขนาดกริด</system:String>
+    <system:String x:Key="Lib_IconSizeDescription">ขนาดไอคอน (รายการ)</system:String>
+    <system:String x:Key="Lib_IconSizeTitle">ขนาดไอคอน</system:String>
+    <system:String x:Key="Lib_LyricsBadge">เนื้อเพลง</system:String>
+    <system:String x:Key="Lib_LyricsFilterTooltip">แสดงเฉพาะเพลงที่มีเนื้อเพลง</system:String>
+    <system:String x:Key="Lib_PlayAll">เล่นทั้งหมด</system:String>
+    <system:String x:Key="Lib_ResetAppearance">รีเซ็ตลักษณะที่ปรากฏ</system:String>
+    <system:String x:Key="Lib_SearchPlaceholder">ค้นหาในคอลเลกชันของคุณ...</system:String>
+    <system:String x:Key="Lib_SelectFolderDescription">เลือกโฟลเดอร์เพื่อเพิ่มลงในไลบรารีเพลง</system:String>
+    <system:String x:Key="Lib_Shuffle">สุ่มเล่นทั้งหมด</system:String>
+    <system:String x:Key="Lib_Songs">เพลง</system:String>
+    <system:String x:Key="Lib_SongsCountFormat">{0} เพลง</system:String>
+    <system:String x:Key="Lib_SortBy">เรียงลำดับโดย:</system:String>
+    <system:String x:Key="Lib_SortDirection">เปลี่ยนทิศทาง (↑/↓)</system:String>
+    <system:String x:Key="Lib_Sort_Album">อัลบั้ม</system:String>
+    <system:String x:Key="Lib_Sort_Artist">ศิลปิน</system:String>
+    <system:String x:Key="Lib_Sort_Duration">ความยาว</system:String>
+    <system:String x:Key="Lib_Sort_PlayCount">จำนวนการเล่น</system:String>
+    <system:String x:Key="Lib_Sort_Title">ชื่อเพลง (A-Z)</system:String>
+    <system:String x:Key="Lib_Title">ไลบรารีเพลง</system:String>
+    <system:String x:Key="Lib_ToggleList">แสดง/ซ่อนรายการ</system:String>
+    <system:String x:Key="Lib_ViewSettingsTooltip">ดูการตั้งค่า</system:String>
+    <system:String x:Key="LibraryAppearanceSectionTitle">ลักษณะของไลบรารี</system:String>
+    <system:String x:Key="LibraryGridSizeDescription">ปรับขนาดของอัลบั้มและศิลปิน (ค่าเริ่มต้น: 160px)</system:String>
+    <system:String x:Key="LibraryGridSizeTitle">ขนาดกริด</system:String>
+    <system:String x:Key="LibraryTrackIconSizeDescription">ปรับขนาดไอคอนในรายการเพลง (ค่าเริ่มต้น: 40px)</system:String>
+    <system:String x:Key="LibraryTrackIconSizeTitle">ขนาดไอคอนแทร็ก</system:String>
+    <system:String x:Key="LockKeysAnimatedDescription">เปิดใช้งานแอนิเมชันที่ละเอียดอ่อนสำหรับตัวบ่งชี้ปุ่มล็อก</system:String>
+    <system:String x:Key="LockKeysAnimatedTitle">แอนิเมชันตัวบ่งชี้</system:String>
+    <system:String x:Key="LockKeysBoldUIDescription">เน้นสัญลักษณ์และแบบอักษรของหน้าต่างแอป</system:String>
+    <system:String x:Key="LockKeysBoldUITitle">สัญลักษณ์และแบบอักษรตัวหนา</system:String>
+    <system:String x:Key="LockKeysCursorUIDescription">เลือกจอภาพที่คุณต้องการให้แสดงหน้าต่างแอป</system:String>
+    <system:String x:Key="LockKeysCursorUITitle">หน้าจอเป้าหมายที่ต้องการ</system:String>
+    <system:String x:Key="LockKeysCustomizationTitle">หน้าต่างปุ่มล็อก</system:String>
+    <system:String x:Key="LockKeysDescription" xml:space="preserve">ตรวจสอบสถานะปุ่มล็อกของคุณได้อย่างรวดเร็ว จะปรากฏขึ้นหลังจากกด Caps Lock, Num Lock หรือ Scroll Lock มีประโยชน์สำหรับแล็ปท็อปที่ไม่มีไฟ LED แสดงสถานะ</system:String>
+    <system:String x:Key="LockKeysStayDurationDescription">(ค่าเริ่มต้น: 2000 ms)</system:String>
+    <system:String x:Key="LockKeysStayDurationTitle">ระยะเวลาแสดงปุ่มล็อก</system:String>
+    <system:String x:Key="LockWindow_CapsLock">Caps Lock</system:String>
+    <system:String x:Key="LockWindow_Insert">Insert</system:String>
+    <system:String x:Key="LockWindow_InsertPressed">กด Insert แล้ว</system:String>
+    <system:String x:Key="LockWindow_LockOff">ปิด</system:String>
+    <system:String x:Key="LockWindow_LockOn">เปิด</system:String>
+    <system:String x:Key="LockWindow_NumLock">Num Lock</system:String>
+    <system:String x:Key="LockWindow_ScrollLock">Scroll Lock</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplay">แสดงเสมอ</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">หน้าต่างจะยังคงเปิดอยู่จนกว่าคุณจะคลิกปุ่มปิด</system:String>
+    <system:String x:Key="MediaFlyoutDescription">ในขณะที่ฟังเพลง/วิดีโอ ให้กดปุ่มสื่อหรือปุ่มระดับเสียงใดก็ได้เพื่อเรียกใช้หน้าต่างแอป แสดงข้อมูลสื่อ การควบคุมการเล่น และอื่นๆ</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">ไม่แสดงหน้าต่างแอปเมื่อกดปุ่มเพิ่ม/ลดเสียง หรือปิดเสียง</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">ไม่รวมปุ่มระดับเสียง</system:String>
+    <system:String x:Key="MediaFlyoutTitle">หน้าต่างควบคุมสื่อ</system:String>
+    <system:String x:Key="MillisecondsUnit">ms</system:String>
+    <system:String x:Key="MonitorWithCursor">จอภาพที่มีเคอร์เซอร์</system:String>
+    <system:String x:Key="MonitorWithFocusedWindow">จอภาพที่มีหน้าต่างที่โฟกัส</system:String>
+    <system:String x:Key="NativeExperienceInfo">เพื่อประสบการณ์ Windows 11 แบบดั้งเดิม ควรคงการตั้งค่าเริ่มต้นไว้</system:String>
+    <system:String x:Key="NextUpCustomizationTitle">หน้าต่าง "ถัดไป"</system:String>
+    <system:String x:Key="NextUpDescription" xml:space="preserve">หน้าต่างแสดงรายการถัดไปในคิวเมื่อเพลง/วิดีโอจบลง จะปรากฏขึ้นก็ต่อเมื่อรายการถัดไปจะถูกเล่นโดยอัตโนมัติ</system:String>
+    <system:String x:Key="NextUpStayDurationDescription">(ค่าเริ่มต้น: 2000 ms)</system:String>
+    <system:String x:Key="NextUpStayDurationTitle">ระยะเวลาแสดง "ถัดไป"</system:String>
+    <system:String x:Key="NextUpWindow_UpNextText">ถัดไป:</system:String>
+    <system:String x:Key="PauseOtherMediaDescription">เมื่อเล่นหรือโฟกัสสื่อใหม่ เซสชันที่เปิดใช้งานอยู่อื่นๆ จะถูกหยุดชั่วคราวโดยอัตโนมัติ</system:String>
+    <system:String x:Key="PauseOtherMediaTitle">หยุดสื่ออื่นชั่วคราวอัตโนมัติ</system:String>
+    <system:String x:Key="PixelsUnit">px</system:String>
+    <system:String x:Key="Player_NoTrack">ไม่มีแทร็กที่กำลังเล่น</system:String>
+    <system:String x:Key="Player_SelectTrackMsg">โปรดเลือกแทร็กจากไลบรารี</system:String>
+    <system:String x:Key="Playlist_Title">เพลย์ลิสต์</system:String>
+    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> ล่างกลาง</system:String>
+    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> ล่างซ้าย</system:String>
+    <system:String x:Key="PositionBottomRight" xml:space="preserve"> ล่างขวา</system:String>
+    <system:String x:Key="PositionLeft">ซ้าย</system:String>
+    <system:String x:Key="PositionRight">ขวา</system:String>
+    <system:String x:Key="PositionTopCenter" xml:space="preserve"> บนกลาง</system:String>
+    <system:String x:Key="PositionTopLeft" xml:space="preserve"> บนซ้าย</system:String>
+    <system:String x:Key="PositionTopRight" xml:space="preserve"> บนขวา</system:String>
+    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">การสนับสนุนของคุณช่วยให้ฉันรักษา FluentFlyout ต่อไปได้ ปลดล็อกคุณสมบัติการปรับแต่ง Premium ทั้งหมดทันทีและถาวร
+
+หมายเหตุ: เนื่องจากเป็นโปรเจกต์โอเพนซอร์ส คุณลักษณะเหล่านี้จึงมีให้ใช้งานฟรีผ่านการติดตั้งด้วยตนเองบน GitHub</system:String>
+    <system:String x:Key="PremiumFeatureTitle">คุณสมบัติ Premium</system:String>
+    <system:String x:Key="PremiumGitHubMessage">เวอร์ชัน GitHub/บิลด์เอง ได้ปลดล็อกฟีเจอร์ Premium แล้ว</system:String>
+    <system:String x:Key="PremiumLockedMessage">ฟีเจอร์นี้เป็นส่วนหนึ่งของแพ็กเกจ Premium</system:String>
+    <system:String x:Key="PremiumPurchaseCancelled">การซื้อถูกยกเลิก</system:String>
+    <system:String x:Key="PremiumPurchaseFailed">การซื้อล้มเหลว โปรดลองอีกครั้ง</system:String>
+    <system:String x:Key="PremiumPurchaseSuccess">ปลดล็อก Premium สำเร็จแล้ว!</system:String>
+    <system:String x:Key="PremiumUnlockedMessage">ปลดล็อกฟีเจอร์ Premium แล้ว ขอบคุณสำหรับการสนับสนุน!</system:String>
+    <system:String x:Key="RepeatButtonDescription">สลับระหว่างการเล่นซ้ำทั้งหมด หรือเล่นซ้ำเพลงเดียว เพิ่มความกว้างของหน้าต่างแอป</system:String>
+    <system:String x:Key="RepeatButtonTitle">ปุ่มเล่นซ้ำ*</system:String>
+    <system:String x:Key="SelectedMonitorTitle">จอภาพเป้าหมายของหน้าต่างแอป</system:String>
+    <system:String x:Key="SettingsExportedSuccessfully">ส่งออกการตั้งค่าสำเร็จแล้ว!</system:String>
+    <system:String x:Key="SettingsImportedSuccessfully">นำเข้าการตั้งค่าสำเร็จแล้ว! แอปจะเริ่มใหม่ทันที</system:String>
+    <system:String x:Key="ShowMediaPlayerNameTitle">แสดงชื่อเครื่องเล่นสื่อ</system:String>
+    <system:String x:Key="ShowSeekbarDescription">แถบความคืบหน้าแบบโต้ตอบจะแสดงโดยอัตโนมัติหากเครื่องเล่นรองรับ</system:String>
+    <system:String x:Key="ShowSeekbarTitle">แสดงแถบความคืบหน้า*</system:String>
+    <system:String x:Key="ShowUpdateNotificationsTitle">แสดงการแจ้งเตือนสำหรับการอัปเดตใหม่</system:String>
+    <system:String x:Key="ShuffleButtonDescription">เพิ่มความกว้างของหน้าต่างแอป</system:String>
+    <system:String x:Key="ShuffleButtonTitle">ปุ่มสุ่มเพลง*</system:String>
+    <system:String x:Key="SponsorMeLink">สนับสนุนฉัน</system:String>
+    <system:String x:Key="StartupAppsHyperlinkText">แอปเริ่มต้น</system:String>
+    <system:String x:Key="StartupAppsSettingsInfo">หากการตั้งค่านี้ไม่ทำงานตามที่คาดไว้ ให้ตรวจสอบ</system:String>
+    <system:String x:Key="SystemConfigure">กำหนดค่า</system:String>
+    <system:String x:Key="SystemMediaControlEnabledDescription">แสดงและควบคุมสื่อจากแอปอื่น (Spotify, YouTube, Chrome ฯลฯ)</system:String>
+    <system:String x:Key="SystemMediaControlEnabledTitle">ควบคุมแอปภายนอก</system:String>
+    <system:String x:Key="SystemSettingsTitle">ระบบ</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">เสียงต้องดังแค่ไหนเพื่อให้แถบสูงถึงระดับสูงสุด</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">ระดับเกณฑ์สูงสุดของเสียง</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">เสียงต้องดังแค่ไหนก่อนที่แถบจะเริ่มขยับ</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">ความไวของเสียง</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountDescription">จำนวนแถบของตัวแสดงภาพ</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountTitle">จำนวนแถบ</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineDescription">แสดงเส้นบางๆ เมื่อระดับเสียงเป็นศูนย์</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineTitle">แสดงเส้นฐาน (Baseline)</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">แถบขยายออกอย่างสมมาตรจากกึ่งกลางแทนที่จะยกขึ้นจากด้านล่าง</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">จัดแถบไว้ตรงกลาง</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableDescription">การคลิกที่ตัวแสดงภาพจะเปิดหน้าการตั้งค่าของมัน</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableTitle">คลิกเพื่อเปิดการตั้งค่า</system:String>
+    <system:String x:Key="TaskbarVisualizerDescription">ตัวแสดงภาพเสียงสดบนทาสก์บาร์ของคุณ ออกแบบมาเพื่อให้มีผลกระทบต่อประสิทธิภาพน้อยที่สุด</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledDescription">รุ่นทดลอง: ทำงานต่อเมื่อเปิดใช้งานวิดเจ็ตทาสก์บาร์เท่านั้น</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledTitle">เปิดใช้งานตัวแสดงภาพทาสก์บาร์ (รุ่นทดลอง)</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">เปลี่ยนสิ่งที่ตัวแสดงภาพรับฟังโดยการเปลี่ยนอุปกรณ์เอาต์พุตสำหรับ FluentFlyout</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">อุปกรณ์เอาต์พุต</system:String>
+    <system:String x:Key="TaskbarVisualizerPositionTitle">ตำแหน่งของตัวแสดงภาพเทียบกับวิดเจ็ตทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarVisualizerTitle">ตัวแสดงภาพทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedDescription">เปิดใช้งานแอนิเมชันที่ละเอียดอ่อนสำหรับวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedTitle">แอนิเมชันวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideDescription">ซ่อนวิดเจ็ตโดยอัตโนมัติเมื่อสื่อถูกหยุดชั่วคราว</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideTitle">ซ่อนวิดเจ็ตอัตโนมัติ</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">เพิ่มเอฟเฟกต์เบลอพื้นหลังสำหรับวิดเจ็ตทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">เบลอพื้นหลัง</system:String>
+    <system:String x:Key="TaskbarWidgetClickableDescription">การคลิกที่วิดเจ็ตจะเปิดหน้าต่างสื่อแบบเต็ม</system:String>
+    <system:String x:Key="TaskbarWidgetClickableTitle">คลิกเพื่อเปิดหน้าต่างสื่อ</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutDescription">ปิดหน้าต่างหากเปิดอยู่แล้วเมื่อคลิกที่วิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutTitle">ดับเบิลคลิกเพื่อปิดหน้าต่าง</system:String>
+    <system:String x:Key="TaskbarWidgetControlsDescription">แสดงปุ่มควบคุมสื่อบนวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionDescription">เลือกตำแหน่งที่จะแสดงปุ่มควบคุมสื่อ</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionTitle">ตำแหน่งควบคุมสื่อ</system:String>
+    <system:String x:Key="TaskbarWidgetControlsTitle">การควบคุมสื่อวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationPerk">วิดเจ็ตทาสก์บาร์และตัวแสดงภาพ</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationTitle">วิดเจ็ตทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarWidgetDescription">วิดเจ็ตขนาดกะทัดรัดที่รวมเข้ากับทาสก์บาร์ของ Windows โดยตรงเพื่อให้เข้าถึงสื่อของคุณได้ทันที</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledDescription">แสดงวิดเจ็ตสื่อขนาดกะทัดรัดบนทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledTitle">เปิดใช้งานวิดเจ็ตทาสก์บาร์</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">ซ่อนวิดเจ็ตอย่างสมบูรณ์เมื่อไม่มีสื่อให้บริการ</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">ซ่อนโดยสมบูรณ์เมื่อไม่มีสื่อ</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingDescription">เพิ่มพื้นที่ว่างเพิ่มเติม (ค่าเริ่มต้น: 0px)</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingTitle">พื้นที่ว่างที่กำหนดเอง</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingDescription">เปิดตัวเลือกนี้หากคุณเปิดปุ่ม "Windows Widgets"</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">ปรับพื้นที่ว่างรอบๆ วิดเจ็ตเพื่อให้เข้ากับสไตล์ทาสก์บาร์ของคุณ</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">การตั้งค่าพื้นที่วิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingTitle">พื้นที่อัตโนมัติสำหรับปุ่ม Windows Widgets</system:String>
+    <system:String x:Key="TaskbarWidgetPosition">ตำแหน่งวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">จอภาพเป้าหมายของวิดเจ็ต</system:String>
+    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">กำหนดค่าตัวเลือกด้านล่างหากคุณประสบปัญหาทางสายตา</system:String>
+    <system:String x:Key="TextBlockText1">เปิดใช้งานหน้าต่างสื่อ</system:String>
+    <system:String x:Key="TextBlockText2">เลือกจากสไตล์การเบลอพื้นหลังที่ทันสมัย</system:String>
+    <system:String x:Key="TextBlockText3">แสดงหน้าต่างแอปเมื่อกดปุ่มสื่อ</system:String>
+    <system:String x:Key="TitleText">การตั้งค่า FluentFlyout</system:String>
+    <system:String x:Key="TranslatorsTitle">นักแปล</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorDescription">เลือกสิ่งที่จะเกิดขึ้นเมื่อคลิกซ้ายที่ไอคอนในถาดระบบ</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorTitle">พฤติกรรมการคลิกซ้ายที่ไอคอนถาดระบบ</system:String>
+    <system:String x:Key="TrayIconLeftClickOption1"> เปิดการตั้งค่า</system:String>
+    <system:String x:Key="TrayIconLeftClickOption2"> แสดงหน้าต่างสื่อ</system:String>
+    <system:String x:Key="TrayIconSectionTitle">ไอคอนในถาดระบบ</system:String>
+    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repository</system:String>
+    <system:String x:Key="TrayIcon_QuitOption">ออกจาก FluentFlyout</system:String>
+    <system:String x:Key="TrayIcon_ReportBugOption">รายงานบั๊ก</system:String>
+    <system:String x:Key="TrayIcon_SettingsOption">การตั้งค่า</system:String>
+    <system:String x:Key="TrayIcon_ViewLogsOption">ดูบันทึก</system:String>
+    <system:String x:Key="UnlockFullExperienceText">ปลดล็อกประสบการณ์เต็มรูปแบบของ FluentFlyout:</system:String>
+    <system:String x:Key="UnlockPremiumButton">ปลดล็อก Premium</system:String>
+    <system:String x:Key="UnsupportedControlsWarning">*เบราว์เซอร์/ผู้เล่นบางรายไม่รองรับการควบคุมการเล่นซ้ำ สุ่มเพลง และแถบความคืบหน้า</system:String>
+    <system:String x:Key="UpToDate">อัปเดตแล้ว</system:String>
+    <system:String x:Key="UpdateAvailable">มีการอัปเดตใหม่</system:String>
+    <system:String x:Key="UpdateAvailableNotificationButton">ดาวน์โหลดการอัปเดต</system:String>
+    <system:String x:Key="UpdateAvailableNotificationMessage">เวอร์ชันใหม่ ({0}) พร้อมให้ดาวน์โหลดแล้ว</system:String>
+    <system:String x:Key="UpdateAvailableNotificationTitle">มีการอัปเดตใหม่!</system:String>
+    <system:String x:Key="UpdateToastButton">ดูการอัปเดต</system:String>
+    <system:String x:Key="UpdateToastMessage">ขณะนี้คุณกำลังใช้เวอร์ชัน {0}</system:String>
+    <system:String x:Key="UpdateToastTitle">FluentFlyout อัปเดตแล้ว!</system:String>
+    <system:String x:Key="UpdatesSectionTitle">การอัปเดต</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorDescription">องค์ประกอบ UI บางอย่างจะใช้สีจากรูปหน้าปกอัลบั้มแทนธีมของระบบ</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorTitle">ใช้ปกอัลบั้มสำหรับสีเน้น</system:String>
+    <system:String x:Key="Win11TrayIconDescription">ใช้ไอคอนในถาดระบบที่ตรงกับสไตล์ Windows 11 (สลับเพื่อรีเฟรชธีม)</system:String>
+    <system:String x:Key="Win11TrayIconTitle">ไอคอนถาดระบบสไตล์ Windows 11</system:String>
+    
+    <!-- New Keys -->
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">ตัวตรวจสอบการปรับเทียบเสียง</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">แสดงระดับอินพุตและปรับจุดตัดแบบเรียลไทม์</system:String>
+    <system:String x:Key="TaskbarVisualizer_Silence">เงียบ</system:String>
+    <system:String x:Key="TaskbarVisualizer_Max">สูงสุด</system:String>
+    <system:String x:Key="TaskbarVisualizer_StartPoint">จุดเริ่มต้น (ความไว)</system:String>
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">เกณฑ์สูงสุด (Peak)</system:String>
+    <system:String x:Key="Edit_LrcFilter">ไฟล์ LRC (*.lrc)|*.lrc|ไฟล์ข้อความ (*.txt)|*.txt|ไฟล์ทั้งหมด|*.*</system:String>
+    <system:String x:Key="Error_FailedSetStartup">ไม่สามารถตั้งค่าการเริ่มต้นระบบได้</system:String>
 </ResourceDictionary>

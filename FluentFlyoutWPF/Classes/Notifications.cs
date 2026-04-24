@@ -1,6 +1,3 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using Microsoft.Toolkit.Uwp.Notifications;
 using NLog;
@@ -92,10 +89,10 @@ internal static class Notifications
             {
                 // updated app version
                 new ToastContentBuilder()
-                    .AddText(Application.Current.FindResource("UpdateToastTitle").ToString())
-                    .AddText(string.Format(Application.Current.FindResource("UpdateToastMessage").ToString(), currentVersion))
+                    .AddText(Application.Current.FindResource("UpdateToastTitle")?.ToString() ?? "Updated!")
+                    .AddText(string.Format(Application.Current.FindResource("UpdateToastMessage")?.ToString() ?? "Updated to {0}", currentVersion))
                     .AddButton(new ToastButton()
-                        .SetContent(Application.Current.FindResource("UpdateToastButton").ToString())
+                        .SetContent(Application.Current.FindResource("UpdateToastButton")?.ToString() ?? "View Changes")
                         .AddArgument("action", "viewChanges")
                         .SetBackgroundActivation())
                     .Show();
@@ -131,14 +128,14 @@ internal static class Notifications
         try
         {
             var builder = new ToastContentBuilder()
-                .AddText(Application.Current.FindResource("UpdateAvailableNotificationTitle").ToString())
-                .AddText(string.Format(Application.Current.FindResource("UpdateAvailableNotificationMessage").ToString(), newVersion));
+                .AddText(Application.Current.FindResource("UpdateAvailableNotificationTitle")?.ToString() ?? "Update Available")
+                .AddText(string.Format(Application.Current.FindResource("UpdateAvailableNotificationMessage")?.ToString() ?? "Version {0} is available", newVersion));
 
             // only add download button if URL is available
             if (!string.IsNullOrEmpty(updateUrl))
             {
                 builder.AddButton(new ToastButton()
-                    .SetContent(Application.Current.FindResource("UpdateAvailableNotificationButton").ToString())
+                    .SetContent(Application.Current.FindResource("UpdateAvailableNotificationButton")?.ToString() ?? "Download")
                     .AddArgument("action", "downloadUpdate")
                     .AddArgument("url", updateUrl)
                     .SetBackgroundActivation());

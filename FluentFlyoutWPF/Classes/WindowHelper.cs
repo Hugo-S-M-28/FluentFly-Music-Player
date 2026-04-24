@@ -1,6 +1,3 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -71,7 +68,13 @@ public static class WindowHelper
         window.SourceInitialized += (sender, e) =>
         {
             var helper = new WindowInteropHelper(window);
-            SetWindowLong(helper.Handle, GWL_EXSTYLE, GetWindowLong(helper.Handle, GWL_EXSTYLE) | WS_EX_NOACTIVATE);
+            int currentStyle = GetWindowLong(helper.Handle, GWL_EXSTYLE);
+            if (currentStyle == 0 && Marshal.GetLastWin32Error() != 0)
+            {
+                Logger.Warn($"GetWindowLong failed for '{window.GetType().Name}', Win32Error={Marshal.GetLastWin32Error()}");
+                return;
+            }
+            SetWindowLong(helper.Handle, GWL_EXSTYLE, currentStyle | WS_EX_NOACTIVATE);
         };
     }
 }

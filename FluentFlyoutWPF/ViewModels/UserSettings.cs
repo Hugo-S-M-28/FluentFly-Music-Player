@@ -11,6 +11,9 @@ using FluentFlyoutWPF.Models;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Xml.Serialization;
+using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyoutWPF.Classes.Messages;
+using System.ComponentModel;
 
 namespace FluentFlyoutWPF.ViewModels;
 
@@ -20,10 +23,49 @@ namespace FluentFlyoutWPF.ViewModels;
 public partial class UserSettings : ObservableObject
 {
     /// <summary>
+    /// Enable internal music player (playing local files instead of system media)
+    /// </summary>
+    [ObservableProperty]
+    public partial bool InternalPlayerEnabled { get; set; }
+
+    /// <summary>
+    /// Enable controlling other media applications (Spotify, YouTube, etc.)
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SystemMediaControlEnabled { get; set; }
+
+    /// <summary>
+    /// User selected music library folders
+    /// </summary>
+    public ObservableCollection<string> MusicLibraryFolders { get; set; } = new ObservableCollection<string>();
+
+    /// <summary>
+    /// Player volume (0.0 to 1.0)
+    /// </summary>
+    [ObservableProperty]
+    public partial float Volume { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Last played track file path
+    /// </summary>
+    public string LastPlayedTrackPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Last playback position in seconds
+    /// </summary>
+    public double LastPlaybackPosition { get; set; } = 0;
+
+    /// <summary>
     /// Use a compact layout
     /// </summary>
     [ObservableProperty]
     public partial bool CompactLayout { get; set; }
+
+    partial void OnCompactLayoutChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WeakReferenceMessenger.Default.Send(new UpdateUILayoutMessage());
+    }
 
     /// <summary>
     /// Flyout Target Display
@@ -73,6 +115,12 @@ public partial class UserSettings : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDurationEditable))]
     public partial bool MediaFlyoutAlwaysDisplay { get; set; }
+
+    partial void OnMediaFlyoutAlwaysDisplayChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WeakReferenceMessenger.Default.Send(new UpdateUILayoutMessage());
+    }
 
     [XmlIgnore] public bool IsDurationEditable => !MediaFlyoutAlwaysDisplay;
 
@@ -157,6 +205,12 @@ public partial class UserSettings : ObservableObject
     [ObservableProperty]
     public partial bool CenterTitleArtist { get; set; }
 
+    partial void OnCenterTitleArtistChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WeakReferenceMessenger.Default.Send(new UpdateUILayoutMessage());
+    }
+
     /// <summary>
     /// Animation easing style index
     /// </summary>
@@ -214,6 +268,24 @@ public partial class UserSettings : ObservableObject
     public partial bool MediaFlyoutEnabled { get; set; }
 
     /// <summary>
+    /// Whether the equalizer is enabled
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EqualizerEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Name of the active EQ preset
+    /// </summary>
+    [ObservableProperty]
+    public partial string ActiveEqPresetName { get; set; } = "Normal";
+
+    /// <summary>
+    /// Custom gains for the 10 EQ bands
+    /// </summary>
+    [ObservableProperty]
+    public partial float[] EqualizerGains { get; set; } = new float[10];
+
+    /// <summary>
     /// Exclude volume keys from triggering media flyout
     /// </summary>
     [ObservableProperty]
@@ -261,6 +333,12 @@ public partial class UserSettings : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial bool SeekbarEnabled { get; set; }
+
+    partial void OnSeekbarEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WeakReferenceMessenger.Default.Send(new UpdateUILayoutMessage());
+    }
 
     /// <summary>
     /// Pause other media sessions when focusing a new one
@@ -403,12 +481,6 @@ public partial class UserSettings : ObservableObject
     public partial bool TaskbarWidgetHideCompletely { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the pause icon overlay should be completely hidden from view.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool TaskbarWidgetShowPauseOverlay { get; set; }
-
-    /// <summary>
     /// Whether taskbar widget controls (pause, previous, next) are enabled.
     /// </summary>
     [ObservableProperty]
@@ -484,6 +556,13 @@ public partial class UserSettings : ObservableObject
     public partial int TaskbarVisualizerAudioPeakLevel { get; set; }
 
     /// <summary>
+    /// Current audio peak level for UI visualization (0-100). Not persisted.
+    /// </summary>
+    [XmlIgnore]
+    [ObservableProperty]
+    public partial double TaskbarVisualizerCurrentLevel { get; set; }
+
+    /// <summary>
     /// Gets whether premium features are unlocked (runtime only, not persisted)
     /// </summary>
     [XmlIgnore]
@@ -527,6 +606,54 @@ public partial class UserSettings : ObservableObject
     [ObservableProperty]
     public partial bool LegacyTaskbarWidthEnabled { get; set; }
 
+    /// <summary>
+    /// Size of track icons in the library list view
+    /// </summary>
+    [ObservableProperty]
+    public partial double LibraryTrackIconSize { get; set; } = 40.0;
+
+    /// <summary>
+    /// Size of album/artist items in the library grid view
+    /// </summary>
+    [ObservableProperty]
+    public partial double LibraryGridItemSize { get; set; } = 160.0;
+
+    /// <summary>
+    /// Preferred library sort property
+    /// </summary>
+    [ObservableProperty]
+    public partial string LibrarySortProperty { get; set; } = "Title";
+
+    /// <summary>
+    /// Preferred library sort direction
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LibrarySortAscending { get; set; } = true;
+
+    /// <summary>
+    /// Last search text in library
+    /// </summary>
+    [ObservableProperty]
+    public partial string LibrarySearchText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Last selected tab in library (0: Songs, 1: Albums, 2: Artists)
+    /// </summary>
+    [ObservableProperty]
+    public partial int LibrarySelectedTab { get; set; } = 0;
+
+    /// <summary>
+    /// Whether the lyrics filter is active in the library
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LibraryLyricsFilterEnabled { get; set; } = false;
+
+    /// <summary>
+    /// Whether the playlist sidebar is visible in the library
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LibraryPlaylistVisible { get; set; } = false;
+
     [XmlIgnore]
     private bool _initializing = true;
 
@@ -537,6 +664,8 @@ public partial class UserSettings : ObservableObject
             LanguageOptions.Add(new LanguageOption(supportedLanguage.Key, supportedLanguage.Value));
         }
 
+        InternalPlayerEnabled = true;
+        SystemMediaControlEnabled = true;
         CompactLayout = false;
         FlyoutSelectedMonitor = 0;
         Position = 0;
@@ -555,6 +684,9 @@ public partial class UserSettings : ObservableObject
         LockKeysDuration = 2000;
         AppTheme = 0;
         MediaFlyoutEnabled = true;
+        EqualizerEnabled = true;
+        ActiveEqPresetName = "Normal";
+        EqualizerGains = new float[10];
         MediaFlyoutAlwaysDisplay = false;
         MediaFlyoutVolumeKeysExcluded = false;
         NIconSymbol = false;
@@ -581,7 +713,6 @@ public partial class UserSettings : ObservableObject
         TaskbarWidgetManualPadding = 0;
         TaskbarWidgetBackgroundBlur = false;
         TaskbarWidgetHideCompletely = false;
-        TaskbarWidgetShowPauseOverlay = true;
         TaskbarWidgetControlsEnabled = false;
         TaskbarWidgetControlsPosition = 1;
         TaskbarWidgetAnimated = true;
@@ -591,13 +722,21 @@ public partial class UserSettings : ObservableObject
         TaskbarVisualizerBarCount = 10;
         TaskbarVisualizerCenteredBars = false;
         TaskbarVisualizerBaseline = false;
-        TaskbarVisualizerAudioSensitivity = 2;
-        TaskbarVisualizerAudioPeakLevel = 3;
+        TaskbarVisualizerAudioSensitivity = 5;
+        TaskbarVisualizerAudioPeakLevel = 8;
         AcrylicBlurOpacity = 175;
         UseAlbumArtAsAccentColor = false;
         LastUpdateNotificationUnixSeconds = 0;
         ShowUpdateNotifications = true;
         LegacyTaskbarWidthEnabled = false;
+        LibraryTrackIconSize = 40.0;
+        LibraryGridItemSize = 160.0;
+        LibrarySortProperty = "Title";
+        LibrarySortAscending = true;
+        LibrarySearchText = string.Empty;
+        LibrarySelectedTab = 0;
+        LibraryLyricsFilterEnabled = false;
+        LibraryPlaylistVisible = false;
     }
 
     /// <summary>
@@ -654,6 +793,7 @@ public partial class UserSettings : ObservableObject
             return;
         }
 
+        ExternalMediaService.Instance.UpdateStateFromSettings();
         UpdateTaskbar();
     }
 
@@ -682,12 +822,6 @@ public partial class UserSettings : ObservableObject
         UpdateTaskbar();
     }
 
-    partial void OnTaskbarWidgetShowPauseOverlayChanged(bool oldValue, bool newValue)
-    {
-        if (oldValue == newValue || _initializing) return;
-        UpdateTaskbar();
-    }
-
     partial void OnTaskbarWidgetControlsEnabledChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
@@ -698,8 +832,7 @@ public partial class UserSettings : ObservableObject
     {
         if (oldValue == newValue || _initializing) return;
         
-        MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-        mainWindow.taskbarWindow?.Widget?.ReorderControls();
+        WeakReferenceMessenger.Default.Send(new ReorderTaskbarWidgetControlsMessage());
     }
 
     partial void OnTaskbarVisualizerPositionChanged(int oldValue, int newValue)
@@ -716,8 +849,7 @@ public partial class UserSettings : ObservableObject
 
     private void UpdateTaskbar()
     {
-        MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-        mainWindow.UpdateTaskbar();
+        WeakReferenceMessenger.Default.Send(new UpdateTaskbarMessage());
     }
 
     partial void OnTaskbarVisualizerEnabledChanged(bool oldValue, bool newValue)
@@ -743,5 +875,67 @@ public partial class UserSettings : ObservableObject
     {
         if (oldValue == newValue || _initializing) return;
         BitmapHelper.GetDominantColors(1);
+        WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+    }
+
+    partial void OnInternalPlayerEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+
+        if (!newValue)
+        {
+            MusicPlayerService.Instance.Stop();
+        }
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            ExternalMediaService.Instance.UpdateStateFromSettings();
+        });
+    }
+
+    partial void OnSystemMediaControlEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            ExternalMediaService.Instance.UpdateStateFromSettings();
+        });
+    }
+
+    partial void OnMediaFlyoutEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+
+        // If the flyout is being disabled and is currently visible, close it immediately
+        if (!newValue)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowMediaFlyoutMessage(toggleMode: true));
+        }
+    }
+
+    /// <summary>
+    /// Automatically save settings whenever a property changes.
+    /// </summary>
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        // Don't save during initialization or for ignored properties
+        if (!_initializing && 
+            e.PropertyName != nameof(IsPremiumUnlocked) && 
+            e.PropertyName != nameof(IsDurationEditable) &&
+            e.PropertyName != nameof(LastPlaybackPosition) && // Avoid excessive writes during playback
+            !string.IsNullOrEmpty(e.PropertyName))
+        {
+            SettingsManager.SaveSettings();
+        }
+    }
+
+    /// <summary>
+    /// Public wrapper to trigger OnPropertyChanged from external services
+    /// </summary>
+    public void NotifyPropertyChanged(string propertyName)
+    {
+        OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
     }
 }

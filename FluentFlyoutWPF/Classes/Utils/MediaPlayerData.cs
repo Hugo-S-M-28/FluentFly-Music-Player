@@ -1,4 +1,4 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
+// Copyright © 2024-2026 The FluentFlyout Authors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System.Diagnostics;
@@ -11,17 +11,17 @@ public static class MediaPlayerData
 {
     private class CachedMediaPlayerInfo
     {
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public ImageSource? Icon { get; set; }
     }
     // cache for media player info to avoid redundant process lookups
     private static readonly Dictionary<string, CachedMediaPlayerInfo> mediaPlayerCache = new();
 
-    private static Process[] cachedProcesses = null;
+    private static Process[]? cachedProcesses = null;
     private static DateTime lastCacheTime = DateTime.MinValue;
     private const int CACHE_DURATION_SECONDS = 5;
 
-    public static (string, ImageSource) getMediaPlayerData(string mediaPlayerId)
+    public static (string, ImageSource?) getMediaPlayerData(string mediaPlayerId)
     {
         if (mediaPlayerCache.TryGetValue(mediaPlayerId, out var cachedInfo))
         {
@@ -50,6 +50,14 @@ public static class MediaPlayerData
         // use cache to avoid frequent process enumeration
         if (cachedProcesses == null || (DateTime.Now - lastCacheTime).TotalSeconds > CACHE_DURATION_SECONDS)
         {
+            // Dispose old process handles before replacing the cache
+            if (cachedProcesses != null)
+            {
+                foreach (var p in cachedProcesses)
+                {
+                    try { p.Dispose(); } catch { }
+                }
+            }
             cachedProcesses = Process.GetProcesses();
             lastCacheTime = DateTime.Now;
         }

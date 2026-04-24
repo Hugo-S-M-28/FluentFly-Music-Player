@@ -1,4 +1,4 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
+// Copyright © 2024-2026 The FluentFlyout Authors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using FluentFlyout.Classes;
@@ -99,29 +99,45 @@ public partial class SettingsWindow : FluentWindow
             ResetScrollPosition();
         };
 
-        SettingsManager.Current.PropertyChanged += async (s, args) =>
+        SettingsManager.Current.PropertyChanged += OnSettingsPropertyChanged;
+    }
+
+    private async void OnSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(SettingsManager.Current.AppTheme))
         {
-            if (args.PropertyName == nameof(SettingsManager.Current.AppTheme))
+            // force fix pane state after theme change
+            await Dispatcher.InvokeAsync(async () =>
             {
+                if (instance == null || RootNavigation == null) return;
+
                 var wasPaneOpen = RootNavigation.IsPaneOpen;
 
-                // force fix pane state after theme change
-                await Dispatcher.InvokeAsync(async () =>
+                await Task.Delay(100);
+                if (instance == null || RootNavigation == null) return;
+
+                try
                 {
-                    await Task.Delay(100);
                     RootNavigation.IsPaneOpen = !wasPaneOpen;
                     await Task.Delay(10);
+                    if (instance == null || RootNavigation == null) return;
                     RootNavigation.IsPaneOpen = wasPaneOpen;
 
                     await Task.Delay(300);
+                    if (instance == null || RootNavigation == null) return;
                     RootNavigation.Navigate(typeof(HomePage));
-                }, System.Windows.Threading.DispatcherPriority.Loaded);
-            }
-        };
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error during NavigationView theme change workaround");
+                }
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
     }
 
     private void SettingsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
+        SettingsManager.Current.PropertyChanged -= OnSettingsPropertyChanged;
         SettingsManager.SaveSettings();
     }
 
@@ -208,5 +224,10 @@ public partial class SettingsWindow : FluentWindow
             }
         }
         return null;
+    }
+
+    private void NavigationViewItem_Click(object sender, RoutedEventArgs e)
+    {
+
     }
 }

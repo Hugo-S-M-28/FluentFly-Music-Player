@@ -1,3 +1,691 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+
+
+    <system:String x:Key="AboutContributorsDescription">FluentFlyout இன் வளர்ச்சிக்கும் வெற்றிக்கும் பங்களித்த அனைத்து அற்புதமான மக்களுக்கும் ஒரு பெரிய நன்றி!</system:String>
+
+    <system:String x:Key="AboutContributorsTitle">❤️ எமது பங்களிப்பாளர்களைச் சந்திக்கவும்</system:String>
+
+    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout பின்வரும் திறந்த மூல தொகுப்புகளைப் பயன்படுத்தி உருவாக்கப்பட்டுள்ளது:</system:String>
+
+    <system:String x:Key="AboutOpenSourceLicensesTitle">திறந்த மூல உரிமங்கள்</system:String>
+
+    <system:String x:Key="AboutPremiumTitle">Premium பற்றி</system:String>
+
+    <system:String x:Key="AboutTitle">பற்றி</system:String>
+
+    <system:String x:Key="AcrylicBlurOpacityDescription">அக்ரிலிக் பிளைஅவுட்களில் ஊடுருவும் விளைவைச் சரிசெய்யவும் (இயல்புநிலை: 175)</system:String>
+
+    <system:String x:Key="AcrylicBlurOpacityPerk">அக்ரிலிக் தெளிவின்மை ஒளிபுகாநிலை</system:String>
+
+    <system:String x:Key="AcrylicBlurOpacityTitle">அக்ரிலிக் தெளிவின்மை ஒளிபுகாநிலை</system:String>
+
+    <system:String x:Key="AcrylicWindowDescription">பிளைஅவுட்டுக்கு வெளிப்படையான அக்ரிலிக் தெளிவின்மை விளைவைப் பயன்படுத்துங்கள் (முடக்கினால் Mica-விற்குத் திரும்பும்)</system:String>
+
+    <system:String x:Key="AcrylicWindowTitle">அக்ரிலிக் சாளரம்</system:String>
+
+    <system:String x:Key="AdvancedSettingsTitle">மேம்பட்ட அமைப்புகள்</system:String>
+
+    <system:String x:Key="AllFuturePremiumFeatures">அனைத்து எதிர்கால Premium அம்சங்கள்</system:String>
+
+    <system:String x:Key="AnimationDurationScaleDescription">சாளர அசைவூட்ட வேகம் (இயல்புநிலை: 1x)</system:String>
+
+    <system:String x:Key="AnimationDurationScaleTitle">அசைவூட்ட கால அளவு அளவு</system:String>
+
+    <system:String x:Key="AnimationEasingStyleDescription">(இயல்புநிலை: Quadratic)</system:String>
+
+    <system:String x:Key="AnimationEasingStyleTitle">அசைவூட்டத் தளர்த்தல் பாணி</system:String>
+
+    <system:String x:Key="AnimationSettingsDescription">அசைவூட்டங்களை உங்கள் விருப்பத்திற்கு ஏற்ப மாற்றவும்</system:String>
+
+    <system:String x:Key="AnimationSettingsTitle">அசைவூட்ட அமைப்புகள்</system:String>
+
+    <system:String x:Key="AnimationSpeedOff">முடக்கப்பட்டது</system:String>
+
+    <system:String x:Key="AppLanguageDescription">உங்கள் மொழி பட்டியலில் இல்லை அல்லது முழுமையடையவில்லை என்றால், அது இயல்புநிலையாக ஆங்கிலத்திற்கு மாறும்.
+
+மொழிபெயர்ப்புகளுக்கு நீங்கள் இங்கே பங்களிக்கலாம்:</system:String>
+
+    <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
+
+    <system:String x:Key="AppLanguageTitle">பயன்பாட்டு மொழி</system:String>
+
+    <system:String x:Key="AppThemeDark"> இருண்ட</system:String>
+
+    <system:String x:Key="AppThemeDefault"> விண்டோஸ் இயல்புநிலை</system:String>
+
+    <system:String x:Key="AppThemeLight"> ஒளி</system:String>
+
+    <system:String x:Key="AppThemeTitle">பயன்பாட்டு தீம்</system:String>
+
+    <system:String x:Key="AppearanceBehaviorSectionTitle">தோற்றம் &amp; நடத்தை</system:String>
+
+    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> எதுவுமில்லை</system:String>
+
+    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> பாணி 1 (Cover Glow)</system:String>
+
+    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> பாணி 2 (Rising Glow)</system:String>
+
+    <system:String x:Key="BackgroundBlurOption4" xml:space="preserve"> பாணி 3 (தெளிவின்மை)</system:String>
+
+    <system:String x:Key="BackgroundBlurTitle">பின்னணி தெளிவின்மை</system:String>
+
+    <system:String x:Key="BackupRestoreCardTitle">உங்கள் அமைப்புகளை காப்புப் பிரதி எடுத்து மீட்டமைக்கவும்</system:String>
+
+    <system:String x:Key="BackupRestoreSectionTitle">காப்புப் பிரதி &amp; மீட்டமை</system:String>
+
+    <system:String x:Key="BuyMeCoffeeLink">எனக்கு ஒரு காபி வாங்கித் தாருங்கள்</system:String>
+
+    <system:String x:Key="CenterTitleArtistDescription">உரையை இடதுபுறம் சீரமைப்பதற்குப் பதிலாக மையப்படுத்துங்கள்</system:String>
+
+    <system:String x:Key="CenterTitleArtistTitle">தலைப்பு மற்றும் கலைஞரை மையப்படுத்து</system:String>
+
+    <system:String x:Key="CheckingForUpdates">மேம்படுத்தல்களைச் சரிபார்க்கிறது...</system:String>
+
+    <system:String x:Key="CloseButton">மூடு</system:String>
+
+    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">மெல்லிய மற்றும் குறைந்த கவனச்சிதறல் கொண்ட தளவமைப்பு
+
+மீண்டும் செய்தல், வரிசைமாற்றம் மற்றும் பிளேயர் தகவலை மறைக்கிறது</system:String>
+
+    <system:String x:Key="CompactLayoutTitle">சிறிய தளவமைப்பு</system:String>
+
+    <system:String x:Key="DefaultLockLayoutPosition">இயல்புநிலை (இலக்கு திரை)</system:String>
+
+    <system:String x:Key="DevelopersTitle">உருவாக்குநர்கள்</system:String>
+
+    <system:String x:Key="DisableOnFullscreenDescription">முழுத்திரை முறையில் DirectX விளையாட்டுகள் இயங்கும்போது சாளரம் தோன்றுவதைத் தவிர்க்கவும்</system:String>
+
+    <system:String x:Key="DisableOnFullscreenTitle">முழுத்திரை DirectX நிரலைக் கண்டறியும்போது பிளைஅவுட்டை முடக்கு</system:String>
+
+    <system:String x:Key="Disabled">முடக்கப்பட்டது</system:String>
+
+    <system:String x:Key="EasingCubic" xml:space="preserve"> Cubic</system:String>
+
+    <system:String x:Key="EasingLinear" xml:space="preserve"> Linear</system:String>
+
+    <system:String x:Key="EasingQuadratic" xml:space="preserve"> Quadratic</system:String>
+
+    <system:String x:Key="EasingSine" xml:space="preserve"> Sine</system:String>
+
+    <system:String x:Key="Edit_AlbumLabel">ஆல்பம்</system:String>
+
+    <system:String x:Key="Edit_AlbumPlaceholder">ஆல்பத்தின் பெயர்</system:String>
+
+    <system:String x:Key="Edit_ArtFilter">படங்கள்|*.jpg;*.jpeg;*.png;*.bmp;*.webp|அனைத்து கோப்புகள்|*.*</system:String>
+
+    <system:String x:Key="Edit_ArtistLabel">கலைஞர்</system:String>
+
+    <system:String x:Key="Edit_ArtistPlaceholder">கலைஞரின் பெயர்</system:String>
+
+    <system:String x:Key="Edit_Cancel">ரத்து செய்</system:String>
+
+    <system:String x:Key="Edit_ChangeArtOverlay">மாற்று</system:String>
+
+    <system:String x:Key="Edit_ChangeArtTooltip">முகப்பை மாற்ற கிளிக் செய்க</system:String>
+
+    <system:String x:Key="Edit_CollaboratorsLabel">கூட்டுப்பணியாளர்கள்</system:String>
+
+    <system:String x:Key="Edit_CollaboratorsPlaceholder">விருந்தினர் கலைஞர்கள் ( ; கொண்டு பிரிக்கவும்)</system:String>
+
+    <system:String x:Key="Edit_ErrorTitle">பிழை</system:String>
+
+    <system:String x:Key="Edit_FileInfoSection">ஆடியோ கோப்புத் தகவல்</system:String>
+
+    <system:String x:Key="Edit_GenreLabel">வகை</system:String>
+
+    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock, போன்றவை.</system:String>
+
+    <system:String x:Key="Edit_HeaderSummary">மெட்டாடேட்டாவைத் திருத்தவும்</system:String>
+
+    <system:String x:Key="Edit_InfoNote">மாற்றங்கள் அசல் ஆடியோ கோப்பில் நிரந்தரமாகச் சேமிக்கப்படும்.</system:String>
+
+    <system:String x:Key="Edit_LoadLrc">கோப்பை ஏற்றவும்</system:String>
+
+    <system:String x:Key="Edit_LrcLoadError">தேர்ந்தெடுக்கப்பட்ட கோப்பை ஏற்ற முடியவில்லை.</system:String>
+
+    <system:String x:Key="Edit_LyricsFormatInfo">LRC வடிவம்</system:String>
+
+    <system:String x:Key="Edit_LyricsFormatMsg">தானியங்கி ஒத்திசைவுக்கு [mm:ss.xx]Text வடிவில் வரிகளை உள்ளிடவும்.</system:String>
+
+    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] வரிகள் இங்கே...</system:String>
+
+    <system:String x:Key="Edit_Ok">சரி</system:String>
+
+    <system:String x:Key="Edit_OpenLocation">இருப்பிடத்தைத் திறக்கவும்</system:String>
+
+    <system:String x:Key="Edit_Save">மாற்றங்களைச் சேமிக்கவும்</system:String>
+
+    <system:String x:Key="Edit_SaveErrorMsg">மாற்றங்களைச் சேமிக்க முடியவில்லை. கோப்பு மற்றொரு செயலி மூலம் பயன்படுத்தப்படவில்லை என்பதை உறுதிப்படுத்தவும்.</system:String>
+
+    <system:String x:Key="Edit_SelectArtTitle">முகப்புப் படத்தைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="Edit_SelectLrcTitle">பாடல் வரிகள் கோப்பைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="Edit_SyncCurrentTime">தற்போதைய நேரத்தை ஒத்திசைக்கவும்</system:String>
+
+    <system:String x:Key="Edit_SyncLyricsTip">பிளேயரின் தற்போதைய நேரத்தை கர்சர் நிலையில் செருகும்.</system:String>
+
+    <system:String x:Key="Edit_TabLyrics">பாடல் வரிகள் (.lrc)</system:String>
+
+    <system:String x:Key="Edit_TabMetadata">மெட்டாடேட்டா</system:String>
+
+    <system:String x:Key="Edit_TitleLabel">பாடல் தலைப்பு</system:String>
+
+    <system:String x:Key="Edit_TitlePlaceholder">தலைப்பை உள்ளிடவும்</system:String>
+
+    <system:String x:Key="Edit_TrackNumberLabel">ட்ராக் எண் #</system:String>
+
+    <system:String x:Key="Edit_UnknownArtist">தெரியாத கலைஞர்</system:String>
+
+    <system:String x:Key="Edit_Untitled">தலைப்பில்லாதது</system:String>
+
+    <system:String x:Key="Edit_WindowTitle">ட்ராக் தகவலைத் திருத்தவும்</system:String>
+
+    <system:String x:Key="EnableInsertKeyDescription">Insert/Overwrite விசையை அழுத்தும்போது பிளைஅவுட்டைக் காண்பிக்க வேண்டுமா என்பதைத் தீர்மானிக்கிறது</system:String>
+
+    <system:String x:Key="EnableInsertKeyTitle">Insert விசையை இயக்கு</system:String>
+
+    <system:String x:Key="EnableLockKeysDescription">குறிப்பிட்ட லாக் விசைகள் (Caps/Num/Scroll) இயக்கப்பட்டுள்ளதா இல்லையா என்பதைக் காட்டுகிறது</system:String>
+
+    <system:String x:Key="EnableLockKeysTitle">லாக் கீ பிளைஅவுட்களை இயக்கு</system:String>
+
+    <system:String x:Key="EnableNextUpDescription">பாடல்/வீடியோ முடியும் போது அடுத்ததாக என்ன இருக்கிறது என்பதைக் காட்டுகிறது</system:String>
+
+    <system:String x:Key="EnableNextUpTitle">"அடுத்து" பிளைஅவுட்டை இயக்கு</system:String>
+
+    <system:String x:Key="Enabled">இயக்கப்பட்டது</system:String>
+
+    <system:String x:Key="EnjoyingAppText" xml:space="preserve">பயன்பாடு பிடித்திருக்கிறதா? GitHub-இல் எங்களை நட்சத்திரமிடவும்,
+
+அல்லது Microsoft Store-இல் ஒரு மதிப்பாய்வை விடவும்!</system:String>
+
+    <system:String x:Key="Eq_Enable">ஈக்வலைசரை இயக்கு</system:String>
+
+    <system:String x:Key="Eq_Presets">முன்னமைவுகள்</system:String>
+
+    <system:String x:Key="Eq_Title">ஈக்வலைசர்</system:String>
+
+    <system:String x:Key="Error_RestoreSettings">அமைப்புகளை மீட்டமைப்பதில் தோல்வி</system:String>
+
+    <system:String x:Key="ExportFailed">ஏற்றுமதி தோல்வி</system:String>
+
+    <system:String x:Key="ExportSettings">அமைப்புகளை ஏற்றுமதி செய்</system:String>
+
+    <system:String x:Key="ExportSuccessful">ஏற்றுமதி வெற்றி</system:String>
+
+    <system:String x:Key="ExternalMediaSectionTitle">வெளிப்புற ஊடக ஒருங்கிணைப்பு</system:String>
+
+    <system:String x:Key="FailedToExportSettings">அமைப்புகளை ஏற்றுமதி செய்ய முடியவில்லை. விவரங்களுக்கு பதிவுகளைச் சரிபார்க்கவும்.</system:String>
+
+    <system:String x:Key="FailedToImportSettings">அமைப்புகளை இறக்குமதி செய்ய முடியவில்லை. விவரங்களுக்கு பதிவுகளைச் சரிபார்க்கவும்.</system:String>
+
+    <system:String x:Key="FeaturesLayoutSectionTitle">அம்சங்கள் &amp; தளவமைப்பு</system:String>
+
+    <system:String x:Key="FlyoutPositionTitle">பிளைஅவுட் நிலை</system:String>
+
+    <system:String x:Key="FlyoutStayDurationDescription">(இயல்புநிலை: 3000 ms)</system:String>
+
+    <system:String x:Key="FlyoutStayDurationTitle">பிளைஅவுட் காட்சி காலம்</system:String>
+
+    <system:String x:Key="General_Loading">ஏற்றப்படுகிறது...</system:String>
+
+    <system:String x:Key="General_No">இல்லை</system:String>
+
+    <system:String x:Key="General_Ok">சரி</system:String>
+
+    <system:String x:Key="General_Yes">ஆம்</system:String>
+
+    <system:String x:Key="GitHubRepoLink">GitHub களஞ்சியம்</system:String>
+
+    <system:String x:Key="HideTrayIconDescription">நிரலை இருமுறை இயக்குவதன் மூலம் அமைப்புகளுக்குள் நுழையவும்</system:String>
+
+    <system:String x:Key="HideTrayIconPerk">ட்ரே ஐகானை மறைக்கவும்</system:String>
+
+    <system:String x:Key="HideTrayIconTitle">சிஸ்டம் ட்ரே ஐகானை முழுமையாக மறைக்கவும்</system:String>
+
+    <system:String x:Key="HomeDashboardTitle">டாஷ்போர்டு</system:String>
+
     <system:String x:Key="HomeTitle">முகப்பு</system:String>
+
+    <system:String x:Key="HomeUpdateDescription">புதியவை என்ன என்பதைக் கண்டறியவும்</system:String>
+
+    <system:String x:Key="Home_LyricsNotAvailable">பாடல் வரிகள் கிடைக்கவில்லை</system:String>
+
+    <system:String x:Key="Home_Repeat">மீண்டும் செய்</system:String>
+
+    <system:String x:Key="Home_SelectSongToSeeLyrics">வரிகளைப் பார்க்க பாடலைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="Home_Shuffle">வரிசைமாற்றம்</system:String>
+
+    <system:String x:Key="Home_Title">மியூசிக் பிளேயர்</system:String>
+
+    <system:String x:Key="ImportFailed">இறக்குமதி தோல்வி</system:String>
+
+    <system:String x:Key="ImportSettings">அமைப்புகளை இறக்குமதி செய்</system:String>
+
+    <system:String x:Key="ImportSettingsWarning">இது உங்கள் தற்போதைய அமைப்புகள் அனைத்தையும் மாற்றும். தொடர விரும்புகிறீர்களா?</system:String>
+
+    <system:String x:Key="ImportSuccessful">இறக்குமதி வெற்றி</system:String>
+
+    <system:String x:Key="InternalMusicPlayerSectionTitle">உள் மியூசிக் பிளேயர்</system:String>
+
+    <system:String x:Key="InternalPlayerEnabledDescription">FluentFlyout-ஐ ஒரு சுயாதீனமான உள்ளூர் மியூசிக் பிளேயராகப் பயன்படுத்தவும்</system:String>
+
+    <system:String x:Key="InternalPlayerEnabledTitle">உள் மியூசிக் பிளேயரை இயக்கு</system:String>
+
+    <system:String x:Key="LastChecked">கடைசியாகச் சரிபார்க்கப்பட்டது: {0}</system:String>
+
+    <system:String x:Key="LaunchOnStartupDescription">விண்டோஸ் உள்நுழைவின் போது சிஸ்டம் ட்ரேயில் சுருக்கப்பட்ட நிலையில் தொடங்கும்</system:String>
+
+    <system:String x:Key="LaunchOnStartupTitle">தொடக்கத்தில் இயக்கு</system:String>
+
+    <system:String x:Key="LegacyTaskbarWidthDescription">விட்ஜெட்டுகளுக்கு பழைய பணிப்பட்டி அகல அமைப்பைப் பயன்படுத்தவும்</system:String>
+
+    <system:String x:Key="LegacyTaskbarWidthTitle">பழைய பணிப்பட்டி அகல அமைப்பு</system:String>
+
+    <system:String x:Key="Lib_Albums">ஆல்பங்கள்</system:String>
+
+    <system:String x:Key="Lib_AppearanceTitle">லைப்ரரி தோற்றம்</system:String>
+
+    <system:String x:Key="Lib_Artists">கலைஞர்கள்</system:String>
+
+    <system:String x:Key="Lib_ContextMenu_AddToQueue">வரிசையில் சேர்</system:String>
+
+    <system:String x:Key="Lib_ContextMenu_Edit">தகவலைத் திருத்து</system:String>
+
+    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">கோப்பு இருப்பிடத்தைத் திறக்கவும்</system:String>
+
+    <system:String x:Key="Lib_ContextMenu_Play">இயக்கு</system:String>
+
+    <system:String x:Key="Lib_Folders">கோப்புறைகள்</system:String>
+
+    <system:String x:Key="Lib_GridSizeDescription">கிரிட் அளவு (ஆல்பங்கள்)</system:String>
+
+    <system:String x:Key="Lib_GridSizeTitle">கிரிட் அளவு</system:String>
+
+    <system:String x:Key="Lib_IconSizeDescription">ஐகான் அளவு (பட்டியல்)</system:String>
+
+    <system:String x:Key="Lib_IconSizeTitle">ஐகான் அளவு</system:String>
+
+    <system:String x:Key="Lib_LyricsBadge">வரிகள்</system:String>
+
+    <system:String x:Key="Lib_LyricsFilterTooltip">வரிகள் உள்ள பாடல்களை மட்டும் காட்டு</system:String>
+
+    <system:String x:Key="Lib_PlayAll">அனைத்தையும் இயக்கு</system:String>
+
+    <system:String x:Key="Lib_ResetAppearance">தோற்றத்தை மீட்டமை</system:String>
+
+    <system:String x:Key="Lib_SearchPlaceholder">உங்கள் சேகரிப்பில் தேடுங்கள்...</system:String>
+
+    <system:String x:Key="Lib_SelectFolderDescription">இசை நூலகத்தில் சேர்க்க ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="Lib_Shuffle">அனைத்தையும் வரிசைமாற்று</system:String>
+
+    <system:String x:Key="Lib_Songs">பாடல்கள்</system:String>
+
+    <system:String x:Key="Lib_SongsCountFormat">{0} பாடல்கள்</system:String>
+
+    <system:String x:Key="Lib_SortBy">இதன் படி வரிசைப்படுத்து:</system:String>
+
+    <system:String x:Key="Lib_SortDirection">திசையை மாற்று (↑/↓)</system:String>
+
+    <system:String x:Key="Lib_Sort_Album">ஆல்பம்</system:String>
+
+    <system:String x:Key="Lib_Sort_Artist">கலைஞர்</system:String>
+
+    <system:String x:Key="Lib_Sort_Duration">கால அளவு</system:String>
+
+    <system:String x:Key="Lib_Sort_PlayCount">அதிகம் இசைக்கப்பட்டவை</system:String>
+
+    <system:String x:Key="Lib_Sort_Title">தலைப்பு (A-Z)</system:String>
+
+    <system:String x:Key="Lib_Title">இசை நூலகம்</system:String>
+
+    <system:String x:Key="Lib_ToggleList">பட்டியலைக் காட்டு/மறை</system:String>
+
+    <system:String x:Key="Lib_ViewSettingsTooltip">அமைப்புகளைப் பார்</system:String>
+
+    <system:String x:Key="LibraryAppearanceSectionTitle">நூலகத் தோற்றம்</system:String>
+
+    <system:String x:Key="LibraryGridSizeDescription">ஆல்பங்கள் மற்றும் கலைஞர்களின் அளவைச் சரிசெய்யவும் (இயல்புநிலை: 160px)</system:String>
+
+    <system:String x:Key="LibraryGridSizeTitle">கிரிட் அளவு</system:String>
+
+    <system:String x:Key="LibraryTrackIconSizeDescription">பாடல் பட்டியலில் உள்ள ஐகான் அளவைச் சரிசெய்யவும் (இயல்புநிலை: 40px)</system:String>
+
+    <system:String x:Key="LibraryTrackIconSizeTitle">ட்ராக் ஐகான் அளவு</system:String>
+
+    <system:String x:Key="LockKeysAnimatedDescription">விசை குறிகாட்டிகளுக்கு நுட்பமான அசைவூட்டங்களை இயக்கு</system:String>
+
+    <system:String x:Key="LockKeysAnimatedTitle">குறிகாட்டி அசைவூட்டங்கள்</system:String>
+
+    <system:String x:Key="LockKeysBoldUIDescription">சாளரத்தின் சின்னம் மற்றும் எழுத்துருவை முன்னிலைப்படுத்துகிறது</system:String>
+
+    <system:String x:Key="LockKeysBoldUITitle">தடிமனான சின்னம் &amp; எழுத்துரு</system:String>
+
+    <system:String x:Key="LockKeysCursorUIDescription">பிளைஅவுட்டை எந்தத் திரையில் காட்ட வேண்டும் என்பதைத் தேர்ந்தெடுக்கவும்.</system:String>
+
+    <system:String x:Key="LockKeysCursorUITitle">விருப்பமான இலக்கு திரை</system:String>
+
+    <system:String x:Key="LockKeysCustomizationTitle">லாக் கீ பிளைஅவுட்</system:String>
+
+    <system:String x:Key="LockKeysDescription" xml:space="preserve">உங்கள் லாக் விசைகளின் நிலையை ஒரே பார்வையில் சரிபார்க்கவும். Caps Lock, Num Lock அல்லது Scroll Lock ஆகியவற்றை அழுத்திய பின் தோன்றும். LED குறிகாட்டிகள் இல்லாத மடிக்கணினிகளுக்கு பயனுள்ளதாக இருக்கும்.</system:String>
+
+    <system:String x:Key="LockKeysStayDurationDescription">(இயல்புநிலை: 2000 ms)</system:String>
+
+    <system:String x:Key="LockKeysStayDurationTitle">லாக் கீ காட்சி காலம்</system:String>
+
+    <system:String x:Key="LockWindow_CapsLock">Caps Lock</system:String>
+
+    <system:String x:Key="LockWindow_Insert">Insert</system:String>
+
+    <system:String x:Key="LockWindow_InsertPressed">Insert அழுத்தப்பட்டது</system:String>
+
+    <system:String x:Key="LockWindow_LockOff">ஆஃப்</system:String>
+
+    <system:String x:Key="LockWindow_LockOn">ஆன்</system:String>
+
+    <system:String x:Key="LockWindow_NumLock">Num Lock</system:String>
+
+    <system:String x:Key="LockWindow_ScrollLock">Scroll Lock</system:String>
+
+    <system:String x:Key="MediaFlyoutAlwaysDisplay">எப்போதும் காட்டு</system:String>
+
+    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">மூடும் பொத்தானை அழுத்தும் வரை பிளைஅவுட் திறந்தே இருக்கும்</system:String>
+
+    <system:String x:Key="MediaFlyoutDescription">ஊடகங்களைக் கேட்கும்போது, பிளைஅவுட்டை அழைக்க ஏதேனும் ஊடக விசை அல்லது ஒலி விசையை அழுத்தவும். ஊடகத் தகவல், பின்னணி கட்டுப்பாடுகள் மற்றும் பலவற்றைக் காட்டுகிறது.</system:String>
+
+    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">ஒலி அதிகரிப்பு/குறைவு அல்லது ஒலியடக்க விசைகளை அழுத்தும்போது பிளைஅவுட்டைக் காட்ட வேண்டாம்</system:String>
+
+    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">ஒலி விசைகளைத் தவிர்க்கவும்</system:String>
+
+    <system:String x:Key="MediaFlyoutTitle">மீடியா பிளைஅவுட்</system:String>
+
+    <system:String x:Key="MillisecondsUnit">ms</system:String>
+
+    <system:String x:Key="MonitorWithCursor">கர்சர் உள்ள மானிட்டர்</system:String>
+
+    <system:String x:Key="MonitorWithFocusedWindow">கவனம் செலுத்திய சாளரம் உள்ள மானிட்டர்</system:String>
+
+    <system:String x:Key="NativeExperienceInfo">விண்டோஸ் 11 அனுபவத்திற்கு, இயல்புநிலை அமைப்புகளைப் பேண வேண்டும்.</system:String>
+
+    <system:String x:Key="NextUpCustomizationTitle">"அடுத்து" பிளைஅவுட்</system:String>
+
+    <system:String x:Key="NextUpDescription" xml:space="preserve">பாடல்/வீடியோ முடியும் போது வரிசையில் அடுத்து என்ன இருக்கிறது என்பதை பிளைஅவுட் காட்டுகிறது. அடுத்த உருப்படி தானாகவே இயக்கப்பட்டால் மட்டுமே தோன்றும்.</system:String>
+
+    <system:String x:Key="NextUpStayDurationDescription">(இயல்புநிலை: 2000 ms)</system:String>
+
+    <system:String x:Key="NextUpStayDurationTitle">"அடுத்து" காட்சி காலம்</system:String>
+
+    <system:String x:Key="NextUpWindow_UpNextText">அடுத்து:</system:String>
+
+    <system:String x:Key="PauseOtherMediaDescription">புதிய ஊடகத்தை இயக்கும்போது அல்லது கவனம் செலுத்தும்போது பிற செயலில் உள்ள அமர்வுகள் தானாகவே இடைநிறுத்தப்படும்</system:String>
+
+    <system:String x:Key="PauseOtherMediaTitle">பிற ஊடகங்களை தானாக இடைநிறுத்து</system:String>
+
+    <system:String x:Key="PixelsUnit">px</system:String>
+
+    <system:String x:Key="Player_NoTrack">ட்ராக் எதுவும் இசைக்கப்படவில்லை</system:String>
+
+    <system:String x:Key="Player_SelectTrackMsg">நூலகத்திலிருந்து ஒரு ட்ராக்கைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="Playlist_Title">பிளேலிஸ்ட்</system:String>
+
+    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> கீழ் மையம்</system:String>
+
+    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> கீழ் இடது</system:String>
+
+    <system:String x:Key="PositionBottomRight" xml:space="preserve"> கீழ் வலது</system:String>
+
+    <system:String x:Key="PositionLeft">இடது</system:String>
+
+    <system:String x:Key="PositionRight">வலது</system:String>
+
+    <system:String x:Key="PositionTopCenter" xml:space="preserve"> மேல் மையம்</system:String>
+
+    <system:String x:Key="PositionTopLeft" xml:space="preserve"> மேல் இடது</system:String>
+
+    <system:String x:Key="PositionTopRight" xml:space="preserve"> மேல் வலது</system:String>
+
+    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">உங்கள் பங்களிப்பு FluentFlyout-ஐப் பேண எனக்கு உதவுகிறது. அனைத்து Premium தனிப்பயனாக்க அம்சங்களையும் உடனடியாகவும் நிரந்தரமாகவும் திறக்கிறது.
+
+
+
+குறிப்பு: ஒரு திறந்த மூல திட்டமாக, இந்த அம்சங்கள் GitHub-இல் கைமுறை நிறுவி மூலம் இலவசமாகவும் கிடைக்கின்றன.</system:String>
+
+    <system:String x:Key="PremiumFeatureTitle">Premium அம்சம்</system:String>
+
+    <system:String x:Key="PremiumGitHubMessage">GitHub/சுயமாக உருவாக்கப்பட்ட பதிப்புகளுக்கு Premium அம்சங்கள் திறக்கப்பட்டுள்ளன</system:String>
+
+    <system:String x:Key="PremiumLockedMessage">இந்த அம்சம் Premium தொகுப்பின் ஒரு பகுதியாகும்</system:String>
+
+    <system:String x:Key="PremiumPurchaseCancelled">வாங்குதல் ரத்து செய்யப்பட்டது.</system:String>
+
+    <system:String x:Key="PremiumPurchaseFailed">வாங்குதல் தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.</system:String>
+
+    <system:String x:Key="PremiumPurchaseSuccess">Premium வெற்றிகரமாகத் திறக்கப்பட்டது!</system:String>
+
+    <system:String x:Key="PremiumUnlockedMessage">Premium அம்சங்கள் திறக்கப்பட்டன. உங்கள் ஆதரவுக்கு நன்றி!</system:String>
+
+    <system:String x:Key="RepeatButtonDescription">அனைத்தையும் மீண்டும் செய்தல் அல்லது ஒரு பாடலை மீண்டும் செய்தல் ஆகியவற்றுக்கு இடையே மாறுகிறது, பிளைஅவுட் அகலத்தை அதிகரிக்கிறது</system:String>
+
+    <system:String x:Key="RepeatButtonTitle">மீண்டும் செய்யும் பொத்தான்*</system:String>
+
+    <system:String x:Key="SelectedMonitorTitle">பிளைஅவுட் இலக்கு மானிட்டர்</system:String>
+
+    <system:String x:Key="SettingsExportedSuccessfully">அமைப்புகள் வெற்றிகரமாக ஏற்றுமதி செய்யப்பட்டன!</system:String>
+
+    <system:String x:Key="SettingsImportedSuccessfully">அமைப்புகள் வெற்றிகரமாக இறக்குமதி செய்யப்பட்டன! பயன்பாடு இப்போது மீண்டும் தொடங்கும்.</system:String>
+
+    <system:String x:Key="ShowMediaPlayerNameTitle">மீடியா பிளேயர் பெயரைக் காட்டு</system:String>
+
+    <system:String x:Key="ShowSeekbarDescription">பிளேயர் ஆதரித்தால் ஊடாடும் சீக்பார் தானாகவே காட்டப்படும்</system:String>
+
+    <system:String x:Key="ShowSeekbarTitle">சீக்பாரைக் காட்டு*</system:String>
+
+    <system:String x:Key="ShowUpdateNotificationsTitle">புதிய மேம்படுத்தல்களுக்கான அறிவிப்புகளைக் காட்டு</system:String>
+
+    <system:String x:Key="ShuffleButtonDescription">பிளைஅவுட் அகலத்தை அதிகரிக்கிறது</system:String>
+
+    <system:String x:Key="ShuffleButtonTitle">வரிசைமாற்ற பொத்தான்*</system:String>
+
+    <system:String x:Key="SponsorMeLink">என்னை ஆதரிக்கவும்</system:String>
+
+    <system:String x:Key="StartupAppsHyperlinkText">தொடக்க பயன்பாடுகள்</system:String>
+
+    <system:String x:Key="StartupAppsSettingsInfo">இந்த அமைப்பு எதிர்பார்த்தபடி செயல்படவில்லை என்றால், சரிபார்க்கவும்</system:String>
+
+    <system:String x:Key="SystemConfigure">கட்டமைக்கவும்</system:String>
+
+    <system:String x:Key="SystemMediaControlEnabledDescription">பிற பயன்பாடுகளிலிருந்து (Spotify, YouTube, Chrome போன்றவை) ஊடகங்களைக் காண்பி மற்றும் கட்டுப்படுத்து</system:String>
+
+    <system:String x:Key="SystemMediaControlEnabledTitle">வெளிப்புற பயன்பாடுகளைக் கட்டுப்படுத்து</system:String>
+
+    <system:String x:Key="SystemSettingsTitle">அமைப்பு</system:String>
+
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">பார்கள் அதிகபட்ச உயரத்தை அடைய ஒலி எவ்வளவு சத்தமாக இருக்க வேண்டும்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">ஆடியோ உச்ச நிலை வரம்பு</system:String>
+
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">பார்கள் நகரத் தொடங்கும் முன் ஒலி எவ்வளவு சத்தமாக இருக்க வேண்டும்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">ஆடியோ உணர்திறன்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerBarCountDescription">விசுவலைசர் பார்களின் எண்ணிக்கை</system:String>
+
+    <system:String x:Key="TaskbarVisualizerBarCountTitle">பார்களின் எண்ணிக்கை</system:String>
+
+    <system:String x:Key="TaskbarVisualizerBaselineDescription">ஒலி நிலைகள் பூஜ்ஜியமாக இருக்கும்போது மெல்லிய கோட்டைக் காட்டுகிறது</system:String>
+
+    <system:String x:Key="TaskbarVisualizerBaselineTitle">பேஸ்லைனைக் காட்டு</system:String>
+
+    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">கீழே இருந்து உயருவதற்குப் பதிலாக மையத்திலிருந்து சமச்சீராக விரிவடையும் பார்கள்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">மையப்படுத்தப்பட்ட பார்கள்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerClickableDescription">விசுவலைசரை கிளிக் செய்வது அதன் அமைப்புகள் பக்கத்தைத் திறக்கும்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerClickableTitle">அமைப்புகளைத் திறக்க கிளிக் செய்க</system:String>
+
+    <system:String x:Key="TaskbarVisualizerDescription">உங்கள் பணிப்பட்டியில் நேரடி ஆடியோ விசுவலைசர். செயல்திறனில் குறைந்தபட்ச தாக்கத்தை ஏற்படுத்தும் வகையில் வடிவமைக்கப்பட்டுள்ளது.</system:String>
+
+    <system:String x:Key="TaskbarVisualizerEnabledDescription">சோதனை: பணிப்பட்டி விட்ஜெட் இயக்கப்பட்டிருந்தால் மட்டுமே செயல்படும்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerEnabledTitle">பணிப்பட்டி விசுவலைசரை இயக்கு (சோதனை)</system:String>
+
+    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">FluentFlyout-க்கான வெளியீட்டு சாதனத்தை மாற்றுவதன் மூலம் விசுவலைசர் எதைக் கேட்கிறது என்பதை மாற்றவும்.</system:String>
+
+    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">வெளியீட்டு சாதனம்</system:String>
+
+    <system:String x:Key="TaskbarVisualizerPositionTitle">பணிப்பட்டி விட்ஜெட்டுடன் ஒப்பிடும்போது விசுவலைசர் நிலை</system:String>
+
+    <system:String x:Key="TaskbarVisualizerTitle">பணிப்பட்டி விசுவலைசர்</system:String>
+
+    <system:String x:Key="TaskbarWidgetAnimatedDescription">விட்ஜெட்டுக்கான நுட்பமான அசைவூட்டங்களை இயக்கு</system:String>
+
+    <system:String x:Key="TaskbarWidgetAnimatedTitle">விட்ஜெட் அசைவூட்டங்கள்</system:String>
+
+    <system:String x:Key="TaskbarWidgetAutoHideDescription">ஊடகம் இடைநிறுத்தப்படும்போது விட்ஜெட்டைத் தானாக மறைக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetAutoHideTitle">விட்ஜெட்டைத் தானாக மறைக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">பணிப்பட்டி விட்ஜெட்டுக்கு பின்னணி தெளிவின்மை விளைவைச் சேர்க்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">பின்னணி தெளிவின்மை</system:String>
+
+    <system:String x:Key="TaskbarWidgetClickableDescription">விட்ஜெட்டை கிளிக் செய்வது முழு மீடியா பிளைஅவுட்டைத் திறக்கும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetClickableTitle">மீடியா பிளைஅவுட்டைத் திறக்க கிளிக் செய்க</system:String>
+
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutDescription">விட்ஜெட்டை கிளிக் செய்யும்போது பிளைஅவுட் ஏற்கனவே திறந்திருந்தால் அதை மூடுகிறது</system:String>
+
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutTitle">பிளைஅவுட்டை மூட இருமுறை கிளிக் செய்யவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetControlsDescription">விட்ஜெட்டில் மீடியா கட்டுப்பாட்டு பொத்தான்களைக் காட்டு</system:String>
+
+    <system:String x:Key="TaskbarWidgetControlsPositionDescription">மீடியா கட்டுப்பாட்டு பொத்தான்கள் எங்கே காட்டப்பட வேண்டும் என்பதைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetControlsPositionTitle">மீடியா கட்டுப்பாடுகள் நிலை</system:String>
+
+    <system:String x:Key="TaskbarWidgetControlsTitle">விட்ஜெட் மீடியா கட்டுப்பாடுகள்</system:String>
+
+    <system:String x:Key="TaskbarWidgetCustomizationPerk">பணிப்பட்டி விட்ஜெட் &amp; விசுவலைசர்</system:String>
+
+    <system:String x:Key="TaskbarWidgetCustomizationTitle">பணிப்பட்டி விட்ஜெட்</system:String>
+
+    <system:String x:Key="TaskbarWidgetDescription">உங்கள் ஊடகங்களை உடனடியாக அணுக விண்டோஸ் பணிப்பட்டியில் நேரடியாக ஒருங்கிணைக்கப்பட்ட சிறிய விட்ஜெட்.</system:String>
+
+    <system:String x:Key="TaskbarWidgetEnabledDescription">பணிப்பட்டியில் சிறிய மீடியா விட்ஜெட்டைக் காட்டு</system:String>
+
+    <system:String x:Key="TaskbarWidgetEnabledTitle">பணிப்பட்டி விட்ஜெட்டை இயக்கு</system:String>
+
+    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">ஊடகம் கிடைக்காதபோது விட்ஜெட்டை முழுமையாக மறைக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">ஊடகம் இல்லாதபோது முழுமையாக மறைக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetManualPaddingDescription">கூடுதல் இடைவெளியைச் சேர்க்கவும் (இயல்புநிலை: 0px)</system:String>
+
+    <system:String x:Key="TaskbarWidgetManualPaddingTitle">தனிப்பயன் பேடிங்</system:String>
+
+    <system:String x:Key="TaskbarWidgetPaddingDescription">உங்களிடம் "Windows Widgets" பொத்தான் இயக்கப்பட்டிருந்தால் இதை இயக்கவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">உங்கள் பணிப்பட்டி பாணிக்கு ஏற்ப விட்ஜெட்டைச் சுற்றியுள்ள இடைவெளியைச் சரிசெய்யவும்</system:String>
+
+    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">விட்ஜெட் பேடிங் அமைப்புகள்</system:String>
+
+    <system:String x:Key="TaskbarWidgetPaddingTitle">Windows விட்ஜெட் பொத்தான் ஆட்டோ பேடிங்</system:String>
+
+    <system:String x:Key="TaskbarWidgetPosition">விட்ஜெட் நிலை</system:String>
+
+    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">விட்ஜெட் இலக்கு மானிட்டர்</system:String>
+
+    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">உங்களுக்கு காட்சிச் சிக்கல்கள் இருந்தால் கீழே உள்ள விருப்பங்களை உள்ளமைக்கவும்.</system:String>
+
+    <system:String x:Key="TextBlockText1">மீடியா பிளைஅவுட்டை இயக்கு</system:String>
+
+    <system:String x:Key="TextBlockText2">நவீன பின்னணி தெளிவின்மை பாணிகளிலிருந்து தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="TextBlockText3">மீடியா விசை அழுத்தும்போது பிளைஅவுட்டைக் காட்டுகிறது</system:String>
+
+    <system:String x:Key="TitleText">FluentFlyout அமைப்புகள்</system:String>
+
+    <system:String x:Key="TranslatorsTitle">மொழிபெயர்ப்பாளர்கள்</system:String>
+
+    <system:String x:Key="TrayIconLeftClickBehaviorDescription">ட்ரே ஐகானை இடது கிளிக் செய்யும்போது என்ன நடக்கும் என்பதைத் தேர்ந்தெடுக்கவும்</system:String>
+
+    <system:String x:Key="TrayIconLeftClickBehaviorTitle">ட்ரே ஐகான் இடது கிளிக் நடத்தை</system:String>
+
+    <system:String x:Key="TrayIconLeftClickOption1"> அமைப்புகளைத் திறக்கவும்</system:String>
+
+    <system:String x:Key="TrayIconLeftClickOption2"> மீடியா பிளைஅவுட்டைக் காட்டவும்</system:String>
+
+    <system:String x:Key="TrayIconSectionTitle">சிஸ்டம் ட்ரே ஐகான்</system:String>
+
+    <system:String x:Key="TrayIcon_GitHubRepositoryOption">களஞ்சியம்</system:String>
+
+    <system:String x:Key="TrayIcon_QuitOption">FluentFlyout இலிருந்து வெளியேறு</system:String>
+
+    <system:String x:Key="TrayIcon_ReportBugOption">பிழையைப் புகாரளிக்கவும்</system:String>
+
+    <system:String x:Key="TrayIcon_SettingsOption">அமைப்புகள்</system:String>
+
+    <system:String x:Key="TrayIcon_ViewLogsOption">பதிவுகளைப் பார்</system:String>
+
+    <system:String x:Key="UnlockFullExperienceText">முழு FluentFlyout அனுபவத்தையும் திறக்கவும்:</system:String>
+
+    <system:String x:Key="UnlockPremiumButton">Premium-ஐத் திறக்கவும்</system:String>
+
+    <system:String x:Key="UnsupportedControlsWarning">*சில உலாவிகள்/பிளேயர்கள் மீண்டும் செய்தல், வரிசைமாற்றம் மற்றும் சீக்பார் கட்டுப்பாடுகளை ஆதரிக்காது.</system:String>
+
+    <system:String x:Key="UpToDate">புதுப்பித்த நிலையில் உள்ளது</system:String>
+
+    <system:String x:Key="UpdateAvailable">மேம்படுத்தல் கிடைக்கிறது</system:String>
+
+    <system:String x:Key="UpdateAvailableNotificationButton">மேம்படுத்தலைப் பதிவிறக்கவும்</system:String>
+
+    <system:String x:Key="UpdateAvailableNotificationMessage">புதிய பதிப்பு ({0}) பதிவிறக்கம் செய்யக் கிடைக்கிறது.</system:String>
+
+    <system:String x:Key="UpdateAvailableNotificationTitle">மேம்படுத்தல் உள்ளது!</system:String>
+
+    <system:String x:Key="UpdateToastButton">மேம்படுத்தல்களைப் பார்</system:String>
+
+    <system:String x:Key="UpdateToastMessage">நீங்கள் தற்போது பதிப்பு {0}-ஐப் பயன்படுத்துகிறீர்கள்.</system:String>
+
+    <system:String x:Key="UpdateToastTitle">FluentFlyout மேம்படுத்தப்பட்டது!</system:String>
+
+    <system:String x:Key="UpdatesSectionTitle">மேம்படுத்தல்கள்</system:String>
+
+    <system:String x:Key="UseAlbumArtAccentColorDescription">சில UI கூறுகள் சிஸ்டம் தீமிற்குப் பதிலாக ஆல்பம் ஆர்ட் நிறங்களைப் பயன்படுத்தும்</system:String>
+
+    <system:String x:Key="UseAlbumArtAccentColorTitle">ஆல்பம் ஆர்ட்டை சிறப்பம்ச நிறமாகப் பயன்படுத்தவும்</system:String>
+
+    <system:String x:Key="Win11TrayIconDescription">விண்டோஸ் 11 பாணியுடன் பொருந்தக்கூடிய ட்ரே ஐகானைப் பயன்படுத்தவும் (தீமைப் புதுப்பிக்க மாற்றவும்)</system:String>
+
+    <system:String x:Key="Win11TrayIconTitle">விண்டோஸ் 11 பாணி ட்ரே ஐகான்</system:String>
+
+    
+
+    <!-- New Keys -->
+
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">ஆடியோ அளவுத்திருத்த கண்காணிப்பு</system:String>
+
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">உள்ளீட்டு அளவைக் காட்சிப்படுத்தவும் மற்றும் நிகழ்நேரத்தில் கட்ஆஃப் புள்ளிகளைச் சரிசெய்யவும்</system:String>
+
+    <system:String x:Key="TaskbarVisualizer_Silence">அமைதி</system:String>
+
+    <system:String x:Key="TaskbarVisualizer_Max">அதிகபட்சம்</system:String>
+
+    <system:String x:Key="TaskbarVisualizer_StartPoint">தொடக்கப் புள்ளி (உணர்திறன்)</system:String>
+
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">உச்ச வரம்பு (Peak)</system:String>
+
+    <system:String x:Key="Edit_LrcFilter">LRC கோப்புகள் (*.lrc)|*.lrc|உரை கோப்புகள் (*.txt)|*.txt|அனைத்து கோப்புகள்|*.*</system:String>
+
+    <system:String x:Key="Error_FailedSetStartup">தொடக்கத்தை அமைக்க முடியவில்லை</system:String>
+
 </ResourceDictionary>

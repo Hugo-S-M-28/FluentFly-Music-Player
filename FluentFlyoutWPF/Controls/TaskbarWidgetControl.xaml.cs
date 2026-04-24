@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF;
@@ -14,6 +11,9 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Windows.Media.Control;
 using Wpf.Ui.Controls;
+using FluentFlyoutWPF.Classes;
+using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyoutWPF.Classes.Messages;
 
 namespace FluentFlyout.Controls;
 
@@ -33,19 +33,19 @@ public partial class TaskbarWidgetControl : UserControl
     private double _cachedTitleWidth = 0;
     private double _cachedArtistWidth = 0;
 
-    // reference to main window for flyout functions
-    private MainWindow? _mainWindow;
     private bool _isPaused;
 
     public TaskbarWidgetControl()
     {
         InitializeComponent();
 
-        // Apply Windows theme colors (independent of the app theme setting)
-        ApplyWindowsTheme();
-
         // Set DataContext for bindings
         DataContext = SettingsManager.Current;
+
+        WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
+        {
+            Dispatcher.Invoke(() => ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault()));
+        });
 
         MainBorder.SizeChanged += (s, e) =>
         {
@@ -86,37 +86,13 @@ public partial class TaskbarWidgetControl : UserControl
         }
     }
 
-    public void SetMainWindow(MainWindow mainWindow)
-    {
-        _mainWindow = mainWindow;
-    }
-
-    public void ApplyWindowsTheme()
-    {
-        bool isDark = WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark;
-        var foreground = new SolidColorBrush(isDark
-            ? Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF)
-            : Color.FromArgb(0xE4, 0x1C, 0x1C, 0x1C));
-        SongTitle.Foreground = foreground;
-        SongArtist.Foreground = foreground;
-    }
 
     private void Grid_MouseEnter(object sender, MouseEventArgs e)
     {
         if (string.IsNullOrEmpty(SongTitle.Text + SongArtist.Text)) return;
 
-        SolidColorBrush targetBackgroundBrush;
-        // hover effects with animations, hard-coded colors because I can't find the resource brushes
-        if (WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark)
-        { // dark mode
-            targetBackgroundBrush = new SolidColorBrush(Color.FromArgb(197, 255, 255, 255)) { Opacity = 0.075 };
-            TopBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 0.25 };
-        }
-        else
-        { // light mode
-            targetBackgroundBrush = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)) { Opacity = 0.6 };
-            TopBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 1 };
-        }
+        SolidColorBrush targetBackgroundBrush = Application.Current.TryFindResource("ControlFillColorSecondaryBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(197, 255, 255, 255)) { Opacity = 0.075 };
+        SolidColorBrush targetBorderBrush = Application.Current.TryFindResource("SurfaceStrokeColorDefaultBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 0.25 };
 
         // Animate background
         var backgroundAnimation = new ColorAnimation
@@ -142,6 +118,8 @@ public partial class TaskbarWidgetControl : UserControl
 
         MainBorder.Background.BeginAnimation(SolidColorBrush.ColorProperty, backgroundAnimation);
         MainBorder.Background.BeginAnimation(SolidColorBrush.OpacityProperty, backgroundOpacityAnimation);
+        
+        TopBorder.BorderBrush = targetBorderBrush;
     }
 
     private void Grid_MouseLeave(object sender, MouseEventArgs e)
@@ -171,10 +149,9 @@ public partial class TaskbarWidgetControl : UserControl
 
     private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (_mainWindow == null) return;
 
         // toggle main flyout when clicked
-        _mainWindow.ShowMediaFlyout(toggleMode: true, forceShow: true);
+        WeakReferenceMessenger.Default.Send(new ShowMediaFlyoutMessage(toggleMode: true, forceShow: true));
     }
 
     public (double logicalWidth, double logicalHeight) CalculateSize(double dpiScale)
@@ -265,6 +242,20 @@ public partial class TaskbarWidgetControl : UserControl
                 PlayPauseButton.Opacity = (playbackControls.IsPauseEnabled || playbackControls.IsPlayEnabled) ? 1 : 0.5;
                 NextButton.Opacity = playbackControls.IsNextEnabled ? 1 : 0.5;
             }
+            else if (SettingsManager.Current.TaskbarWidgetControlsEnabled)
+            {
+                // Fallback for the internal player
+                bool hasPrevious = MusicPlayerService.Instance.CanGoPrevious;
+                bool hasNext = MusicPlayerService.Instance.CanGoNext;
+
+                PreviousButton.IsHitTestVisible = hasPrevious;
+                PlayPauseButton.IsHitTestVisible = true; // Internal player can always toggle play/pause
+                NextButton.IsHitTestVisible = hasNext;
+
+                PreviousButton.Opacity = hasPrevious ? 1 : 0.5;
+                PlayPauseButton.Opacity = 1;
+                NextButton.Opacity = hasNext ? 1 : 0.5;
+            }
             else
             {
                 PreviousButton.IsHitTestVisible = false;
@@ -298,18 +289,16 @@ public partial class TaskbarWidgetControl : UserControl
 
             if (SettingsManager.Current.TaskbarWidgetControlsEnabled)
             {
-                PlayPauseButton.Icon = _isPaused ? new SymbolIcon(SymbolRegular.Play24, filled: true) : new SymbolIcon(SymbolRegular.Pause24, filled: true);
+                PlayPauseIcon.Symbol = _isPaused ? SymbolRegular.Play24 : SymbolRegular.Pause24;
             }
 
-            // change color of icon
-            SolidColorBrush brush = BitmapHelper.SavedDominantColors.Count > 0 ?
-                BitmapHelper.SavedDominantColors.Last()
-                : (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary");
-            SongImagePlaceholder.Foreground = brush;
+            ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
+
+            // Handled in ApplyAccentColor
 
             if (icon != null)
             {
-                if (_isPaused && SettingsManager.Current.TaskbarWidgetShowPauseOverlay && !SettingsManager.Current.TaskbarWidgetControlsEnabled)
+                if (_isPaused)
                 { // show pause icon overlay
                     SongImagePlaceholder.Symbol = SymbolRegular.Pause24;
                     SongImagePlaceholder.Visibility = Visibility.Visible;
@@ -350,7 +339,7 @@ public partial class TaskbarWidgetControl : UserControl
     {
         try
         {
-            int msDuration = MainWindow.getDuration();
+            int msDuration = FlyoutAnimationService.GetDuration();
 
             // opacity and left to right animation for SongInfoStackPanel
             DoubleAnimation opacityAnimation = new()
@@ -393,47 +382,94 @@ public partial class TaskbarWidgetControl : UserControl
     // event handlers for media control buttons
     private async void Previous_Click(object sender, RoutedEventArgs e)
     {
-        if (_mainWindow == null) return;
 
-        var mediaManager = _mainWindow.mediaManager;
-        if (mediaManager == null) return;
-
-        var focusedSession = mediaManager.GetFocusedSession();
-        if (focusedSession == null) return;
-
-        await focusedSession.ControlSession.TrySkipPreviousAsync();
+        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
+        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
+        {
+            await focusedSession.ControlSession.TrySkipPreviousAsync();
+        }
+        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        {
+            MusicPlayerService.Instance.PlayPrevious();
+        }
     }
 
     private async void PlayPause_Click(object sender, RoutedEventArgs e)
     {
-        if (_mainWindow == null) return;
 
-        var mediaManager = _mainWindow.mediaManager;
-        if (mediaManager == null) return;
-
-        var focusedSession = mediaManager.GetFocusedSession();
-        if (focusedSession == null) return;
-
-        if (_isPaused) // paused
+        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
+        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
         {
-            await focusedSession.ControlSession.TryPlayAsync();
+            if (_isPaused) await focusedSession.ControlSession.TryPlayAsync();
+            else await focusedSession.ControlSession.TryPauseAsync();
         }
-        else // playing
+        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
         {
-            await focusedSession.ControlSession.TryPauseAsync();
+            MusicPlayerService.Instance.TogglePlayPause();
         }
     }
 
     private async void Next_Click(object sender, RoutedEventArgs e)
     {
-        if (_mainWindow == null) return;
 
-        var mediaManager = _mainWindow.mediaManager;
-        if (mediaManager == null) return;
+        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
+        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
+        {
+            await focusedSession.ControlSession.TrySkipNextAsync();
+        }
+        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        {
+            MusicPlayerService.Instance.PlayNext();
+        }
+    }
 
-        var focusedSession = mediaManager.GetFocusedSession();
-        if (focusedSession == null) return;
+    private void ApplyAccentColor(SolidColorBrush? brush)
+    {
+        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
 
-        await focusedSession.ControlSession.TrySkipNextAsync();
+        Dispatcher.Invoke(() =>
+        {
+            if (useAccent && brush != null)
+            {
+                // Apply to icons
+                PreviousIcon.Foreground = brush;
+                PlayPauseIcon.Foreground = brush;
+                NextIcon.Foreground = brush;
+                SongImagePlaceholder.Foreground = brush;
+                
+                // Apply to progress line
+                ProgressLine.Fill = brush;
+            }
+            else
+            {
+                // Reset to defaults
+                var accentBrush = (SolidColorBrush)Application.Current.TryFindResource("AccentFillColorDefaultBrush");
+
+                PreviousIcon.ClearValue(ForegroundProperty);
+                PlayPauseIcon.ClearValue(ForegroundProperty);
+                NextIcon.ClearValue(ForegroundProperty);
+                SongImagePlaceholder.Foreground = accentBrush;
+                
+                ProgressLine.Fill = accentBrush;
+            }
+        });
+    }
+
+    public void UpdateProgress(double currentSeconds, double totalSeconds)
+    {
+        if (totalSeconds <= 0)
+        {
+            Dispatcher.Invoke(() => ProgressLine.Visibility = Visibility.Collapsed);
+            return;
+        }
+
+        Dispatcher.Invoke(() =>
+        {
+            if (ProgressLine.Visibility != Visibility.Visible)
+                ProgressLine.Visibility = Visibility.Visible;
+
+            double ratio = Math.Clamp(currentSeconds / totalSeconds, 0, 1);
+            ProgressLine.Width = MainBorder.ActualWidth * ratio;
+        });
     }
 }

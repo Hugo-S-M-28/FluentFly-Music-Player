@@ -1,4 +1,4 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
+// Copyright © 2024-2026 The FluentFlyout Authors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using FluentFlyout.Classes;
@@ -16,13 +16,12 @@ namespace FluentFlyoutWPF.Windows;
 /// </summary>
 public partial class NextUpWindow : MicaWindow
 {
-    MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
     public NextUpWindow(string title, string artist, BitmapImage thumbnail)
     {
         DataContext = SettingsManager.Current;
         WindowStartupLocation = WindowStartupLocation.Manual;
-        Left = -Width - 9999; // move window out of bounds to prevent flickering, maybe needs better solution
-        Top = 9999;
+        Left = SystemParameters.VirtualScreenLeft - Width - 100; // move window safely off-screen (multi-monitor safe)
+        Top = SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight + 100;
         WindowHelper.SetNoActivate(this);
         InitializeComponent();
         WindowHelper.SetTopmost(this);
@@ -47,15 +46,16 @@ public partial class NextUpWindow : MicaWindow
         SongTitle.Text = title;
         SongArtist.Text = artist;
         UpdateThumbnail(thumbnail);
+        ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
         Show();
 
-        mainWindow.OpenAnimation(this);
+        FlyoutAnimationService.OpenAnimation(this);
 
         async void wait()
         {
             await Task.Delay(SettingsManager.Current.NextUpDuration);
-            mainWindow.CloseAnimation(this);
-            await Task.Delay(MainWindow.getDuration());
+            FlyoutAnimationService.CloseAnimation(this);
+            await Task.Delay(FlyoutAnimationService.GetDuration());
             Close();
         }
 
@@ -67,5 +67,16 @@ public partial class NextUpWindow : MicaWindow
         SongImage.ImageSource = thumbnail;
         if (SongImage.ImageSource == null) SongImagePlaceholder.Visibility = Visibility.Visible;
         else SongImagePlaceholder.Visibility = Visibility.Collapsed;
+    }
+    private void ApplyAccentColor(System.Windows.Media.SolidColorBrush? brush)
+    {
+        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
+
+        if (useAccent && brush != null)
+        {
+            NextUpIcon.Foreground = brush;
+            UpNextTextBlock.Foreground = brush;
+            SongImagePlaceholder.Foreground = brush;
+        }
     }
 }

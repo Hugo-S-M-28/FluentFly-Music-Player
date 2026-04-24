@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
@@ -43,8 +40,8 @@ namespace FluentFlyoutWPF.Classes
             {
                 _deviceEnumerator = new MMDeviceEnumerator();
                 _notificationClient = new AudioDeviceNotificationClient();
-                _notificationClient.DefaultDeviceChanged += OnDefaultDeviceChanged;
                 _deviceEnumerator.RegisterEndpointNotificationCallback(_notificationClient);
+                _notificationClient.DefaultDeviceChanged += OnDefaultDeviceChanged;
                 
                 Logger.Info("Audio device monitoring initialized");
             }
@@ -72,8 +69,13 @@ namespace FluentFlyoutWPF.Classes
             }
         }
 
+        private bool _disposed;
+
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+
             if (_notificationClient != null)
             {
                 _notificationClient.DefaultDeviceChanged -= OnDefaultDeviceChanged;
@@ -89,11 +91,12 @@ namespace FluentFlyoutWPF.Classes
                 {
                     Logger.Error(ex, "Failed to unregister device notification callback");
                 }
-                _deviceEnumerator.Dispose();
-                _deviceEnumerator = null;
             }
 
             _notificationClient = null;
+
+            _deviceEnumerator?.Dispose();
+            _deviceEnumerator = null;
 
             GC.SuppressFinalize(this);
         }

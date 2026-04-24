@@ -1,135 +1,247 @@
-<p align="center">
-	<picture>
-		<source width="65%" alt="fluentflyout-title" media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/daa2969f-8ad2-4832-8253-26133a50c921" />
-		<source width="65%" alt="fluentflyout-title" media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/3e75e514-b9a6-40e3-b170-af9d29a82bb4" />
-		<img width="65%" alt="fluentflyout-title" src="https://github.com/user-attachments/assets/daa2969f-8ad2-4832-8253-26133a50c921">
-	</picture>
-</p>
+# FluentFlyout - Reproductor de Música Moderno
+
+![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg?logo=dotnet&logoColor=white)
+
+## 🎵 Descripción
+
+**FluentFlyout** es un reproductor de música y controlador de medios de última generación para Windows, diseñado con los principios de **Fluent Design** de Microsoft. Ofrece una experiencia visualmente impresionante y fluida, integrándose perfectamente con la estética de Windows 11 mediante efectos de **Mica** y **Acrylic**.
+
+> [!NOTE]
+> Este proyecto es un fork de [unchihugo/FluentFlyout](https://github.com/unchihugo/FluentFlyout), con mejoras significativas en la arquitectura (MVVM completo), personalización y soporte para el reproductor interno.
+
+La aplicación no solo funciona como un reproductor interno, sino que también actúa como un controlador universal para cualquier sesión de medios activa en el sistema (Spotify, YouTube, Navegadores, etc.), proporcionando un "Flyout" elegante para gestionar tu música sin interrumpir tu flujo de trabajo.
+
+### Identidad Visual
 
 <p align="center">
-	<img alt="GitHub Release" src="https://img.shields.io/github/v/release/unchihugo/FluentFlyout">
-	<img alt="Static Badge" src="https://img.shields.io/badge/downloads-130K%2B-blue?color=limegreen">
-	<a href="https://hosted.weblate.org/engage/fluentflyout/"><img src="https://hosted.weblate.org/widget/fluentflyout/svg-badge.svg" alt="Translation status"/></a>
-	<img alt="GitHub contributors" src="https://img.shields.io/github/contributors-anon/unchihugo/fluentflyout?labelColor=midnightblue&color=goldenrod">
-</p>
-<p align="center">
-  <strong>English</strong> | <a href="https://github.com/unchihugo/FluentFlyout/blob/master/README.zh.md">简体中文</a> | <a href="https://github.com/unchihugo/FluentFlyout/blob/master/README.nl.md">Nederlands</a> | <a href="https://github.com/unchihugo/FluentFlyout/blob/master/README.tr.md">Türkçe</a> | <a href="https://github.com/unchihugo/FluentFlyout/blob/master/README.ru.md">Русский</a>
+  <img src="logo-change.png" alt="FluentFlyout Logo" width="200"/>
 </p>
 
 ---
-FluentFlyout is the modern Flyout app for Windows, built with Fluent 2 Design principles.  
-The UI seemingly blends in with Windows 11, providing you an uninterrupted, clean, and native-like experience when controlling your media, lock keys, and more.  
 
-FluentFlyout features smooth animations, blends with your system's color themes and includes a suite of personalization settings while providing media controls, information and more in nice and modern looking popup flyouts.
+## 🙏 Reconocimiento al Creador Original
 
-<a href="https://apps.microsoft.com/detail/9n45nsm4tnbp?referrer=appbadge&cid=GitHub_README&mode=direct">
-	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
-</a>
+Este proyecto es una evolución y mejora de **[FluentFlyout](https://github.com/unchihugo/FluentFlyout)**, desarrollado originalmente por **[unchihugo](https://github.com/unchihugo)**.
 
-<img alt="FluentFlyoutHero-Cinemascope" src="https://github.com/user-attachments/assets/a7c7e2db-e21b-4435-9acc-0b2c5f38eb7d" />
+Queremos dar todo el crédito al autor original por la idea innovadora y la base técnica que hizo posible este reproductor. Si te gusta esta aplicación, por favor considera darle una estrella a su repositorio original para apoyar su trabajo.
 
-## Features ✨
-- **Audio flyout: Displays Cover, Title, Artist and media controls**
-- **"Up Next" flyout: shows what's next when a song ends**
-- **Lock Keys flyout: displays the status of lock keys at a glance**
-- **Taskbar widget: shows media info directly on the Windows taskbar**
-- Native Windows-like design
-- Uses Fluent 2 components
-- Utilises Windows Mica blur
-- Supports Light and Dark mode
-- Matches your device color theme
-- Smooth animations
-- Customizable flyout positions
-- Includes Repeat All, Repeat One and Shuffle
-- Sits unobtrusively in system tray
+---
 
-<p align="center">
-    <a href="https://www.windowscentral.com/microsoft/windows-11/microsoft-is-too-busy-with-ai-to-fix-windows-11s-design-so-developers-stepped-up"><img height="40px" alt="Windows Central" src="https://cdn.mos.cms.futurecdn.net/pJbSHFPBawZknTYBZnj9tS-970-80.jpg.webp"></a>
-    &nbsp;&nbsp;&nbsp;
-    <a href="https://www.neowin.net/news/this-free-unofficial-app-promises-big-list-of-modern-windows-11-fluent-customization-options/"><img height="40px" alt="Neowin" src="https://upload.wikimedia.org/wikipedia/en/1/11/Neowin_Logo_1.png"></a>
-</p>
-<p align="center">
-  <em>"Windows 11 may have just gained another must-have app."</em> — <strong><a href="https://www.windowscentral.com/microsoft/windows-11/microsoft-is-too-busy-with-ai-to-fix-windows-11s-design-so-developers-stepped-up">Windows Central</a></strong><br>
-  <em>"Does a better job than what Microsoft officially offers."</em> — <strong><a href="https://www.neowin.net/news/this-free-unofficial-app-promises-big-list-of-modern-windows-11-fluent-customization-options/">Neowin</a></strong>
-</p>
+## ✨ Características Principales
 
-## Taskbar widget ⏯️
-<div align="center">
-	<img height="440px" width="auto" src="https://github.com/user-attachments/assets/43963c54-e2d8-4b93-9842-482e12b2c592" />
-</div>
+- **Diseño Premium**: Interfaz moderna con efectos de transparencia (Mica/Acrylic) y animaciones suaves.
+- **Control Universal de Medios**: Sincronización en tiempo real con el Servicio Global de Control de Transporte de Medios (GSMTC) de Windows.
+- **Arquitectura MVVM**: Refactorización completa utilizando `CommunityToolkit.Mvvm` para una lógica limpia y reactiva.
+- **Modos Visuales Dinámicos**: Soporte completo para Temas Claro/Oscuro y colores de acento dinámicos basados en el arte del álbum.
+- **Integración con la Barra de Tareas**: Widget personalizado en la barra de tareas para un control rápido.
+- **Notificaciones "Next Up"**: Ventanas emergentes elegantes que muestran la siguiente pista antes de que comience.
+- **Altamente Personalizable**: Ajustes de duración de visibilidad, posición en pantalla, teclas de acceso rápido y comportamientos de control.
 
-<details close>
-<summary>Video showcase</summary>
-	
-https://github.com/user-attachments/assets/bfc7666f-1d59-4cbf-8d15-3855671cb147
+---
 
-</details>
+## 🛠️ Tecnologías
 
-## Flyouts and more 🎵
-<div align="center">
-	<img height="205px" width="auto" src="https://github.com/user-attachments/assets/4dab1c12-594a-4785-bddc-0da1783bf1c8"> <img height="205px" src="https://github.com/user-attachments/assets/b4306026-b274-418b-a39e-78877e7610a7"> 	<img height="190px" src="https://github.com/user-attachments/assets/39de69fe-54c8-4b22-880c-7f0370b8dd9c"> <img height="190px" src="https://github.com/user-attachments/assets/a25adb0e-963a-49a5-8abb-d9a288c2ad9a"> <img height="190px" src="https://github.com/user-attachments/assets/2de44e7b-7e6c-4575-bf3b-0be2f741c994">
-</div>
-<details open>
-<summary>v2.0 screenshots</summary>
-<div align="center">
-	<img height="220px" width="auto" src="https://github.com/user-attachments/assets/e45592d5-8576-4d6a-8679-56baacccd585"> <img height="220px" width="auto" src="https://github.com/user-attachments/assets/ff2fcfab-8e24-48cf-9bdf-d35252eb3e67">
-</div>
-</details>
+- **Lenguaje**: C# / .NET 8
+- **Framework UI**: WPF (Windows Presentation Foundation)
+- **Librerías de Diseño**:
+  - [WPF-UI](https://github.com/lepoco/wpfui) - Componentes Fluent modernos.
+  - [MicaWPF](https://github.com/SimpLeischa/MicaWPF) - Soporte nativo para efectos de fondo de Windows 11.
+- **Arquitectura**: MVVM (Model-View-ViewModel) con Community Toolkit.
+- **Logging**: NLog para un seguimiento robusto de errores y eventos.
 
-## How to install 📥
-### Which version should you choose? 
-The **Microsoft Store version** provides automatic updates, but has a one-time purchase to unlock a few extra features.  
-The **GitHub version** is completely free and open-source, but requires manual updates.  
-Read more about the project's model in the [Sustainability & The Microsoft Store](#sustainability--the-microsoft-store-) section below.
+---
 
-### Using Microsoft Store
-<a href="https://apps.microsoft.com/detail/9n45nsm4tnbp?referrer=appbadge&cid=GitHub_README_2&mode=direct">
-	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="300"/>
-</a>
+## 🚀 Instalación y Uso
 
-> Looking for FluentFlyout Settings? You can access it by clicking the system tray icon
-### Using .msixbundle installer
-1. Go to the [latest release](https://github.com/unchihugo/FluentFlyout/releases/latest) page
-2. Download the **"*.cer"** file *(real certificates cost a lot of money)*
-3. Open the certificate and press **"Install Certificate..."**
-4. On the Certificate Import Wizard, select **"Local Machine"**, press **"Next"** and grant Admin Access
-5. Select **"Place all certificates in the following store"**, then **"Browse..."**, choose **"Trusted Root Certification Authorities"** and **"OK"**
-6. Finally, press **"Next"** and then **"Finish"**. It might ask you to confirm, press **Yes**
-7. Download the **"*.msixbundle"** file
-8. The App Installer will pop up, press **"Install"**, or **"Update"** if you've installed FluentFlyout before
+### Requisitos
 
-## Contributing 💖
-Please feel free to contribute in any way you can! Check out [CONTRIBUTING.md](https://github.com/unchihugo/FluentFlyout/blob/master/.github/CONTRIBUTING.md) to get started.
-If you want to help with translations, please visit our [Weblate page](https://hosted.weblate.org/engage/fluentflyout/).
+- Windows 10 (1809+) o Windows 11.
+- .NET 8.0 Runtime o SDK.
 
-### Translation Status
-<a href="https://hosted.weblate.org/engage/fluentflyout/">
-<img src="https://hosted.weblate.org/widget/fluentflyout/multi-auto.svg" alt="Translation status" />
-</a>
+### Ejecución desde el código
 
-### Thanks to our amazing team of contributors!
-<a href="https://github.com/unchihugo/fluentflyout/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=unchihugo/fluentflyout&anon=1" />
-</a>
+1. Clonar el repositorio:
 
-## Sustainability & The Microsoft Store 💰
-FluentFlyout is and always will be free and open-source. You can download the latest builds from the [Releases](https://github.com/unchihugo/FluentFlyout/releases/latest) tab or compile the project yourself to access the full feature set without restrictions.
+   ```bash
+   git clone https://github.com/Hugo-S-M-28/Reproductor-Musica.git
+   ```
 
-Maintaining a project of this scale takes time and effort. To support ongoing development, the Microsoft Store version offers a convenient way to install the app and includes a few optional features unlockable via a small payment (€2.99, varies by region).
+2. Abrir `FluentFlyout.sln` en Visual Studio 2022.
+3. Restaurar los paquetes NuGet.
+4. Establecer `FluentFlyoutWPF` como proyecto de inicio y presionar `F5`.
 
-- **Microsoft Store version:** provides automatic background updates and one-click installation. A small set of features is unlocked with a one-time purchase to help fund development.
-- **GitHub version:** Completely free, fully featured, and open-source. The only trade-off is that updates and installation must be done manually.
+---
 
-Thank you for your support and understanding!
+## 🏗️ Arquitectura y Funcionamiento Interno
 
-## Credits 🙌
-- [Hugo Li](https://unchihugo.github.io) - Original Developer, Microsoft Store Publisher, CN & NL Translations
-- [LiAuTraver](https://github.com/LiAuTraver) - Code Contributor (app theme switcher)
-- [AksharDP](https://github.com/AksharDP) - Code Contributor (media seekbar & duration)
-- [Hykerisme](https://github.com/Hykerisme) - CN Translation
-- [nopeless](https://github.com/nopeless) - Code Contributor (QoL features)
+### Diagrama de Arquitectura
 
-### Dependencies
-- [Dubya.WindowsMediaController](https://github.com/DubyaDude/WindowsMediaController)
-- [MicaWPF](https://github.com/Simnico99/MicaWPF)
-- [WPF-UI](https://github.com/lepoco/wpfui)
+El siguiente diagrama ilustra cómo fluyen los datos y eventos a través de las diferentes capas de la aplicación, desde las integraciones con el sistema operativo hasta la interfaz de usuario.
+
+```mermaid
+graph TD
+    subgraph "Capa de Sistema (Windows OS)"
+        SMTC["Global System Media Transport Controls (GSMTC)"]
+        Hooks["Win32 Keyboard & Explorer Hooks"]
+        Screens["Pantallas y Monitores (DPI Aware)"]
+    end
+
+    subgraph "Capa de Servicios (Core Logic)"
+        EMS["ExternalMediaService<br/>(Monitorea Spotify, Web, etc.)"]
+        MPS["MusicPlayerService<br/>(Reproductor Interno)"]
+        SHS["SystemHookService<br/>(Detecta teclas multimedia y volumen)"]
+        HKS["HotKeyService<br/>(Global Hotkeys)"]
+        SM["SettingsManager<br/>(Persistencia SQLite/JSON)"]
+    end
+
+    subgraph "Capa ViewModel (MVVM)"
+        NPVM["NowPlayingViewModel<br/>(Estado de reproducción reactivo)"]
+        USVM["UserSettings ViewModel<br/>(Configuraciones)"]
+    end
+
+    subgraph "Capa de Interfaz (UI)"
+        MW["MainWindow (Flyout)<br/>Mica & Acrylic"]
+        TW["TaskbarWindow<br/>Widget de barra de tareas"]
+        SW["SettingsWindow<br/>Configuración avanzada"]
+        NUW["NextUpWindow<br/>Notificaciones de pista"]
+    end
+
+    %% Relaciones
+    SMTC --> EMS
+    Hooks --> SHS
+    EMS --> NPVM
+    MPS --> NPVM
+    SHS --> MW
+    NPVM --> MW
+    NPVM --> TW
+    SM --> USVM
+    USVM --> MW
+    USVM --> SW
+```
+
+### Explicación en Profundidad
+
+#### 1. Sincronización de Medios Híbrida
+
+Una de las mayores fortalezas de FluentFlyout es su capacidad para manejar múltiples fuentes de audio simultáneamente. El `NowPlayingViewModel` actúa como un orquestador que:
+
+- Prioriza el **reproductor interno** si hay una pista activa.
+- Conmuta automáticamente a **sesiones externas** (como Spotify o YouTube) cuando el reproductor interno está inactivo.
+- Escucha eventos del sistema para actualizar metadatos, imágenes de portada y la barra de progreso en tiempo real (cada 300ms).
+
+#### 2. Integración de Nivel de Sistema
+
+La aplicación utiliza técnicas avanzadas de interoperabilidad con Windows para sentirse como una parte nativa del sistema:
+
+- **Hooks de Bajo Nivel**: Mediante `SystemHookService`, la aplicación intercepta las teclas de volumen y multimedia para mostrar el Flyout de forma inteligente, incluso si la aplicación no tiene el foco.
+- **Mica y Transparencias**: Utiliza la API nativa de composición de Windows para aplicar efectos `Mica` y `Acrylic` que se adaptan al fondo de pantalla y al tema del sistema.
+- **DPI Awareness**: Cálculos precisos de posición para que el Flyout aparezca exactamente sobre la barra de tareas en cualquier monitor y resolución.
+
+#### 3. Ciclo de Vida del Flyout
+
+El Flyout no es solo una ventana; tiene una lógica de vida propia:
+
+- **Animaciones de Entrada/Salida**: Utiliza `DoubleAnimation` con funciones de suavizado (Easing) para aparecer de forma elegante.
+- **Auto-ocultado**: Un bucle de monitoreo (`RunFlyoutLoop`) comprueba si el ratón está sobre la ventana o si el usuario ha dejado de interactuar, cerrándola automáticamente tras un tiempo configurable.
+
+#### 4. Gestión de Estética Dinámica
+
+Cada vez que cambia una canción, se dispara un proceso de análisis:
+
+- Se extrae el color dominante de la portada del álbum.
+- Se aplican gradientes y colores de acento dinámicos a los controles (Play, Barra de progreso, etc.).
+- El fondo se desenfoca y se ajusta según el estilo seleccionado (Glassmorphism).
+
+---
+
+## 🏗️ Estructura del Proyecto
+
+El proyecto sigue una estructura estricta de Model-View-ViewModel para garantizar la escalabilidad y facilidad de prueba:
+
+- **ViewModels**: Contiene `NowPlayingViewModel` y `UserSettings`, manejando la lógica de estado y sincronización de datos.
+- **Views**: Archivos XAML como `MainWindow` y `SettingsWindow` que definen la interfaz visual.
+- **Models**: Definiciones de datos como `TrackModel` y `LyricLine`.
+- **Classes/Services**: Lógica de bajo nivel para `MusicPlayerService`, `ExternalMediaService` y hooks del sistema.
+
+---
+
+## ⚙️ Configuración e Instalación
+
+### 1. Requisitos Previos
+
+- **Sistema Operativo**: Windows 10 (1809 o superior) o Windows 11.
+- **Entorno**: .NET 8.0 SDK instalado.
+
+## 🚀 Instalación y Despliegue Local
+
+Sigue estos pasos para configurar el entorno de desarrollo:
+
+### 1️⃣ Clonar el Repositorio
+
+```bash
+git clone https://github.com/Hugo-S-M-28/Reproductor-Musica.git
+cd Reproductor-Musica
+```
+
+### 2️⃣ Restaurar Dependencias
+
+```bash
+dotnet restore
+```
+
+### 3️⃣ Ejecutar la Aplicación
+
+Puedes ejecutar el proyecto directamente desde la terminal o usando Visual Studio 2022:
+
+```bash
+dotnet run --project FluentFlyoutWPF
+```
+
+### 4️⃣ Compilar para Producción (Release)
+
+Para generar el ejecutable optimizado:
+
+```bash
+dotnet build -c Release
+```
+
+## ⌨️ Atajos de Teclado y Controles
+
+FluentFlyout está diseñado para ser controlado sin necesidad de abrir la ventana principal:
+
+| Acción | Comando / Tecla |
+| :--- | :--- |
+| **Mostrar Flyout** | Teclas multimedia (Volumen, Play/Pause) |
+| **Play / Pausa** | `MediaPlayPause` o botón central |
+| **Siguiente / Anterior** | `MediaNext` / `MediaPrevious` |
+| **Cerrar Flyout** | Clic fuera de la ventana o `Esc` |
+
+## 🎨 Personalización de la Interfaz
+
+Desde el panel de **Configuración**, puedes ajustar:
+
+1. **Efectos de Fondo**: Elige entre Mica, Acrylic o fondo sólido.
+2. **Colores de Acento**: Sincroniza el color de los controles con el arte del álbum actual.
+3. **Posición**: Ajusta en qué monitor y en qué parte de la pantalla aparece el Flyout.
+4. **Comportamiento**: Define cuánto tiempo permanece visible el Flyout tras un cambio de pista.
+
+## 🙏 Agradecimientos Especiales
+
+Quiero expresar mi más profunda gratitud a:
+
+- **[unchihugo](https://github.com/unchihugo)**: Por crear el proyecto original y permitir que la comunidad aprenda de su código. Su trabajo en la integración con SMTC fue la piedra angular de esta versión.
+- **Comunidad de Código Abierto**: Por las librerías como `MicaWPF` y `WPF-UI` que elevan el estándar visual de las aplicaciones Windows.
+
+## 🌐 Créditos y Contacto
+
+- **Desarrollo del Fork**: [Hugo Sánchez Milán](https://github.com/Hugo-S-M-28).
+- **Basado en el trabajo de**: [unchihugo/FluentFlyout](https://github.com/unchihugo/FluentFlyout).
+- **LinkedIn**: [Hugo Sánchez Milán](https://www.linkedin.com/in/hugo-s-197b81278/)
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia **GPL-3.0**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+**Desarrollado con ❤️ por Hugo-S-M-28**

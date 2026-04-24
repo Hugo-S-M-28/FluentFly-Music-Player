@@ -1,63 +1,346 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
-    <system:String x:Key="TitleText">FluentFlyout Postavke</system:String>
-    <system:String x:Key="MediaFlyoutTitle">Uređivanje iskočnog prozora za medije</system:String>
-    <system:String x:Key="MediaFlyoutDescription">Glavni iskočni prozor. Prilikom slušanja medija, pritisnite bilo koju tipku za medije ili glasnoću (pokreni/zaustavi, pojačavanje/smanjivanje glasnoće, itd.) na tipkovnici da se prikaže iskočni prozor. Prikazuje informacije o mediju, kontrole reprodukcije i više.</system:String>
-    <system:String x:Key="TextBlockText1">Omogući iskočni prozor za medije</system:String>
-    <system:String x:Key="TextBlockText3">Prikaži iskočni prozor pritiskom tipki za medije</system:String>
-    <system:String x:Key="TextBlockText2">Odaberite iz unaprijed postavljenih modernih stilova zamućenja pozadine</system:String>
-    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> Stil 1 (Pozadinski Sjaj)</system:String>
-    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> Stil 2 (Izlazeći Sjaj)</system:String>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="AboutContributorsDescription">Veliko hvala svim nevjerojatnim ljudima koji su pridonijeli razvoju i uspjehu FluentFlyout-a!</system:String>
+    <system:String x:Key="AboutContributorsTitle">❤️ Upoznajte naše suradnike</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout je izgrađen pomoću sljedećih paketa otvorenog koda:</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesTitle">Licence otvorenog koda</system:String>
+    <system:String x:Key="AboutPremiumTitle">O Premium verziji</system:String>
+    <system:String x:Key="AboutTitle">O aplikaciji</system:String>
+    <system:String x:Key="AcrylicBlurOpacityDescription">Podesite prozirnost za Acrylic skočne prozore (zadano: 175)</system:String>
+    <system:String x:Key="AcrylicBlurOpacityPerk">Prozirnost Acrylic zamućenja</system:String>
+    <system:String x:Key="AcrylicBlurOpacityTitle">Prozirnost Acrylic zamućenja</system:String>
+    <system:String x:Key="AcrylicWindowDescription">Primijeni efekt prozirnog acrylic zamućenja na skočni prozor (isključeno vraća na Mica efekt)</system:String>
+    <system:String x:Key="AcrylicWindowTitle">Acrylic prozor</system:String>
+    <system:String x:Key="AdvancedSettingsTitle">Napredne postavke</system:String>
+    <system:String x:Key="AllFuturePremiumFeatures">Sve buduće Premium značajke</system:String>
+    <system:String x:Key="AnimationDurationScaleDescription">Brža ili sporija animacija skočnog prozora (zadano: 1x)</system:String>
+    <system:String x:Key="AnimationDurationScaleTitle">Skala trajanja animacije</system:String>
+    <system:String x:Key="AnimationEasingStyleDescription">(zadano: Quadratic)</system:String>
+    <system:String x:Key="AnimationEasingStyleTitle">Stil ublažavanja animacije</system:String>
+    <system:String x:Key="AnimationSettingsDescription">Prilagodite animacije po želji</system:String>
+    <system:String x:Key="AnimationSettingsTitle">Postavke animacije</system:String>
+    <system:String x:Key="AnimationSpeedOff">Isključeno</system:String>
+    <system:String x:Key="AppLanguageDescription">Ako vaš jezik nije na popisu ili je nepotpun, zadani jezik bit će engleski.
+Možete pomoći u prevođenju na:</system:String>
+    <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
+    <system:String x:Key="AppLanguageTitle">Jezik aplikacije</system:String>
+    <system:String x:Key="AppThemeDark"> Tamno</system:String>
+    <system:String x:Key="AppThemeDefault"> Windows zadano</system:String>
+    <system:String x:Key="AppThemeLight"> Svijetlo</system:String>
+    <system:String x:Key="AppThemeTitle">Tema aplikacije</system:String>
+    <system:String x:Key="AppearanceBehaviorSectionTitle">Izgled i ponašanje</system:String>
+    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> Bez zamućenja</system:String>
+    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> Stil 1 (Sjaj omota)</system:String>
+    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> Stil 2 (Uzlazni sjaj)</system:String>
     <system:String x:Key="BackgroundBlurOption4" xml:space="preserve"> Stil 3 (Zamućenje)</system:String>
-    <system:String x:Key="AcrylicWindowTitle">Akrilni prozor</system:String>
-    <system:String x:Key="AcrylicWindowDescription">Primijeni prozirni akrilni zamućeni efekt na iskočni prozor (isključenje vraća na "Mica" efekt)</system:String>
-    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">Tanji i manje nametljiv raspored skriva ponavljanje,
-nasumičnu reprodukciju i informacije o mediju</system:String>
-    <system:String x:Key="SelectedMonitorTitle">Zaslon za prikaz iskočnog prozora</system:String>
-    <system:String x:Key="FlyoutPositionTitle">Pozicija iskočnog prozora</system:String>
-    <system:String x:Key="FlyoutStayDurationTitle">Trajanje prikaza iskočnog prozora</system:String>
-    <system:String x:Key="FlyoutStayDurationDescription">(zadano: 3000 ms)</system:String>
-    <system:String x:Key="MillisecondsUnit">ms</system:String>
-    <system:String x:Key="CenterTitleArtistTitle">Centriraj naslov i izvođača</system:String>
-    <system:String x:Key="CenterTitleArtistDescription">Poravnaj tekst u sredinu umjesto ulijevo</system:String>
-    <system:String x:Key="ShowMediaPlayerNameTitle">Prikaži naziv aplikacije medija</system:String>
-    <system:String x:Key="RepeatButtonTitle">Gumb za ponavljanje*</system:String>
-    <system:String x:Key="RepeatButtonDescription">Odaberi između ponavljanja svih ili ponavljanja jedne, povećava širinu iskočnog prozora</system:String>
-    <system:String x:Key="ShuffleButtonTitle">Gumb za nasumično reproduciranje*</system:String>
-    <system:String x:Key="ShuffleButtonDescription">Povećava širinu iskočnog prozora</system:String>
-    <system:String x:Key="ShowSeekbarTitle">Prikaži traku za traženje*</system:String>
-    <system:String x:Key="ShowSeekbarDescription">Interaktivna traka za traženje će se automatski prikazati ako ju aplikacija podržava</system:String>
-    <system:String x:Key="UnsupportedControlsWarning">*Neki preglednici/aplikacije ne podržavaju ponavljanje, nasumičnu reprodukciju i traku za traženje.</system:String>
-    <system:String x:Key="PauseOtherMediaTitle">Pauziraj druge medije automatski</system:String>
-    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> Nijedan</system:String>
     <system:String x:Key="BackgroundBlurTitle">Zamućenje pozadine</system:String>
-    <system:String x:Key="CompactLayoutTitle">Kompaktni raspored</system:String>
-    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> Dolje lijevo</system:String>
-    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> Dolje centrirano</system:String>
-    <system:String x:Key="PositionBottomRight" xml:space="preserve"> Dolje desno</system:String>
-    <system:String x:Key="PositionTopLeft" xml:space="preserve"> Gore lijevo</system:String>
-    <system:String x:Key="PositionTopCenter" xml:space="preserve"> Sredina gore</system:String>
-    <system:String x:Key="PositionTopRight" xml:space="preserve"> Gore desno</system:String>
-    <system:String x:Key="MediaFlyoutAlwaysDisplay">Uvijek na ekranu</system:String>
-    <system:String x:Key="HomeTitle">Početni zaslon</system:String>
-    <system:String x:Key="Enabled">Omogućeno</system:String>
+    <system:String x:Key="BackupRestoreCardTitle">Izrada sigurnosne kopije i vraćanje postavki</system:String>
+    <system:String x:Key="BackupRestoreSectionTitle">Sigurnosna kopija i vraćanje</system:String>
+    <system:String x:Key="BuyMeCoffeeLink">Plati mi kavu</system:String>
+    <system:String x:Key="CenterTitleArtistDescription">Poravnaj tekst na sredinu umjesto lijevo</system:String>
+    <system:String x:Key="CenterTitleArtistTitle">Centriraj naslov i izvođača</system:String>
+    <system:String x:Key="CheckingForUpdates">Provjera ažuriranja...</system:String>
+    <system:String x:Key="CloseButton">Zatvori</system:String>
+    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">Tanji i manje ometajući izgled
+Skriva ponavljanje, nasumično i informacije o playeru</system:String>
+    <system:String x:Key="CompactLayoutTitle">Kompaktni izgled</system:String>
+    <system:String x:Key="DefaultLockLayoutPosition">Zadano (Ciljni zaslon skočnog prozora)</system:String>
+    <system:String x:Key="DevelopersTitle">Programeri</system:String>
+    <system:String x:Key="DisableOnFullscreenDescription">Sprječava DirectX igre u isključivom načinu cijelog zaslona da se minimiziraju kada se skočni prozor pojavi</system:String>
+    <system:String x:Key="DisableOnFullscreenTitle">Onemogući skočne prozore kada je otkriven DirectX program preko cijelog zaslona</system:String>
     <system:String x:Key="Disabled">Onemogućeno</system:String>
-    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Izostavi Medijske Tipke</system:String>
-    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Ne prikazuj iskočni prozor tijekom pritiskanja tipke za poglašavanje/utišavanje</system:String>
-    <system:String x:Key="PauseOtherMediaDescription">Kada pustite ili promijenite fokus na novi medij, ostale aktivne sesije će se automatski pauzirati</system:String>
-    <system:String x:Key="TaskbarWidgetCustomizationTitle">Widget za Traku</system:String>
-    <system:String x:Key="TaskbarWidgetDescription">Kompaktni i ugrađeni widget koji se nastanjuje na vašoj Windows Traci za trenutni pristup vašem mediju. Pritisnite widget kako bi proširili puni medijski iskočni prozor.</system:String>
-    <system:String x:Key="TaskbarWidgetEnabledTitle">Omogući Widget za Traku</system:String>
-    <system:String x:Key="TaskbarWidgetEnabledDescription">Prikaži kompaktni medijski widget na traci</system:String>
-    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Konfigurirajte postavke ispod ako Vam se pojavljuju vizualne poteškoće.</system:String>
-    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Target Zaslon za Widget</system:String>
-    <system:String x:Key="TaskbarWidgetPosition">Pozicija Widgeta</system:String>
-    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Postavke za Ispunjenje Widgeta</system:String>
-    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Prilagodi ispunjenje oko widgeta kako bi stalo Vašem stilu trake</system:String>
-    <system:String x:Key="TaskbarWidgetPaddingTitle">Automatsko Ispunjenje za tipku za Windows Widgets</system:String>
-    <system:String x:Key="TaskbarWidgetPaddingDescription">Omogućite ovu značajku ako imate Windows Widgets uključen</system:String>
-    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Prilagođeno Ispunjenje</system:String>
-    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Dodaj još ispunjenja (zadano: 0 piksela)</system:String>
-    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Pozadinsko Zamućenje</system:String>
-    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Dodaj efekt pozadinskog zamućenja widgetu za traku</system:String>
-    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Kompletno Sakrij Kada Nema Nikakvog Medija</system:String>
+    <system:String x:Key="EasingCubic" xml:space="preserve"> Cubic</system:String>
+    <system:String x:Key="EasingLinear" xml:space="preserve"> Linearno</system:String>
+    <system:String x:Key="EasingQuadratic" xml:space="preserve"> Kvadratno</system:String>
+    <system:String x:Key="EasingSine" xml:space="preserve"> Sine</system:String>
+    <system:String x:Key="Edit_AlbumLabel">Album</system:String>
+    <system:String x:Key="Edit_AlbumPlaceholder">Naziv albuma</system:String>
+    <system:String x:Key="Edit_ArtFilter">Slike|*.jpg;*.jpeg;*.png;*.bmp;*.webp|Sve datoteke|*.*</system:String>
+    <system:String x:Key="Edit_ArtistLabel">Izvođač</system:String>
+    <system:String x:Key="Edit_ArtistPlaceholder">Ime izvođača</system:String>
+    <system:String x:Key="Edit_Cancel">Odustani</system:String>
+    <system:String x:Key="Edit_ChangeArtOverlay">Promijeni</system:String>
+    <system:String x:Key="Edit_ChangeArtTooltip">Klikni za promjenu omota</system:String>
+    <system:String x:Key="Edit_CollaboratorsLabel">Suradnici</system:String>
+    <system:String x:Key="Edit_CollaboratorsPlaceholder">Gostujući izvođači (odvojeni sa ;)</system:String>
+    <system:String x:Key="Edit_ErrorTitle">Pogreška</system:String>
+    <system:String x:Key="Edit_FileInfoSection">Informacije o audio datoteci</system:String>
+    <system:String x:Key="Edit_GenreLabel">Žanr</system:String>
+    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock, itd.</system:String>
+    <system:String x:Key="Edit_HeaderSummary">Uredi metapodatke</system:String>
+    <system:String x:Key="Edit_InfoNote">Promjene će biti trajno spremljene u izvornu audio datoteku.</system:String>
+    <system:String x:Key="Edit_LoadLrc">Učitaj datoteku</system:String>
+    <system:String x:Key="Edit_LrcLoadError">Nije moguće učitati odabranu datoteku.</system:String>
+    <system:String x:Key="Edit_LyricsFormatInfo">LRC format</system:String>
+    <system:String x:Key="Edit_LyricsFormatMsg">Unesite stihove u formatu [mm:ss.xx]Tekst za automatsku sinkronizaciju.</system:String>
+    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Stihovi ovdje...</system:String>
+    <system:String x:Key="Edit_Ok">U redu</system:String>
+    <system:String x:Key="Edit_OpenLocation">Otvori lokaciju</system:String>
+    <system:String x:Key="Edit_Save">Spremi promjene</system:String>
+    <system:String x:Key="Edit_SaveErrorMsg">Nije moguće spremiti promjene. Provjerite da datoteku ne koristi drugi proces.</system:String>
+    <system:String x:Key="Edit_SelectArtTitle">Odaberi sliku omota</system:String>
+    <system:String x:Key="Edit_SelectLrcTitle">Odaberi datoteku sa stihovima</system:String>
+    <system:String x:Key="Edit_SyncCurrentTime">Sinkroniziraj trenutno vrijeme</system:String>
+    <system:String x:Key="Edit_SyncLyricsTip">Umeće trenutno vrijeme playera na poziciju kursora.</system:String>
+    <system:String x:Key="Edit_TabLyrics">Stihovi (.lrc)</system:String>
+    <system:String x:Key="Edit_TabMetadata">Metapodaci</system:String>
+    <system:String x:Key="Edit_TitleLabel">Naslov pjesme</system:String>
+    <system:String x:Key="Edit_TitlePlaceholder">Unesite naslov</system:String>
+    <system:String x:Key="Edit_TrackNumberLabel">Broj pjesme #</system:String>
+    <system:String x:Key="Edit_UnknownArtist">Nepoznat izvođač</system:String>
+    <system:String x:Key="Edit_Untitled">Bez naslova</system:String>
+    <system:String x:Key="Edit_WindowTitle">Uredi informacije o pjesmi</system:String>
+    <system:String x:Key="EnableInsertKeyDescription">Određuje hoće li pritisak na tipku Insert/Overwrite prikazati skočni prozor</system:String>
+    <system:String x:Key="EnableInsertKeyTitle">Omogući Insert tipku</system:String>
+    <system:String x:Key="EnableLockKeysDescription">Prikazuje jesu li specifične tipke za zaključavanje uključene ili isključene</system:String>
+    <system:String x:Key="EnableLockKeysTitle">Omogući skočne prozore tipki za zaključavanje</system:String>
+    <system:String x:Key="EnableNextUpDescription">Prikazuje što je sljedeće na redu kada pjesma/video završi</system:String>
+    <system:String x:Key="EnableNextUpTitle">Omogući "Sljedeće" skočni prozor</system:String>
+    <system:String x:Key="Enabled">Omogućeno</system:String>
+    <system:String x:Key="EnjoyingAppText" xml:space="preserve">Uživate u aplikaciji? Dajte zvjezdicu na GitHub-u,
+ili ostavite recenziju na Microsoft Store-u!</system:String>
+    <system:String x:Key="Eq_Enable">Omogući Equalizer</system:String>
+    <system:String x:Key="Eq_Presets">Predlošci</system:String>
+    <system:String x:Key="Eq_Title">Ekvilajzer</system:String>
+    <system:String x:Key="Error_RestoreSettings">Vraćanje postavki nije uspjelo</system:String>
+    <system:String x:Key="ExportFailed">Izvoz nije uspio</system:String>
+    <system:String x:Key="ExportSettings">Izvezi postavke</system:String>
+    <system:String x:Key="ExportSuccessful">Izvoz uspješan</system:String>
+    <system:String x:Key="ExternalMediaSectionTitle">Integracija vanjskih medija</system:String>
+    <system:String x:Key="FailedToExportSettings">Nije moguće izvesti postavke. Provjerite zapisnike za detalje.</system:String>
+    <system:String x:Key="FailedToImportSettings">Nije moguće uvesti postavke. Provjerite zapisnike za detalje.</system:String>
+    <system:String x:Key="FeaturesLayoutSectionTitle">Značajke i izgled</system:String>
+    <system:String x:Key="FlyoutPositionTitle">Pozicija skočnog prozora</system:String>
+    <system:String x:Key="FlyoutStayDurationDescription">(zadano: 3000 ms)</system:String>
+    <system:String x:Key="FlyoutStayDurationTitle">Trajanje prikaza skočnog prozora</system:String>
+    <system:String x:Key="General_Loading">Učitavanje...</system:String>
+    <system:String x:Key="General_No">Ne</system:String>
+    <system:String x:Key="General_Ok">U redu</system:String>
+    <system:String x:Key="General_Yes">Da</system:String>
+    <system:String x:Key="GitHubRepoLink">GitHub repozitorij</system:String>
+    <system:String x:Key="HideTrayIconDescription">Uđite u postavke tako što ćete pokrenuti program dva puta</system:String>
+    <system:String x:Key="HideTrayIconPerk">Sakrij ikonu u sistemskoj traci</system:String>
+    <system:String x:Key="HideTrayIconTitle">Potpuno sakrij ikonu u sistemskoj traci</system:String>
+    <system:String x:Key="HomeDashboardTitle">Nadzorna ploča</system:String>
+    <system:String x:Key="HomeTitle">Početna</system:String>
+    <system:String x:Key="HomeUpdateDescription">Saznajte što je novo</system:String>
+    <system:String x:Key="Home_LyricsNotAvailable">Stihovi nisu dostupni</system:String>
+    <system:String x:Key="Home_Repeat">Ponovi</system:String>
+    <system:String x:Key="Home_SelectSongToSeeLyrics">Odaberite pjesmu za prikaz stihova</system:String>
+    <system:String x:Key="Home_Shuffle">Nasumično</system:String>
+    <system:String x:Key="Home_Title">Glazbeni player</system:String>
+    <system:String x:Key="ImportFailed">Uvoz nije uspio</system:String>
+    <system:String x:Key="ImportSettings">Uvezi postavke</system:String>
+    <system:String x:Key="ImportSettingsWarning">Ovo će zamijeniti sve vaše trenutne postavke. Želite li nastaviti?</system:String>
+    <system:String x:Key="ImportSuccessful">Uvoz uspješan</system:String>
+    <system:String x:Key="InternalMusicPlayerSectionTitle">Interni glazbeni player</system:String>
+    <system:String x:Key="InternalPlayerEnabledDescription">Koristi FluentFlyout kao samostalni lokalni glazbeni player</system:String>
+    <system:String x:Key="InternalPlayerEnabledTitle">Omogući interni glazbeni player</system:String>
+    <system:String x:Key="LastChecked">Zadnja provjera: {0}</system:String>
+    <system:String x:Key="LaunchOnStartupDescription">Pokreni minimizirano u sistemskoj traci prilikom prijave u Windows</system:String>
+    <system:String x:Key="LaunchOnStartupTitle">Pokreni pri podizanju sustava</system:String>
+    <system:String x:Key="LegacyTaskbarWidthDescription">Koristi stari sustav širine taskbara za widgete</system:String>
+    <system:String x:Key="LegacyTaskbarWidthTitle">Stari sustav širine taskbara</system:String>
+    <system:String x:Key="Lib_Albums">Albumi</system:String>
+    <system:String x:Key="Lib_AppearanceTitle">Izgled knjižnice</system:String>
+    <system:String x:Key="Lib_Artists">Izvođači</system:String>
+    <system:String x:Key="Lib_ContextMenu_AddToQueue">Dodaj u red čekanja</system:String>
+    <system:String x:Key="Lib_ContextMenu_Edit">Uredi informacije</system:String>
+    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">Otvori lokaciju datoteke</system:String>
+    <system:String x:Key="Lib_ContextMenu_Play">Reproduciraj</system:String>
+    <system:String x:Key="Lib_Folders">Mape</system:String>
+    <system:String x:Key="Lib_GridSizeDescription">Veličina mreže (Albumi)</system:String>
+    <system:String x:Key="Lib_GridSizeTitle">Veličina mreže</system:String>
+    <system:String x:Key="Lib_IconSizeDescription">Veličina ikone (Popis)</system:String>
+    <system:String x:Key="Lib_IconSizeTitle">Veličina ikone</system:String>
+    <system:String x:Key="Lib_LyricsBadge">Stihovi</system:String>
+    <system:String x:Key="Lib_LyricsFilterTooltip">Prikaži samo pjesme sa stihovima</system:String>
+    <system:String x:Key="Lib_PlayAll">Reproduciraj sve</system:String>
+    <system:String x:Key="Lib_ResetAppearance">Resetiraj izgled</system:String>
+    <system:String x:Key="Lib_SearchPlaceholder">Pretraži svoju kolekciju...</system:String>
+    <system:String x:Key="Lib_SelectFolderDescription">Odaberite mapu za dodavanje u glazbenu knjižnicu</system:String>
+    <system:String x:Key="Lib_Shuffle">Nasumično reproduciraj</system:String>
+    <system:String x:Key="Lib_Songs">Pjesme</system:String>
+    <system:String x:Key="Lib_SongsCountFormat">{0} pjesama</system:String>
+    <system:String x:Key="Lib_SortBy">Sortiraj prema:</system:String>
+    <system:String x:Key="Lib_SortDirection">Promijeni smjer (↑/↓)</system:String>
+    <system:String x:Key="Lib_Sort_Album">Album</system:String>
+    <system:String x:Key="Lib_Sort_Artist">Izvođač</system:String>
+    <system:String x:Key="Lib_Sort_Duration">Trajanje</system:String>
+    <system:String x:Key="Lib_Sort_PlayCount">Najviše reproducirano</system:String>
+    <system:String x:Key="Lib_Sort_Title">Naslov (A-Z)</system:String>
+    <system:String x:Key="Lib_Title">Glazbena knjižnica</system:String>
+    <system:String x:Key="Lib_ToggleList">Prikaži/Sakrij popis</system:String>
+    <system:String x:Key="Lib_ViewSettingsTooltip">Vidi postavke</system:String>
+    <system:String x:Key="LibraryAppearanceSectionTitle">Izgled knjižnice</system:String>
+    <system:String x:Key="LibraryGridSizeDescription">Podesite veličinu albuma i izvođača (zadano: 160px)</system:String>
+    <system:String x:Key="LibraryGridSizeTitle">Veličina mreže</system:String>
+    <system:String x:Key="LibraryTrackIconSizeDescription">Podesite veličinu ikona u popisu pjesama (zadano: 40px)</system:String>
+    <system:String x:Key="LibraryTrackIconSizeTitle">Veličina ikone pjesme</system:String>
+    <system:String x:Key="LockKeysAnimatedDescription">Omogući suptilne animacije za indikatore tipki</system:String>
+    <system:String x:Key="LockKeysAnimatedTitle">Animacije indikatora</system:String>
+    <system:String x:Key="LockKeysBoldUIDescription">Naglašava simbol i font skočnog prozora</system:String>
+    <system:String x:Key="LockKeysBoldUITitle">Podebljani simbol i font</system:String>
+    <system:String x:Key="LockKeysCursorUIDescription">Odaberite na kojem zaslonu želite prikazati skočni prozor.</system:String>
+    <system:String x:Key="LockKeysCursorUITitle">Preferirani ciljni zaslon</system:String>
+    <system:String x:Key="LockKeysCustomizationTitle">Skočni prozor tipki za zaključavanje</system:String>
+    <system:String x:Key="LockKeysDescription" xml:space="preserve">Provjerite stanje svojih tipki za zaključavanje na prvi pogled. Pojavljuje se nakon pritiska na Caps Lock, Num Lock ili Scroll Lock. Zgodno za prijenosna računala bez LED indikatora.</system:String>
+    <system:String x:Key="LockKeysStayDurationDescription">(zadano: 2000 ms)</system:String>
+    <system:String x:Key="LockKeysStayDurationTitle">Trajanje prikaza tipki za zaključavanje</system:String>
+    <system:String x:Key="LockWindow_CapsLock">Caps Lock</system:String>
+    <system:String x:Key="LockWindow_Insert">Insert</system:String>
+    <system:String x:Key="LockWindow_InsertPressed">Insert pritisnut</system:String>
+    <system:String x:Key="LockWindow_LockOff">Isključeno</system:String>
+    <system:String x:Key="LockWindow_LockOn">Uključeno</system:String>
+    <system:String x:Key="LockWindow_NumLock">Num Lock</system:String>
+    <system:String x:Key="LockWindow_ScrollLock">Scroll Lock</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplay">Uvijek prikaži</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">Skočni prozor ostat će otvoren dok ne kliknete gumb za zatvaranje</system:String>
+    <system:String x:Key="MediaFlyoutDescription">Dok slušate medije, pritisnite bilo koju medijsku tipku ili tipku glasnoće za prikaz skočnog prozora. Prikazuje informacije o medijima, kontrole reprodukcije i još mnogo toga.</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Ne prikazuj skočni prozor pri pritisku na tipke za glasnoću/utišavanje</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Isključi tipke glasnoće</system:String>
+    <system:String x:Key="MediaFlyoutTitle">Medijski skočni prozor</system:String>
+    <system:String x:Key="MillisecondsUnit">ms</system:String>
+    <system:String x:Key="MonitorWithCursor">Zaslon s kursorom</system:String>
+    <system:String x:Key="MonitorWithFocusedWindow">Zaslon s fokusiranim prozorom</system:String>
+    <system:String x:Key="NativeExperienceInfo">Za izvorno Windows 11 iskustvo, zadane postavke trebaju biti zadržane.</system:String>
+    <system:String x:Key="NextUpCustomizationTitle">"Sljedeće" skočni prozor</system:String>
+    <system:String x:Key="NextUpDescription" xml:space="preserve">Skočni prozor prikazuje što je sljedeće na redu kada pjesma/video završi. Pojavljuje se samo ako će se sljedeća stavka automatski reproducirati.</system:String>
+    <system:String x:Key="NextUpStayDurationDescription">(zadano: 2000 ms)</system:String>
+    <system:String x:Key="NextUpStayDurationTitle">Trajanje prikaza "Sljedeće"</system:String>
+    <system:String x:Key="NextUpWindow_UpNextText">Sljedeće:</system:String>
+    <system:String x:Key="PauseOtherMediaDescription">Kada reproducirate ili fokusirate novi medij, ostale aktivne sesije automatski će se pauzirati</system:String>
+    <system:String x:Key="PauseOtherMediaTitle">Automatski pauziraj druge medije</system:String>
+    <system:String x:Key="PixelsUnit">px</system:String>
+    <system:String x:Key="Player_NoTrack">Nijedna pjesma se ne reproducira</system:String>
+    <system:String x:Key="Player_SelectTrackMsg">Odaberite pjesmu iz knjižnice</system:String>
+    <system:String x:Key="Playlist_Title">Popis za reprodukciju</system:String>
+    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> Dolje sredina</system:String>
+    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> Dolje lijevo</system:String>
+    <system:String x:Key="PositionBottomRight" xml:space="preserve"> Dolje desno</system:String>
+    <system:String x:Key="PositionLeft">Lijevo</system:String>
+    <system:String x:Key="PositionRight">Desno</system:String>
+    <system:String x:Key="PositionTopCenter" xml:space="preserve"> Gore sredina</system:String>
+    <system:String x:Key="PositionTopLeft" xml:space="preserve"> Gore lijevo</system:String>
+    <system:String x:Key="PositionTopRight" xml:space="preserve"> Gore desno</system:String>
+    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">Vaš doprinos mi pomaže u održavanju FluentFlyout-a. Odmah trajno otključava sve Premium značajke prilagodbe.
+
+Napomena: Kao projekt otvorenog koda, ove značajke također su dostupne besplatno putem ručnog instalacijskog programa na GitHub-u.</system:String>
+    <system:String x:Key="PremiumFeatureTitle">Premium značajka</system:String>
+    <system:String x:Key="PremiumGitHubMessage">Premium značajke su otključane za GitHub/Self-compiled verzije</system:String>
+    <system:String x:Key="PremiumLockedMessage">Ova značajka je dio Premium paketa</system:String>
+    <system:String x:Key="PremiumPurchaseCancelled">Kupnja otkazana.</system:String>
+    <system:String x:Key="PremiumPurchaseFailed">Kupnja nije uspjela. Molimo pokušajte ponovno.</system:String>
+    <system:String x:Key="PremiumPurchaseSuccess">Premium uspješno otključan!</system:String>
+    <system:String x:Key="PremiumUnlockedMessage">Premium značajke otključane. Hvala na podršci!</system:String>
+    <system:String x:Key="RepeatButtonDescription">Prebacivanje između Ponovi sve ili Ponovi jednu pjesmu, povećava širinu skočnog prozora</system:String>
+    <system:String x:Key="RepeatButtonTitle">Gumb za ponavljanje*</system:String>
+    <system:String x:Key="SelectedMonitorTitle">Ciljni zaslon skočnog prozora</system:String>
+    <system:String x:Key="SettingsExportedSuccessfully">Postavke uspješno izvezene!</system:String>
+    <system:String x:Key="SettingsImportedSuccessfully">Postavke uspješno uvezene! Aplikacija će se sada ponovno pokrenuti.</system:String>
+    <system:String x:Key="ShowMediaPlayerNameTitle">Prikaži naziv media playera</system:String>
+    <system:String x:Key="ShowSeekbarDescription">Interaktivna traka napretka automatski će se prikazati ako player to podržava</system:String>
+    <system:String x:Key="ShowSeekbarTitle">Prikaži traku napretka*</system:String>
+    <system:String x:Key="ShowUpdateNotificationsTitle">Prikaži obavijesti o novim ažuriranjima</system:String>
+    <system:String x:Key="ShuffleButtonDescription">Povećava širinu skočnog prozora</system:String>
+    <system:String x:Key="ShuffleButtonTitle">Gumb za nasumičnu reprodukciju*</system:String>
+    <system:String x:Key="SponsorMeLink">Sponzoriraj me</system:String>
+    <system:String x:Key="StartupAppsHyperlinkText">Startup aplikacije</system:String>
+    <system:String x:Key="StartupAppsSettingsInfo">Ako ova postavka ne radi kako je očekivano, provjerite</system:String>
+    <system:String x:Key="SystemConfigure">Konfiguriraj</system:String>
+    <system:String x:Key="SystemMediaControlEnabledDescription">Prikaz i kontrola medija iz drugih aplikacija (Spotify, YouTube, Chrome, itd.)</system:String>
+    <system:String x:Key="SystemMediaControlEnabledTitle">Kontroliraj vanjske aplikacije</system:String>
+    <system:String x:Key="SystemSettingsTitle">Sustav</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">Koliko glasno zvuk treba biti da stupci dosegnu maksimalnu visinu</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">Prag vršne razine zvuka</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">Koliko glasno zvuk treba biti prije nego što se stupci počnu pomicati</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">Osjetljivost zvuka</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountDescription">Broj stupaca vizualizatora</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountTitle">Broj stupaca</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineDescription">Prikazuje tanku liniju kada su razine zvuka na nuli</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineTitle">Prikaži osnovnu liniju</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">Stupci koji se simetrično šire iz sredine umjesto dizanja s dna</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">Centrirani stupci</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableDescription">Klik na vizualizator otvorit će njegovu stranicu postavki</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableTitle">Klikni za otvaranje postavki</system:String>
+    <system:String x:Key="TaskbarVisualizerDescription">Live audio vizualizator na vašem taskbaru. Dizajniran za minimalan utjecaj na performanse.</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledDescription">Eksperimentalno: Radi samo ako je omogućen Taskbar widget</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledTitle">Omogući Taskbar vizualizator (Eksperimentalno)</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">Promijenite što vizualizator sluša promjenom izlaznog uređaja za FluentFlyout.</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">Izlazni uređaj</system:String>
+    <system:String x:Key="TaskbarVisualizerPositionTitle">Pozicija vizualizatora u odnosu na Taskbar widget</system:String>
+    <system:String x:Key="TaskbarVisualizerTitle">Taskbar vizualizator</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedDescription">Omogući suptilne animacije za widget</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedTitle">Animacije widgeta</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideDescription">Automatski sakrij widget kada su mediji pauzirani</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideTitle">Automatski sakrij widget</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Dodaj efekt zamućenja pozadine za Taskbar widget</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Zamućenje pozadine</system:String>
+    <system:String x:Key="TaskbarWidgetClickableDescription">Klik na widget otvorit će puni medijski skočni prozor</system:String>
+    <system:String x:Key="TaskbarWidgetClickableTitle">Klikni za otvaranje medijskog skočnog prozora</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutDescription">Zatvara skočni prozor ako je već otvoren pri kliku na widget</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutTitle">Dvoklik za zatvaranje skočnog prozora</system:String>
+    <system:String x:Key="TaskbarWidgetControlsDescription">Prikaži gumbe za medijsku kontrolu na widgetu</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionDescription">Odaberite gdje će se prikazivati gumbi za medijsku kontrolu</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionTitle">Pozicija medijskih kontrola</system:String>
+    <system:String x:Key="TaskbarWidgetControlsTitle">Medijske kontrole widgeta</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationPerk">Taskbar Widget &amp; Vizualizator</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationTitle">Taskbar widget</system:String>
+    <system:String x:Key="TaskbarWidgetDescription">Kompaktni widget integriran izravno u Windows taskbar za trenutačni pristup vašim medijima.</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledDescription">Prikaži kompaktni medijski widget u taskbaru</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledTitle">Omogući Taskbar widget</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">Potpuno sakrij widget kada mediji nisu dostupni</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Potpuno sakrij bez medija</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Dodaj dodatni razmak (zadano: 0px)</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Prilagođeni razmak</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingDescription">Uključite ovo ako imate omogućen "Windows Widgets" gumb</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Podesite razmak oko widgeta kako bi odgovarao vašem stilu taskbara</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Postavke razmaka widgeta</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingTitle">Automatski razmak gumba Windows Widgets</system:String>
+    <system:String x:Key="TaskbarWidgetPosition">Pozicija widgeta</system:String>
+    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Ciljni zaslon widgeta</system:String>
+    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Konfigurirajte donje opcije ako imate vizualnih problema.</system:String>
+    <system:String x:Key="TextBlockText1">Omogući medijski skočni prozor</system:String>
+    <system:String x:Key="TextBlockText2">Odaberite između modernih stilova zamućenja pozadine</system:String>
+    <system:String x:Key="TextBlockText3">Prikazuje skočni prozor pri pritisku na medijsku tipku</system:String>
+    <system:String x:Key="TitleText">FluentFlyout Postavke</system:String>
+    <system:String x:Key="TranslatorsTitle">Prevoditelji</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorDescription">Odaberite što se događa pri lijevom kliku na ikonu u sistemskoj traci</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorTitle">Ponašanje lijevog klika na ikonu sistemske trake</system:String>
+    <system:String x:Key="TrayIconLeftClickOption1"> Otvori postavke</system:String>
+    <system:String x:Key="TrayIconLeftClickOption2"> Prikaži medijski skočni prozor</system:String>
+    <system:String x:Key="TrayIconSectionTitle">Ikona u sistemskoj traci</system:String>
+    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repozitorij</system:String>
+    <system:String x:Key="TrayIcon_QuitOption">Izađi iz FluentFlyout-a</system:String>
+    <system:String x:Key="TrayIcon_ReportBugOption">Prijavi pogrešku</system:String>
+    <system:String x:Key="TrayIcon_SettingsOption">Postavke</system:String>
+    <system:String x:Key="TrayIcon_ViewLogsOption">Vidi zapisnike</system:String>
+    <system:String x:Key="UnlockFullExperienceText">Otključajte potpuno FluentFlyout iskustvo:</system:String>
+    <system:String x:Key="UnlockPremiumButton">Otključaj Premium</system:String>
+    <system:String x:Key="UnsupportedControlsWarning">*Neki preglednici/playeri ne podržavaju kontrole ponavljanja, nasumične reprodukcije i trake napretka.</system:String>
+    <system:String x:Key="UpToDate">Ažurno</system:String>
+    <system:String x:Key="UpdateAvailable">Ažuriranje dostupno</system:String>
+    <system:String x:Key="UpdateAvailableNotificationButton">Preuzmi ažuriranje</system:String>
+    <system:String x:Key="UpdateAvailableNotificationMessage">Nova verzija ({0}) je dostupna za preuzimanje.</system:String>
+    <system:String x:Key="UpdateAvailableNotificationTitle">Ažuriranje dostupno!</system:String>
+    <system:String x:Key="UpdateToastButton">Vidi ažuriranja</system:String>
+    <system:String x:Key="UpdateToastMessage">Trenutno koristite verziju {0}.</system:String>
+    <system:String x:Key="UpdateToastTitle">FluentFlyout je ažuriran!</system:String>
+    <system:String x:Key="UpdatesSectionTitle">Ažuriranja</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorDescription">Neki UI elementi koristit će boje omota albuma umjesto sistemske teme</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorTitle">Koristi omot albuma za istaknutu boju</system:String>
+    <system:String x:Key="Win11TrayIconDescription">Koristi ikonu sistemske trake koja odgovara Windows 11 stilu (promijenite za osvježavanje teme)</system:String>
+    <system:String x:Key="Win11TrayIconTitle">Ikona sistemske trake u Windows 11 stilu</system:String>
+    
+    <!-- New Keys -->
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Monitor za kalibraciju zvuka</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Vizualizirajte ulaznu razinu i podesite točke rezanja u stvarnom vremenu</system:String>
+    <system:String x:Key="TaskbarVisualizer_Silence">Tišina</system:String>
+    <system:String x:Key="TaskbarVisualizer_Max">Maksimum</system:String>
+    <system:String x:Key="TaskbarVisualizer_StartPoint">Početna točka (Osjetljivost)</system:String>
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Prag vrha (Peak)</system:String>
+    <system:String x:Key="Edit_LrcFilter">LRC datoteke (*.lrc)|*.lrc|Tekstualne datoteke (*.txt)|*.txt|Sve datoteke|*.*</system:String>
+    <system:String x:Key="Error_FailedSetStartup">Postavljanje pri pokretanju sustava nije uspjelo</system:String>
 </ResourceDictionary>

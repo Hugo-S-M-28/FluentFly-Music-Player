@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF;
 using FluentFlyoutWPF.Classes;
@@ -19,7 +16,7 @@ namespace FluentFlyout.Controls;
 public partial class TaskbarVisualizerControl : UserControl
 {
     // reference to main window for flyout functions
-    private static readonly Visualizer visualizer = new();
+    private static Visualizer visualizer => Visualizer.Instance;
 
     public TaskbarVisualizerControl()
     {
@@ -47,14 +44,11 @@ public partial class TaskbarVisualizerControl : UserControl
 
     public static void OnTaskbarVisualizerEnabledChanged(bool value)
     {
-        if (visualizer == null)
-            return;
-
         if (value)
         {
             visualizer.Start();
         }
-        else
+        else if (!visualizer.ShouldBeRunning)
         {
             visualizer.Stop();
         }
@@ -62,9 +56,6 @@ public partial class TaskbarVisualizerControl : UserControl
 
     public static void DisposeVisualizer()
     {
-        if (visualizer == null)
-            return;
-
         visualizer.Dispose();
     }
 

@@ -7,20 +7,27 @@
         xmlns:controls="clr-namespace:FluentFlyout.Controls"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="TaskbarWindow" Height="40" Width="100"
+        Title="TaskbarWindow"
+        Height="40"
+        Width="100"
         WindowStyle="None"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         AllowsTransparency="True"
         Background="Transparent"
-        TextOptions.TextRenderingMode="ClearType" TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        TextOptions.TextFormattingMode="Ideal"
         FontFamily="{Binding FontFamily}"
         FlowDirection="{Binding FlowDirection}"
-        Loaded="Window_Loaded" Visibility="Collapsed" d:Visibility="Visible"
+        Loaded="Window_Loaded"
+        Visibility="Collapsed"
+        d:Visibility="Visible"
         xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
-		d:DataContext="{d:DesignInstance viewModels:UserSettings}">
-    <Canvas Name="WidgetCanvas" Background="Transparent">
-		<controls:TaskbarVisualizerControl x:Name="TaskbarVisualizer" Margin="0,1,0,0" />
-        <controls:TaskbarWidgetControl x:Name="Widget" />
+        d:DataContext="{d:DesignInstance viewModels:UserSettings}">
+    <Canvas Name="WidgetCanvas"
+            Background="Transparent">
+        <controls:TaskbarVisualizerControl x:Name="TaskbarVisualizer"
+                                           Margin="0,1,0,0"/>
+        <controls:TaskbarWidgetControl x:Name="Widget"/>
     </Canvas>
 </Window>

@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using Microsoft.Win32;
@@ -17,28 +14,55 @@ namespace FluentFlyoutWPF.Classes
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public static int BarCount = 10;
+        private static Visualizer? _instance;
+        public static Visualizer Instance => _instance ??= new Visualizer();
+
+        public int BarCount { get; private set; } = 10;
         private readonly int ImageWidth = 76 * 3;
         private readonly int ImageHeight = 32 * 3;
         private readonly int BarSpacing = 2 * 3;
 
         private WasapiLoopbackCapture? _capture;
         private MMDevice? _renderDevice;
-        private static float[]? _barValues;
+        private float[]? _barValues;
         private WriteableBitmap? _bitmap;
         private bool _isRunning;
         private readonly object _lock = new();
 
-        private readonly int _fftLength = 4096;
+        private int _clientCount = 0;
+
+        public void AddClient()
+        {
+            lock (_lock)
+            {
+                _clientCount++;
+            }
+            if (ShouldBeRunning) Start();
+        }
+
+        public void RemoveClient()
+        {
+            lock (_lock)
+            {
+                _clientCount--;
+                if (_clientCount < 0) _clientCount = 0;
+            }
+            if (!ShouldBeRunning) Stop();
+        }
+
+        public bool ShouldBeRunning => SettingsManager.Current.TaskbarVisualizerEnabled || _clientCount > 0;
+
+        private readonly int _fftLength = 1024;
         private int _fftPos = 0;
         private readonly Complex[] _fftBuffer;
 
-        private readonly int _targetFps = 30;
+        private readonly int _targetFps = 60;
         private DateTime _lastUpdateTime = DateTime.MinValue;
 
         private System.Timers.Timer? _captureWatchdog;
         private DateTime _lastDataAvailableUtc = DateTime.MinValue;
         private int _restartInProgress; // 0=false, 1=true (Interlocked)
+        private readonly object _barValuesLock = new(); // Lock for thread-safe access to _barValues
 
         private readonly struct BarGeometry
         {
@@ -76,7 +100,7 @@ namespace FluentFlyoutWPF.Classes
 
             _fftBuffer = new Complex[_fftLength];
 
-            ResizeBarList(SettingsManager.Current.TaskbarVisualizerBarCount);
+            SetBarCountInternal(SettingsManager.Current.TaskbarVisualizerBarCount);
             AudioDeviceMonitor.Instance.DefaultDeviceChanged += OnDefaultDeviceChanged;
             TryRegisterSystemEvents();
         }
@@ -110,7 +134,7 @@ namespace FluentFlyoutWPF.Classes
 
         private void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
         {
-            if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+            if (!ShouldBeRunning)
                 return;
 
             // When unlocking after device disconnect (e.g. Bluetooth earbuds), WASAPI loopback can get stuck.
@@ -123,7 +147,7 @@ namespace FluentFlyoutWPF.Classes
 
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
-            if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+            if (!ShouldBeRunning)
                 return;
 
             if (e.Mode == PowerModes.Resume)
@@ -150,14 +174,14 @@ namespace FluentFlyoutWPF.Classes
 
             // Even if capture isn't currently running (e.g. restart attempt failed while the device was reconfiguring),
             // we still want to try restarting as soon as Windows reports a usable default endpoint again.
-            if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+            if (!ShouldBeRunning)
                 return;
             RequestRestart("default audio output device changed");
         }
 
         private void RequestRestart(string reason)
         {
-            if (!SettingsManager.Current.TaskbarVisualizerEnabled)
+            if (!ShouldBeRunning)
                 return;
 
             if (Interlocked.Exchange(ref _restartInProgress, 1) == 1)
@@ -192,6 +216,11 @@ namespace FluentFlyoutWPF.Classes
         }
 
         public static void ResizeBarList(int newBarCount)
+        {
+            Instance.SetBarCountInternal(newBarCount);
+        }
+
+        private void SetBarCountInternal(int newBarCount)
         {
             BarCount = newBarCount;
             _barValues = new float[BarCount];
@@ -234,9 +263,15 @@ namespace FluentFlyoutWPF.Classes
                 {
                     if (_isRunning)
                     {
-                        for (int i = 0; i < _barValues.Length; i++)
+                        lock (_barValuesLock)
                         {
-                            _barValues[i] = 0;
+                            if (_barValues != null)
+                            {
+                                for (int i = 0; i < _barValues.Length; i++)
+                                {
+                                    _barValues[i] = 0;
+                                }
+                            }
                         }
                         UpdateBitmap();
 
@@ -287,22 +322,26 @@ namespace FluentFlyoutWPF.Classes
 
             _lastDataAvailableUtc = DateTime.UtcNow;
 
-            _captureWatchdog.Stop();
-            _captureWatchdog.Start();
+            _captureWatchdog?.Stop();
+            _captureWatchdog?.Start();
 
             int bytesPerSample = _capture!.WaveFormat.BitsPerSample / 8;
             int samplesRecorded = e.BytesRecorded / bytesPerSample;
+            bool ignoreAudio = !SettingsManager.Current.SystemMediaControlEnabled && !MusicPlayerService.Instance.IsPlaying;
 
             for (int i = 0; i < samplesRecorded; i++)
             {
                 float sampleValue = 0;
-                if (bytesPerSample == 4)
+                if (!ignoreAudio)
                 {
-                    sampleValue = BitConverter.ToSingle(e.Buffer, i * 4);
-                }
-                else if (bytesPerSample == 2)
-                {
-                    sampleValue = BitConverter.ToInt16(e.Buffer, i * 2) / 32768f;
+                    if (bytesPerSample == 4)
+                    {
+                        sampleValue = BitConverter.ToSingle(e.Buffer, i * 4);
+                    }
+                    else if (bytesPerSample == 2)
+                    {
+                        sampleValue = BitConverter.ToInt16(e.Buffer, i * 2) / 32768f;
+                    }
                 }
 
                 _fftBuffer[_fftPos].X = (float)(sampleValue * FastFourierTransform.HammingWindow(_fftPos, _fftLength));
@@ -339,7 +378,7 @@ namespace FluentFlyoutWPF.Classes
                 bool allZero = true;
                 for (int j = 0; j < BarCount; j++)
                 {
-                    if (_barValues[j] > 0.01f)
+                    if (_barValues != null && _barValues[j] > 0.01f)
                     {
                         allZero = false;
                         break;
@@ -358,17 +397,20 @@ namespace FluentFlyoutWPF.Classes
         {
             FastFourierTransform.FFT(true, (int)Math.Log(_fftLength, 2.0), _fftBuffer);
 
-            int sampleRate = _capture.WaveFormat.SampleRate;
+            int sampleRate = _capture?.WaveFormat.SampleRate ?? 44100;
             double frequencyPerBin = (double)sampleRate / _fftLength;
 
             double minFreq = 40;   // Hz
             double maxFreq = 8000; // Hz
             //double minFreq = 40;  // Hz // could be a setting to be bass only
             //double maxFreq = 120; // Hz
-            float minDb = (SettingsManager.Current.TaskbarVisualizerAudioSensitivity * -10f) - 30f;
-            float maxDb = (SettingsManager.Current.TaskbarVisualizerAudioPeakLevel * 10f) - 30f;
+            float minDb = -30f - (SettingsManager.Current.TaskbarVisualizerAudioSensitivity * 5f);
+            float maxDb = -45f + (SettingsManager.Current.TaskbarVisualizerAudioPeakLevel * 5f);
+
+            if (minDb >= maxDb) minDb = maxDb - 3;
 
             float[] currentBars = new float[BarCount];
+            float maxDbDetected = -100f;
 
             for (int i = 0; i < BarCount; i++)
             {
@@ -398,6 +440,7 @@ namespace FluentFlyoutWPF.Classes
                 if (maxAmplitude < 0.001f) maxAmplitude = 0.001f;
 
                 float db = 20f * (float)Math.Log10(maxAmplitude);
+                if (db > maxDbDetected) maxDbDetected = db;
 
                 float intensity = (db - minDb) / (maxDb - minDb);
                 intensity = Math.Clamp(intensity, 0f, 1f);
@@ -405,20 +448,27 @@ namespace FluentFlyoutWPF.Classes
                 currentBars[i] = intensity;
             }
 
-            for (int i = 0; i < BarCount; i++)
+            // Update UI level meter (Map -80dB..10dB to 0..100)
+            float level = (maxDbDetected + 80f) / 90f * 100f;
+            SettingsManager.Current.TaskbarVisualizerCurrentLevel = Math.Clamp(level, 0, 100);
+
+            if (_barValues != null)
             {
-                if (currentBars[i] > _barValues[i])
+                lock (_barValuesLock)
                 {
-                    // Jump up quickly
-                    _barValues[i] = currentBars[i];
-                }
-                else
-                {
-                    // Fall down slowly
-                    //_barValues[i] = (_barValues[i] * 0.9f) + (currentBars[i] * 0.1f);
-                    _barValues[i] = (_barValues[i] * 0.8f) + (currentBars[i] * 0.2f);
-                    //_barValues[i] = (_barValues[i] * 0.7f) + (currentBars[i] * 0.3f); // could be options for smoothening
-                    //_barValues[i] = (_barValues[i] * 0.6f) + (currentBars[i] * 0.4f);
+                    for (int i = 0; i < BarCount; i++)
+                    {
+                        if (currentBars[i] > _barValues[i])
+                        {
+                            // Jump up quickly
+                            _barValues[i] = currentBars[i];
+                        }
+                        else
+                        {
+                            // Fall down slowly
+                            _barValues[i] = (_barValues[i] * 0.92f) + (currentBars[i] * 0.08f);
+                        }
+                    }
                 }
             }
         }
@@ -494,7 +544,14 @@ namespace FluentFlyoutWPF.Classes
             {
                 int barX = offsetX + i * (barWidth + BarSpacing);
 
-                int barHeight = GetBarHeight(_barValues[i], barBaseline);
+                float val = 0f;
+                lock (_barValuesLock)
+                {
+                    if (_barValues != null && i < _barValues.Length)
+                        val = _barValues[i];
+                }
+
+                int barHeight = GetBarHeight(val, barBaseline);
 
                 if (barHeight <= 0)
                     continue;

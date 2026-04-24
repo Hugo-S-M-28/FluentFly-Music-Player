@@ -8,11 +8,17 @@
     xmlns:pages="clr-namespace:FluentFlyoutWPF.Pages"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d"
-    Height="700" MinHeight="300" MinWidth="750" Width="900"
-    Title="FluentFlyout" Icon="/Resources/FluentFlyout2.ico"
-    TextOptions.TextRenderingMode="ClearType" TextOptions.TextFormattingMode="Ideal"
+    Height="750"
+    MinHeight="500"
+    MinWidth="800"
+    Width="1000"
+    WindowStartupLocation="CenterScreen"
+    Title="FluentFlyout"
+    Icon="/Resources/FluentFlyout2.ico"
+    TextOptions.TextRenderingMode="ClearType"
+    TextOptions.TextFormattingMode="Ideal"
     FontFamily="{Binding FontFamily}"
-	FlowDirection="{Binding FlowDirection}"
+    FlowDirection="{Binding FlowDirection}"
     Closing="SettingsWindow_Closing"
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
     d:DataContext="{d:DesignInstance viewModels:UserSettings}"
@@ -22,37 +28,55 @@
     WindowBackdropType="Mica"
     Loaded="SettingsWindow_Loaded">
 
-	<Grid>
-		<ui:NavigationView x:Name="RootNavigation"
+    <Grid>
+        <ui:NavigationView x:Name="RootNavigation"
                            PaneDisplayMode="Left"
                            TransitionDuration="300"
                            IsPaneToggleVisible="true"
                            Margin="0, 40, 0, 0"
-						   FrameMargin="0, 0, 0, 0"
+                           FrameMargin="0, 0, 0, 0"
                            OpenPaneLength="250"
                            IsTopSeparatorVisible="false"
                            IsFooterSeparatorVisible="false">
-			<ui:NavigationView.MenuItems>
-				<ui:NavigationViewItem Content="{DynamicResource HomeTitle}" Icon="{ui:SymbolIcon Home24}" TargetPageType="{x:Type pages:HomePage}" />
-				<ui:NavigationViewItem Content="{DynamicResource MediaFlyoutTitle}" Icon="{ui:SymbolIcon VideoPlayPause24}" TargetPageType="{x:Type pages:MediaFlyoutPage}" />
-				<ui:NavigationViewItem Content="{DynamicResource TaskbarWidgetCustomizationTitle}" Icon="{ui:SymbolIcon TextboxAlignBottom24}" TargetPageType="{x:Type pages:TaskbarWidgetPage}" />
-				<ui:NavigationViewItem Content="{DynamicResource NextUpCustomizationTitle}" Icon="{ui:SymbolIcon MusicNote2Play20}" TargetPageType="{x:Type pages:NextUpPage}" />
-				<ui:NavigationViewItem Content="{DynamicResource LockKeysCustomizationTitle}" Icon="{ui:SymbolIcon LockMultiple24}" TargetPageType="{x:Type pages:LockKeysPage}" />
-				<ui:NavigationViewItem Content="{DynamicResource TaskbarVisualizerTitle}" Icon="{ui:SymbolIcon SoundWaveCircle24}" TargetPageType="{x:Type pages:TaskbarVisualizerPage}" />
-				<ui:NavigationViewItem Content="{DynamicResource SystemSettingsTitle}" Icon="{ui:SymbolIcon Settings24}" TargetPageType="{x:Type pages:SystemPage}" />
-			</ui:NavigationView.MenuItems>
-			<ui:NavigationView.FooterMenuItems>
-				<ui:NavigationViewItem Content="{DynamicResource AboutTitle}" Icon="{ui:SymbolIcon Info24}" TargetPageType="{x:Type pages:AboutPage}" />
-			</ui:NavigationView.FooterMenuItems>
-		</ui:NavigationView>
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="{DynamicResource Lib_Title}"
+                                       Icon="{ui:SymbolIcon Library24}"
+                                       TargetPageType="{x:Type pages:LibraryPage}"
+                                       Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                <ui:NavigationViewItem Content="{DynamicResource HomeTitle}"
+                                       Icon="{ui:SymbolIcon Home24}"
+                                       TargetPageType="{x:Type pages:HomePage}"
+                                       Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                <ui:NavigationViewItem Content="{DynamicResource MediaFlyoutTitle}"
+                                       Icon="{ui:SymbolIcon VideoPlayPause24}"
+                                       TargetPageType="{x:Type pages:MediaFlyoutPage}"/>
+                <ui:NavigationViewItem Content="{DynamicResource TaskbarWidgetCustomizationTitle}"
+                                       Icon="{ui:SymbolIcon TextboxAlignBottom24}"
+                                       TargetPageType="{x:Type pages:TaskbarWidgetPage}"/>
+                <ui:NavigationViewItem Content="{DynamicResource NextUpCustomizationTitle}"
+                                       Icon="{ui:SymbolIcon MusicNote2Play20}"
+                                       TargetPageType="{x:Type pages:NextUpPage}"/>
+                <ui:NavigationViewItem Content="{DynamicResource LockKeysCustomizationTitle}"
+                                       Icon="{ui:SymbolIcon LockMultiple24}"
+                                       TargetPageType="{x:Type pages:LockKeysPage}"/>
+                <ui:NavigationViewItem Content="{DynamicResource TaskbarVisualizerTitle}"
+                                       Icon="{ui:SymbolIcon SoundWaveCircle24}"
+                                       TargetPageType="{x:Type pages:TaskbarVisualizerPage}"/>
+                <ui:NavigationViewItem Content="{DynamicResource SystemSettingsTitle}"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       TargetPageType="{x:Type pages:SystemPage}"/>
+            </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
 
-		<ui:TitleBar
+        <ui:TitleBar
             x:Name="TitleBar"
             Title="FluentFlyout"
             Grid.Row="0">
-			<ui:TitleBar.Icon>
-				<ui:ImageIcon Source="/Resources/FluentFlyout2.ico" />
-			</ui:TitleBar.Icon>
-		</ui:TitleBar>
-	</Grid>
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="/Resources/FluentFlyout2.ico"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+    </Grid>
 </ui:FluentWindow>

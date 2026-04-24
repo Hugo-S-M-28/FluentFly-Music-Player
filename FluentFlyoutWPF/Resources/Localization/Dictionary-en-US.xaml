@@ -64,8 +64,6 @@ hides repeat, shuffle and player info</System:String>
     <System:String x:Key="TaskbarWidgetHideCompletelyDescription">Hides the entire widget when no media is available, instead of displaying a media icon</System:String>
     <System:String x:Key="TaskbarWidgetAutoHideTitle">Autohide Widget</System:String>
     <System:String x:Key="TaskbarWidgetAutoHideDescription">Hides the widget automatically when media is paused</System:String>
-    <System:String x:Key="TaskbarWidgetShowPauseOverlayTitle">Show Pause Icon Overlay</System:String>
-    <System:String x:Key="TaskbarWidgetShowPauseOverlayDescription">When media is paused, display a pause icon over the album art</System:String>
     <System:String x:Key="TaskbarWidgetControlsTitle">Widget Media Controls</System:String>
     <System:String x:Key="TaskbarWidgetControlsDescription">Show media control buttons on the widget</System:String>
     <System:String x:Key="TaskbarWidgetControlsPositionTitle">Media Controls Position</System:String>
@@ -201,6 +199,7 @@ You can help contribute translations on</System:String>
     <System:String x:Key="TrayIcon_SettingsOption">Settings</System:String>
     <System:String x:Key="TrayIcon_GitHubRepositoryOption">Repository</System:String>
     <System:String x:Key="TrayIcon_ViewLogsOption">View logs</System:String>
+    <System:String x:Key="ViewLogsDescription">Open the folder containing the application log files</System:String>
     <System:String x:Key="TrayIcon_ReportBugOption">Report bug</System:String>
     <System:String x:Key="TrayIcon_QuitOption">Quit FluentFlyout</System:String>
     <System:String x:Key="PixelsUnit">px</System:String>
@@ -231,4 +230,139 @@ You can help contribute translations on</System:String>
     <System:String x:Key="AdvancedSettingsTitle">Advanced Settings</System:String>
     <System:String x:Key="LegacyTaskbarWidthTitle">Legacy Taskbar Width System</System:String>
     <System:String x:Key="LegacyTaskbarWidthDescription">Use the legacy Taskbar width system for Taskbar Widgets</System:String>
+
+    <!-- Internal Music Player -->
+    <System:String x:Key="InternalMusicPlayerSectionTitle">Internal Music Player</System:String>
+    <System:String x:Key="InternalPlayerEnabledTitle">Enable Internal Music Player</System:String>
+    <System:String x:Key="InternalPlayerEnabledDescription">Use FluentFlyout as a standalone local music player for your library</System:String>
+    <System:String x:Key="ExternalMediaSectionTitle">External Media Integration</System:String>
+    <System:String x:Key="SystemMediaControlEnabledTitle">Control External Applications</System:String>
+    <System:String x:Key="SystemMediaControlEnabledDescription">Show and control media from other apps (Spotify, YouTube, Chrome, etc.)</System:String>
+
+    <!-- Library Page -->
+    <System:String x:Key="Lib_Title">Music Library</System:String>
+    <System:String x:Key="Lib_SearchPlaceholder">Search your collection...</System:String>
+    <System:String x:Key="Lib_SortBy">Sort by:</System:String>
+    <System:String x:Key="Lib_Sort_Title">Title (A-Z)</System:String>
+    <System:String x:Key="Lib_Sort_Artist">Artist</System:String>
+    <System:String x:Key="Lib_Sort_Album">Album</System:String>
+    <System:String x:Key="Lib_Sort_Duration">Duration</System:String>
+    <System:String x:Key="Lib_Sort_PlayCount">Most played</System:String>
+    <System:String x:Key="Lib_LyricsBadge">LYRICS</System:String>
+    <System:String x:Key="Lib_LyricsFilterTooltip">Show only songs with lyrics</System:String>
+    <System:String x:Key="Lib_ViewSettingsTooltip">View Settings</System:String>
+    <System:String x:Key="Lib_AppearanceTitle">Library Appearance</System:String>
+    <System:String x:Key="Lib_GridSizeTitle">Grid Size</System:String>
+    <System:String x:Key="Lib_GridSizeDescription">Grid Size (Albums)</System:String>
+    <System:String x:Key="Lib_IconSizeTitle">Icon Size</System:String>
+    <System:String x:Key="Lib_IconSizeDescription">Icon Size (List)</System:String>
+    <System:String x:Key="Lib_ResetAppearance">Reset appearance</System:String>
+    <System:String x:Key="Lib_SongsCountFormat">{0} songs</System:String>
+    <System:String x:Key="Lib_SortDirection">Change direction (↑/↓)</System:String>
+    <System:String x:Key="Lib_Folders">Folders</System:String>
+    <System:String x:Key="Lib_Songs">Songs</System:String>
+    <System:String x:Key="Lib_Albums">Albums</System:String>
+    <System:String x:Key="Lib_Artists">Artists</System:String>
+    <System:String x:Key="Lib_PlayAll">Play all</System:String>
+    <System:String x:Key="Lib_Shuffle">Shuffle</System:String>
+    <System:String x:Key="Lib_ToggleList">Show/hide list</System:String>
+    <System:String x:Key="Lib_ContextMenu_Play">Play</System:String>
+    <System:String x:Key="Lib_ContextMenu_AddToQueue">Add to queue</System:String>
+    <System:String x:Key="Lib_ContextMenu_Edit">Edit info</System:String>
+    <System:String x:Key="Lib_ContextMenu_OpenFileLocation">Open file location</System:String>
+
+    <!-- Edit Track Window -->
+    <System:String x:Key="Edit_WindowTitle">Edit Track Info</System:String>
+    <System:String x:Key="Edit_ChangeArtTooltip">Click to change cover art</System:String>
+    <System:String x:Key="Edit_ChangeArtOverlay">Change</System:String>
+    <System:String x:Key="Edit_HeaderSummary">Edit metadata</System:String>
+    <System:String x:Key="Edit_FileInfoSection">Music file information</System:String>
+    <System:String x:Key="Edit_TitleLabel">Song title</System:String>
+    <System:String x:Key="Edit_TitlePlaceholder">Enter title</System:String>
+    <System:String x:Key="Edit_ArtistLabel">Artist</System:String>
+    <System:String x:Key="Edit_ArtistPlaceholder">Artist name</System:String>
+    <System:String x:Key="Edit_CollaboratorsLabel">Collaborators</System:String>
+    <System:String x:Key="Edit_CollaboratorsPlaceholder">Guest artists (separated by ;)</System:String>
+    <System:String x:Key="Edit_AlbumLabel">Album</System:String>
+    <System:String x:Key="Edit_AlbumPlaceholder">Album name</System:String>
+    <System:String x:Key="Edit_TrackNumberLabel">Track #</System:String>
+    <System:String x:Key="Edit_GenreLabel">Genre</System:String>
+    <System:String x:Key="Edit_GenrePlaceholder">Pop, Rock, etc.</System:String>
+    <System:String x:Key="Edit_InfoNote">Changes will be permanently saved to the original audio file.</System:String>
+    <System:String x:Key="Edit_OpenLocation">Open location</System:String>
+    <System:String x:Key="Edit_Cancel">Cancel</System:String>
+    <System:String x:Key="Edit_Save">Save changes</System:String>
+    <System:String x:Key="Edit_TabMetadata">Metadata</System:String>
+    <System:String x:Key="Edit_TabLyrics">Lyrics (.lrc)</System:String>
+    <System:String x:Key="Edit_LyricsFormatInfo">LRC Format</System:String>
+    <System:String x:Key="Edit_LyricsFormatMsg">Enter lyrics in [mm:ss.xx]Text format (Press F5 to insert current time).</System:String>
+    <System:String x:Key="Edit_SyncCurrentTime">Sync current time</System:String>
+    <System:String x:Key="Edit_SyncLyricsTip">Inserts the current player time at the cursor position.</System:String>
+    <System:String x:Key="Edit_LoadLrc">Load file</System:String>
+    <System:String x:Key="Edit_SelectLrcTitle">Select lyrics file</System:String>
+    <System:String x:Key="Edit_ShiftLyricsTitle">Sync Lyrics</System:String>
+    <System:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</System:String>
+    <System:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</System:String>
+    <System:String x:Key="Edit_ShiftLyricsTip">Shift all timestamps forward or backward</System:String>
+
+    <!-- Code-behind strings -->
+    <System:String x:Key="Lib_SelectFolderDescription">Select a folder to add to your music library</System:String>
+    <System:String x:Key="Edit_Untitled">Untitled</System:String>
+    <System:String x:Key="Edit_UnknownArtist">Unknown Artist</System:String>
+    <System:String x:Key="Edit_SelectArtTitle">Select cover image</System:String>
+    <System:String x:Key="Edit_ArtFilter">Images|*.jpg;*.jpeg;*.png;*.bmp;*.webp|All files|*.*</System:String>
+    <System:String x:Key="Edit_ErrorTitle">Error</System:String>
+    <System:String x:Key="Edit_SaveErrorMsg">Could not save changes. Make sure the file is not being used by another process.</System:String>
+    <System:String x:Key="Edit_Ok">OK</System:String>
+
+    <!-- Home Page / Player -->
+    <System:String x:Key="Home_Title">Music Player</System:String>
+    <System:String x:Key="Home_Shuffle">Shuffle</System:String>
+    <System:String x:Key="Home_Repeat">Repeat</System:String>
+    <System:String x:Key="Home_LyricsNotAvailable">Lyrics not available</System:String>
+    <System:String x:Key="Home_SelectSongToSeeLyrics">Select a song to see its lyrics</System:String>
+
+    <!-- General Player State -->
+    <System:String x:Key="Player_NoTrack">No track playing</System:String>
+    <System:String x:Key="Player_SelectTrackMsg">Select a track from the library</System:String>
+
+    <!-- Additional UI -->
+    <System:String x:Key="FeaturesLayoutSectionTitle">Features &amp; Layout</System:String>
+    <System:String x:Key="Playlist_Title">Playlist</System:String>
+
+    <!-- Equalizer -->
+    <System:String x:Key="Eq_Title">Equalizer</System:String>
+    <System:String x:Key="Eq_Presets">Presets</System:String>
+    <System:String x:Key="Eq_Enable">Enable Equalizer</System:String>
+    <System:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Lyrics here...</System:String>
+    <System:String x:Key="General_Loading">Loading...</System:String>
+    <System:String x:Key="General_Ok">OK</System:String>
+    <System:String x:Key="General_Yes">Yes</System:String>
+    <System:String x:Key="General_No">No</System:String>
+    <System:String x:Key="General_Open">Open</System:String>
+    <System:String x:Key="Edit_LrcLoadError">Could not load the selected file.</System:String>
+    <System:String x:Key="LockWindow_Insert">Insert</System:String>
+    <System:String x:Key="Error_RestoreSettings">Failed to restore settings</System:String>
+
+    <!-- Library Appearance -->
+    <System:String x:Key="LibraryAppearanceSectionTitle">Library Appearance</System:String>
+    <System:String x:Key="LibraryGridSizeTitle">Grid Size</System:String>
+    <System:String x:Key="LibraryGridSizeDescription">Adjust the size of albums and artists (default: 160px)</System:String>
+    <System:String x:Key="LibraryTrackIconSizeTitle">Track Icon Size</System:String>
+    <System:String x:Key="LibraryTrackIconSizeDescription">Adjust the size of icons in the song list (default: 40px)</System:String>
+    <System:String x:Key="TaskbarVisualizer_CalibrationTitle">Audio Calibration Monitor</System:String>
+    <System:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualize the input level and adjust the cutoff points in real time</System:String>
+    <System:String x:Key="TaskbarVisualizer_Silence">Silence</System:String>
+    <System:String x:Key="TaskbarVisualizer_Max">Maximum</System:String>
+    <System:String x:Key="TaskbarVisualizer_StartPoint">Start Point (Sensitivity)</System:String>
+    <System:String x:Key="TaskbarVisualizer_PeakThreshold">Peak Threshold (Peak)</System:String>
+    <System:String x:Key="Edit_LrcFilter">LRC Files (*.lrc)|*.lrc|Text Files (*.txt)|*.txt|All Files (*.*)|*.*</System:String>
+    <System:String x:Key="Edit_AutoSyncTip">Auto-Sync: Analyze audio to align the first timestamp</System:String>
+    <System:String x:Key="Edit_AutoSyncNoTimestampsTitle">No Timestamps</System:String>
+    <System:String x:Key="Edit_AutoSyncNoTimestampsMsg">The lyrics don't have timestamps to synchronize.</System:String>
+    <System:String x:Key="Edit_AutoSyncAnalysisError">Could not analyze the audio file.</System:String>
+    <System:String x:Key="Edit_AutoSyncSuccessTitle">Synchronized</System:String>
+    <System:String x:Key="Edit_AutoSyncSuccessMsg">Lyrics shifted by {0:F1}s to match audio peaks.</System:String>
+    <System:String x:Key="Error_FailedSetStartup">Failed to set startup</System:String>
 </ResourceDictionary>
+

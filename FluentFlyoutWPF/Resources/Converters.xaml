@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils">
+
+    <!-- XAML utility resources -->
+    <utils:BoolToVisibleCollapsedConverter x:Key="BoolToVisibleCollapsedConverter"/>
+    <utils:BoolToVisibleCollapsedConverter x:Key="BoolToCollapsedVisibleConverter"
+                                           TrueValue="Collapsed"
+                                           FalseValue="Visible"/>
+    <utils:BoolToEnabledDisabledConverter x:Key="BoolToEnabledDisabledConverter"/>
+    <utils:BoolToFullHalfOpacityConverter x:Key="BoolToFullHalfOpacityConverter"/>
+    <utils:SensitivityToPercentageConverter x:Key="SensitivityToPercentageConverter"/>
+    <utils:PeakLevelToPercentageConverter x:Key="PeakLevelToPercentageConverter"/>
+    <utils:SensitivityToGridLengthConverter x:Key="SensitivityToGridLengthConverter"/>
+    <utils:PeakLevelToGridLengthConverter x:Key="PeakLevelToGridLengthConverter"/>
+
+</ResourceDictionary>

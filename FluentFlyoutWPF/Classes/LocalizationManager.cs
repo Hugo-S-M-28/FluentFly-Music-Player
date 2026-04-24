@@ -1,6 +1,3 @@
-﻿// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF;
@@ -79,7 +76,7 @@ public static class LocalizationManager
         }
 
         // extract only the language code (first two letters) from the culture
-        string languageCode = culture[..Math.Min(2, culture.Length)];
+        string languageCode = culture.Length >= 2 ? culture[..2] : culture;
         LanguageCode = languageCode;
 
         // get current localization
@@ -104,49 +101,52 @@ public static class LocalizationManager
         ApplyFontFamily(culture);
 
         // if English, the default (en-US) is already loaded, so no need to add another dictionary
-        if (languageCode == "en") return;
+        if (culture == "en-US" || (culture == "en" && languageCode == "en")) return;
 
-        // find the localization file path based on the first two letters of the language code
-        string? localizationDictPath = $"Resources/Localization/Dictionary-{culture}.xaml";
-
-        var uri = new Uri(localizationDictPath, UriKind.Relative);
-
-        try
+        // Try loading the full culture dictionary first (e.g., Dictionary-zh-TW.xaml)
+        string localizationDictPath = $"Resources/Localization/Dictionary-{culture}.xaml";
+        if (TryLoadDictionary(dictionaries, localizationDictPath))
         {
-            var resourceDict = new ResourceDictionary() { Source = uri };
-            dictionaries.Add(resourceDict);
+            Logger.Info("Successfully loaded localization for: " + culture);
+            goto PostLoad;
         }
-        catch (Exception)
+
+        // If not found, try the simplified language code (e.g., Dictionary-zh.xaml)
+        localizationDictPath = $"Resources/Localization/Dictionary-{languageCode}.xaml";
+        if (TryLoadDictionary(dictionaries, localizationDictPath))
         {
-            // localization file not found, try simplified language code instead
-
-            try
-            {
-                localizationDictPath = $"Resources/Localization/Dictionary-{languageCode}.xaml";
-                uri = new Uri(localizationDictPath, UriKind.Relative);
-
-                var resourceDict = new ResourceDictionary() { Source = uri };
-                dictionaries.Add(resourceDict);
-            }
-            catch
-            {
-                // do nothing and keep the default (en-US)
-                Logger.Warn("Localization file not found for language: " + culture);
-            }
+            Logger.Info("Successfully loaded localization for simplified code: " + languageCode);
+            goto PostLoad;
         }
+
+        // special cases for regional variants if base not found
+        if (languageCode == "zh")
+        {
+            // Default to CN if zh-TW not found and zh not found
+            TryLoadDictionary(dictionaries, "Resources/Localization/Dictionary-zh-CN.xaml");
+        }
+        else if (languageCode == "pt")
+        {
+            // Default to BR if pt-PT not found
+            TryLoadDictionary(dictionaries, "Resources/Localization/Dictionary-pt-BR.xaml");
+        }
+
+        Logger.Warn("Localization file not found for language: " + culture + ". Falling back to English.");
+
+    PostLoad:
 
         //Calculate the Lock Key Flyout text's Max Lenght
         List<double> Lengths = new List<double>();
 
-        Lengths.Add(StringWidth.GetStringWidth(Application.Current.TryFindResource("LockWindow_InsertPressed").ToString() ?? string.Empty));
+        Lengths.Add(StringWidth.GetStringWidth(Application.Current.TryFindResource("LockWindow_InsertPressed")?.ToString() ?? "Insert Pressed"));
 
         var On = Application.Current.TryFindResource("LockWindow_LockOn")?.ToString() ?? string.Empty;
         var Off = Application.Current.TryFindResource("LockWindow_LockOff")?.ToString() ?? string.Empty;
         var OnOffMax = On.Length >= Off.Length ? On + " " : Off + " ";
 
-        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + Application.Current.TryFindResource("LockWindow_CapsLock").ToString() ?? string.Empty));
-        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + Application.Current.TryFindResource("LockWindow_NumLock").ToString() ?? string.Empty));
-        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + Application.Current.TryFindResource("LockWindow_ScrollLock").ToString() ?? string.Empty));
+        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + (Application.Current.TryFindResource("LockWindow_CapsLock")?.ToString() ?? "Caps Lock")));
+        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + (Application.Current.TryFindResource("LockWindow_NumLock")?.ToString() ?? "Num Lock")));
+        Lengths.Add(StringWidth.GetStringWidth(OnOffMax + (Application.Current.TryFindResource("LockWindow_ScrollLock")?.ToString() ?? "Scroll Lock")));
 
         maxLength = Lengths.Max();
 
@@ -182,5 +182,20 @@ public static class LocalizationManager
         SettingsManager.Current.FontFamily = fontFamily;
 
         Logger.Debug("Applied font family: " + fontFamily);
+    }
+
+    private static bool TryLoadDictionary(System.Collections.ObjectModel.Collection<ResourceDictionary> dictionaries, string path)
+    {
+        try
+        {
+            var uri = new Uri(path, UriKind.Relative);
+            var resourceDict = new ResourceDictionary() { Source = uri };
+            dictionaries.Add(resourceDict);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
