@@ -1,7 +1,7 @@
 # FluentFlyout - Reproductor de Música Moderno
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg?logo=dotnet&logoColor=white)
-![FluentFlyout Header](logo-change.png)
+![FluentFlyout Banner](logo-change.png)
 
 ## 🎵 Descripción
 
@@ -11,6 +11,11 @@
 > Este proyecto es un fork de [unchihugo/FluentFlyout](https://github.com/unchihugo/FluentFlyout), con mejoras significativas en la arquitectura (MVVM completo), personalización y soporte para el reproductor interno.
 
 La aplicación no solo funciona como un reproductor interno, sino que también actúa como un controlador universal para cualquier sesión de medios activa en el sistema (Spotify, YouTube, Navegadores, etc.), proporcionando un "Flyout" elegante para gestionar tu música sin interrumpir tu flujo de trabajo.
+
+### Identidad Visual
+<p align="center">
+  <img src="logo-change.png" alt="FluentFlyout Logo" width="200"/>
+</p>
 
 ---
 
