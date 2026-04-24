@@ -63,7 +63,7 @@ Queremos dar todo el crédito al autor original por la idea innovadora y la base
 1. Clonar el repositorio:
 
    ```bash
-   git clone https://github.com/Hugo-S-M-28/Reproductor-Musica.git
+   git clone https://github.com/Hugo-S-M-28/FluentFly-Music-Player.git
    ```
 
 2. Abrir `FluentFlyout.sln` en Visual Studio 2022.
@@ -179,8 +179,8 @@ Sigue estos pasos para configurar el entorno de desarrollo:
 ### 1️⃣ Clonar el Repositorio
 
 ```bash
-git clone https://github.com/Hugo-S-M-28/Reproductor-Musica.git
-cd Reproductor-Musica
+git clone https://github.com/Hugo-S-M-28/FluentFly-Music-Player.git
+cd FluentFly-Music-Player
 ```
 
 ### 2️⃣ Restaurar Dependencias
