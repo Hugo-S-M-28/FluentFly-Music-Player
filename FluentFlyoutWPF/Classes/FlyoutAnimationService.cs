@@ -70,9 +70,6 @@ public static class FlyoutAnimationService
         var monitor = selectedMonitor != null ? selectedMonitor.Value : GetSelectedMonitor();
         var workArea = monitor.workArea;
 
-        // prevent flickering
-        WindowHelper.SetVisibility(window, false);
-
         // Update the DPI by moving the window to the target workArea, ignoring WPF scaling
         WindowHelper.SetPosition(window, workArea.Left, workArea.Top);
         var windowRect = WindowHelper.GetPlacement(window);
@@ -129,6 +126,7 @@ public static class FlyoutAnimationService
         WindowHelper.SetPosition(window, window_left, moveAnimation.From!.Value);
 
         double dpiScale = monitor.dpiY > 0 ? monitor.dpiY : 96.0;
+        window.Left = window_left * 96.0 / dpiScale;
         moveAnimation.From *= 96.0 / dpiScale;
         moveAnimation.To *= 96.0 / dpiScale;
 
@@ -154,7 +152,6 @@ public static class FlyoutAnimationService
         scaleYAnimation.EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseOut };
 
         storyboard.Begin(window);
-        WindowHelper.SetVisibility(window, true);
         WindowHelper.SetTopmost(window);
     }
 

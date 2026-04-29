@@ -202,4 +202,11 @@ public partial class SystemPage : Page
     {
         Classes.TrayIconService.Instance.OpenLogsFolder();
     }
+
+    private void ResetLibraryLayout_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsManager.Current.LibraryGridItemSize = 160.0;
+        SettingsManager.Current.LibraryTrackIconSize = 40.0;
+        SettingsManager.Current.LibraryItemCornerRadius = 12.0;
+    }
 }

@@ -1,4 +1,4 @@
-﻿using FluentFlyout.Classes.Settings;
+using FluentFlyout.Classes.Settings;
 using static FluentFlyout.Classes.NativeMethods;
 
 namespace FluentFlyoutWPF.Classes;
@@ -27,7 +27,9 @@ internal class FullscreenDetector
                 throw new Exception($"SHQueryUserNotificationState failed with error code: {result}");
             }
 
-            return state == QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN;
+            bool isFullscreen = state == QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN;
+            if (isFullscreen) Logger.Debug("Fullscreen application detected, flyout will be suppressed.");
+            return isFullscreen;
         }
         catch (Exception ex)
         {

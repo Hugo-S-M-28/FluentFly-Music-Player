@@ -19,9 +19,9 @@ public class LibraryManager : IDisposable
 
     public static LibraryManager Instance => _instance ??= new LibraryManager();
 
-    public ObservableCollection<TrackModel> Tracks { get; } = new();
-    public ObservableCollection<LibraryAlbum> Albums { get; } = new();
-    public ObservableCollection<LibraryArtist> Artists { get; } = new();
+    public BulkObservableCollection<TrackModel> Tracks { get; } = new();
+    public BulkObservableCollection<LibraryAlbum> Albums { get; } = new();
+    public BulkObservableCollection<LibraryArtist> Artists { get; } = new();
 
     public event EventHandler<TrackModel>? TrackMetadataUpdated;
     public event EventHandler<TrackModel>? TrackLyricsUpdated;
@@ -39,10 +39,18 @@ public class LibraryManager : IDisposable
     public async Task InitializeAsync()
     {
         if (!Directory.Exists(ArtCachePath)) Directory.CreateDirectory(ArtCachePath);
+        
+        // Load existing library from JSON first (very fast)
         await LoadLibraryAsync();
+        RebuildAlbumsAndArtists(); // Initial build from cache
+
         SetupWatchers();
-        await ScanLibraryAsync();
-        RebuildAlbumsAndArtists();
+
+        // Start disk scan in background without awaiting it to unblock UI
+        _ = Task.Run(async () => 
+        {
+            await ScanLibraryAsync();
+        });
     }
 
     private void SetupWatchers()
@@ -104,14 +112,10 @@ public class LibraryManager : IDisposable
                 var tracks = System.Text.Json.JsonSerializer.Deserialize<List<TrackModel>>(json);
                 if (tracks != null)
                 {
-                    Tracks.Clear();
-                    // Load tracks in a single dispatcher call if possible, or large batches
+                    // Load tracks in a single batch to minimize UI thread overhead
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        foreach (var track in tracks)
-                        {
-                            Tracks.Add(track);
-                        }
+                        Tracks.ReplaceAll(tracks);
                     });
                 }
             }
@@ -158,12 +162,14 @@ public class LibraryManager : IDisposable
             return;
         }
 
-        bool updated = false;
+        int updatedCount = 0;
         var existingPaths = new HashSet<string>(Tracks.Select(t => t.FilePath));
+        var folderList = folders.ToList();
 
-        foreach (var folder in folders)
+        // Parallelize scanning across multiple folders if there are several
+        var scanTasks = folderList.Select(async folder =>
         {
-            if (!Directory.Exists(folder)) continue;
+            if (!Directory.Exists(folder)) return;
 
             try
             {
@@ -179,17 +185,17 @@ public class LibraryManager : IDisposable
                     if (track != null)
                     {
                         newTracks.Add(track);
-                        updated = true;
+                        System.Threading.Interlocked.Increment(ref updatedCount);
                     }
                     
-                    // Add in batches of 20 to keep UI responsive but avoid too many notifications
-                    if (newTracks.Count >= 20)
+                    // Add in batches of 50 to keep UI responsive but avoid too many notifications
+                    if (newTracks.Count >= 50)
                     {
                         var batch = newTracks.ToList();
                         newTracks.Clear();
                         await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            foreach (var t in batch) Tracks.Add(t);
+                            Tracks.AddRange(batch);
                         });
                     }
                 }
@@ -198,7 +204,7 @@ public class LibraryManager : IDisposable
                 {
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        foreach (var t in newTracks) Tracks.Add(t);
+                        Tracks.AddRange(newTracks);
                     });
                 }
             }
@@ -206,20 +212,25 @@ public class LibraryManager : IDisposable
             {
                 Logger.Error(ex, $"Error scanning folder {folder}");
             }
-        }
+        });
+
+        await Task.WhenAll(scanTasks);
 
         // Remove tracks that no longer exist
         var tracksToRemove = Tracks.Where(t => !File.Exists(t.FilePath)).ToList();
-        foreach (var track in tracksToRemove)
+        if (tracksToRemove.Count > 0)
         {
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                Tracks.Remove(track);
+                foreach (var track in tracksToRemove)
+                {
+                    Tracks.Remove(track);
+                }
             });
-            updated = true;
+            System.Threading.Interlocked.Increment(ref updatedCount);
         }
-
-        if (updated)
+        
+        if (updatedCount > 0)
         {
             await SaveLibraryAsync();
             RebuildAlbumsAndArtists();
@@ -320,10 +331,19 @@ public class LibraryManager : IDisposable
                 wasPlaying = MusicPlayerService.Instance.IsPlaying;
                 lastPosition = MusicPlayerService.Instance.CurrentPosition;
                 MusicPlayerService.Instance.Stop();
+                // Give the system a moment to release the file handle
+                await Task.Delay(200);
             }
 
             await Task.Run(() =>
             {
+                // Ensure file is not read-only
+                var attributes = File.GetAttributes(track.FilePath);
+                if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                {
+                    File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
+                }
+
                 using var file = TagLib.File.Create(track.FilePath);
                 file.Tag.Title = newTitle;
                 
@@ -366,7 +386,25 @@ public class LibraryManager : IDisposable
                     };
                 }
 
-                file.Save();
+                // Retry loop for saving tags in case of transient locks
+                int attempts = 0;
+                while (true)
+                {
+                    try
+                    {
+                        file.Save();
+                        break;
+                    }
+                    catch (Exception ex) when (attempts < 3 && (ex is UnauthorizedAccessException || ex is IOException))
+                    {
+                        attempts++;
+                        System.Threading.Thread.Sleep(500);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
             });
 
             // Update model in memory
@@ -418,14 +456,51 @@ public class LibraryManager : IDisposable
 
     public async Task<bool> UpdateTrackLyricsAsync(TrackModel track, string lyricsText)
     {
+        bool wasPlaying = false;
+        TimeSpan lastPosition = TimeSpan.Zero;
+
         try
         {
+            // Release file lock if it's being played
+            if (MusicPlayerService.Instance.CurrentTrack?.FilePath == track.FilePath)
+            {
+                wasPlaying = MusicPlayerService.Instance.IsPlaying;
+                lastPosition = MusicPlayerService.Instance.CurrentPosition;
+                MusicPlayerService.Instance.Stop();
+                await Task.Delay(200);
+            }
+
             // 1. Save to internal tags
             await Task.Run(() =>
             {
+                // Ensure file is not read-only
+                var attributes = File.GetAttributes(track.FilePath);
+                if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                {
+                    File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
+                }
+
                 using var file = TagLib.File.Create(track.FilePath);
                 file.Tag.Lyrics = lyricsText;
-                file.Save();
+                
+                int attempts = 0;
+                while (true)
+                {
+                    try
+                    {
+                        file.Save();
+                        break;
+                    }
+                    catch (Exception ex) when (attempts < 3 && (ex is UnauthorizedAccessException || ex is IOException))
+                    {
+                        attempts++;
+                        System.Threading.Thread.Sleep(500);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
             });
 
             // 2. Save to external .lrc if it contains timestamps
@@ -437,7 +512,18 @@ public class LibraryManager : IDisposable
 
             track.Lyrics = lyricsText;
             track.HasLyrics = !string.IsNullOrWhiteSpace(lyricsText);
+            
+            // Re-save library and notify UI
+            await SaveLibraryAsync();
             TrackLyricsUpdated?.Invoke(this, track);
+
+            // Resume playback if it was playing
+            if (wasPlaying)
+            {
+                MusicPlayerService.Instance.Play(track);
+                MusicPlayerService.Instance.Seek(lastPosition);
+            }
+
             return true;
         }
         catch (Exception ex)
@@ -516,13 +602,11 @@ public class LibraryManager : IDisposable
         }
 
         // Update collections on UI thread once
+        // Update collections on UI thread in bulk
         System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
-            Albums.Clear();
-            foreach (var a in tempAlbums.OrderBy(x => x.Title)) Albums.Add(a);
-            
-            Artists.Clear();
-            foreach (var a in tempArtists.OrderBy(x => x.Name)) Artists.Add(a);
+            Albums.ReplaceAll(tempAlbums.OrderBy(x => x.Title));
+            Artists.ReplaceAll(tempArtists.OrderBy(x => x.Name));
         });
     }
 

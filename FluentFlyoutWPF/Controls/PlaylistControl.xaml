@@ -10,6 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="340">
     <UserControl.Resources>
         <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+        <local:IsCurrentTrackConverter x:Key="IsCurrentTrackConverter" xmlns:local="clr-namespace:FluentFlyoutWPF.Controls"/>
 
         <!-- Drop indicator line shown between items during drag -->
         <Style x:Key="DropIndicatorStyle" TargetType="Border">
@@ -19,24 +20,39 @@
             <Setter Property="Margin" Value="12,0"/>
             <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
+        
+        <BooleanToVisibilityConverter x:Key="BoolToVisibleCollapsedConverter"/>
     </UserControl.Resources>
     
     <ui:Card Padding="0" VerticalAlignment="Stretch" Background="{DynamicResource ControlFillColorDefaultBrush}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" Margin="16,16,16,12">
-                <ui:SymbolIcon Symbol="Collections24" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                <ui:TextBlock FontTypography="Subtitle" Text="{DynamicResource Playlist_Title}"/>
-            </StackPanel>
+            <Grid Margin="16,16,16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:SymbolIcon Symbol="Collections24" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Grid.Column="0"/>
+                <ui:TextBlock FontTypography="Subtitle" Text="{DynamicResource Playlist_Title}" Grid.Column="1" VerticalAlignment="Center"/>
+                <ui:Button Grid.Column="2" Appearance="Transparent" Padding="4" ToolTip="Limpiar Cola" Click="ClearQueue_Click">
+                    <ui:SymbolIcon Symbol="Delete24" FontSize="16" Opacity="0.8"/>
+                </ui:Button>
+            </Grid>
+            
+            <ui:TextBox x:Name="SearchBox" Grid.Row="1" Margin="12,0,12,8" PlaceholderText="Buscar en la cola..." TextChanged="SearchBox_TextChanged" Icon="Search24"/>
+
+
 
             <ListView x:Name="PlaylistListView"
-                      Grid.Row="1"
+                      Grid.Row="2"
                       MouseDoubleClick="PlaylistListView_MouseDoubleClick"
-                      SelectionMode="Single"
+                      SelectionMode="Extended"
                       Background="Transparent"
                       BorderThickness="0"
                       Padding="12,0,12,12"
@@ -61,7 +77,24 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:TrackModel}">
-                        <Grid Margin="0,4">
+                        <Grid Margin="0,4" Background="Transparent">
+                            <Grid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Reproducir siguiente" Click="PlayNext_Click">
+                                        <MenuItem.Icon><ui:SymbolIcon Symbol="Play24"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Quitar de la cola" Click="RemoveFromQueue_Click">
+                                        <MenuItem.Icon><ui:SymbolIcon Symbol="Delete24"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Ver información" Click="ViewInfo_Click">
+                                        <MenuItem.Icon><ui:SymbolIcon Symbol="Info24"/></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Abrir ubicación" Click="OpenLocation_Click">
+                                        <MenuItem.Icon><ui:SymbolIcon Symbol="Folder24"/></MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Grid.ContextMenu>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -70,18 +103,40 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Drag handle -->
-                            <ui:SymbolIcon Symbol="ReOrderDotsVertical24"
+                            <ui:SymbolIcon x:Name="DragHandle" Symbol="ReOrderDotsVertical24"
                                           FontSize="14"
-                                          Opacity="0.3"
+                                          Opacity="0"
                                           VerticalAlignment="Center"
                                           Margin="0,0,6,0"
                                           Cursor="SizeAll"/>
 
-                            <Border Grid.Column="1" CornerRadius="6" Width="40" Height="40" Margin="0,0,12,0">
-                                <Grid>
-                                    <ui:SymbolIcon Symbol="MusicNote124" Opacity="0.3" FontSize="20"/>
-                                    <Image Source="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=80, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
-                                </Grid>
+                            <Border Grid.Column="1" 
+                                    CornerRadius="10" 
+                                    Width="40" 
+                                    Height="40" 
+                                    Margin="0,0,12,0"
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}">
+                                <Border CornerRadius="10" ClipToBounds="True">
+                                    <Grid>
+                                        <ui:SymbolIcon Symbol="MusicNote124" Opacity="0.3" FontSize="20"/>
+                                        <Border CornerRadius="10" RenderOptions.BitmapScalingMode="HighQuality">
+                                            <Border.Background>
+                                                <ImageBrush ImageSource="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=80, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                            </Border.Background>
+                                        </Border>
+                                        
+                                        <!-- Playing Now Indicator -->
+                                        <Border Background="#80000000" CornerRadius="10">
+                                            <Border.Visibility>
+                                                <MultiBinding Converter="{StaticResource IsCurrentTrackConverter}">
+                                                    <Binding />
+                                                    <Binding Path="CurrentTrack" Source="{x:Static classes:MusicPlayerService.Instance}"/>
+                                                </MultiBinding>
+                                            </Border.Visibility>
+                                            <ui:SymbolIcon Symbol="Play24" Foreground="White" FontSize="20"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
                             </Border>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
@@ -89,12 +144,17 @@
                             </StackPanel>
                             <TextBlock Grid.Column="3" Text="{Binding Duration, StringFormat={}{0:mm\\:ss}}" Opacity="0.5" VerticalAlignment="Center"/>
                         </Grid>
+                        <DataTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DragHandle" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
             <!-- Drop indicator line (overlaid on the ListView) -->
-            <Canvas x:Name="DropIndicatorCanvas" Grid.Row="1" IsHitTestVisible="False">
+            <Canvas x:Name="DropIndicatorCanvas" Grid.Row="2" IsHitTestVisible="False">
                 <Border x:Name="DropIndicator"
                         Height="2"
                         Background="{DynamicResource AccentFillColorDefaultBrush}"
@@ -110,6 +170,23 @@
                     </Border.Effect>
                 </Border>
             </Canvas>
+
+            <!-- Empty State -->
+            <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Items.Count, ElementName=PlaylistListView}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <ui:SymbolIcon Symbol="MusicNote124" FontSize="48" Opacity="0.2" Margin="0,0,0,16"/>
+                <TextBlock Text="Tu cola está vacía" FontWeight="SemiBold" FontSize="16" TextAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Arrastra música aquí o añádela desde la biblioteca." TextAlignment="Center" Opacity="0.6" TextWrapping="Wrap"/>
+            </StackPanel>
         </Grid>
     </ui:Card>
 </UserControl>

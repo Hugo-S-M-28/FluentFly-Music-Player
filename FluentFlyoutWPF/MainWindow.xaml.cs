@@ -743,7 +743,7 @@ public partial class MainWindow : MicaWindow
     {
         long currentTime = Environment.TickCount64;
         // debounce to prevent hangs with rapid key presses
-        if ((currentTime - _lastFlyoutTime) < 500) // 500ms debounce time
+        if ((currentTime - _lastFlyoutTime) < 200) // Reduced from 500ms to 200ms
         {
             return false;
         }
@@ -757,8 +757,8 @@ public partial class MainWindow : MicaWindow
         // If in toggle mode and flyout is visible, close it
         if (toggleMode && Visibility == Visibility.Visible && !_isHiding)
         {
-            FlyoutAnimationService.CloseAnimation(this);
             _isHiding = true;
+            FlyoutAnimationService.CloseAnimation(this);
             cts.Cancel();
             await Task.Delay(FlyoutAnimationService.GetDuration());
             if (_isHiding)
@@ -778,9 +778,17 @@ public partial class MainWindow : MicaWindow
         if (focusedSession == null && !hasInternalTrack)
             return;
 
-        if ((!forceShow && !SettingsManager.Current.MediaFlyoutEnabled) ||
-            FullscreenDetector.IsFullscreenApplicationRunning())
+        if (!forceShow && !SettingsManager.Current.MediaFlyoutEnabled)
+        {
+            Logger.Debug("ShowMediaFlyout: Suppressed because MediaFlyoutEnabled is false.");
             return;
+        }
+
+        if (FullscreenDetector.IsFullscreenApplicationRunning())
+        {
+            Logger.Debug("ShowMediaFlyout: Suppressed because a fullscreen application is running.");
+            return;
+        }
 
         UpdateUI();
         
@@ -800,7 +808,9 @@ public partial class MainWindow : MicaWindow
             nextUpWindow = null;
         }
 
-        if (_isHiding == true)
+        bool needsAnimation = Visibility != Visibility.Visible || _isHiding;
+        Visibility = Visibility.Visible;
+        if (needsAnimation)
         {
             _isHiding = false;
             FlyoutAnimationService.OpenAnimation(this);
@@ -808,8 +818,8 @@ public partial class MainWindow : MicaWindow
         cts.Cancel();
         cts = new CancellationTokenSource();
         var token = cts.Token;
-        Visibility = Visibility.Visible;
         WindowHelper.SetTopmost(this);
+        this.EnableBackdrop();
 
         // Start the auto-close loop so the flyout hides after the configured duration
         _ = RunFlyoutLoop(token);
@@ -832,8 +842,8 @@ public partial class MainWindow : MicaWindow
                     await Task.Delay(SettingsManager.Current.Duration, token);
                     if (!IsMouseOver)
                     {
-                        FlyoutAnimationService.CloseAnimation(this);
                         _isHiding = true;
+                        FlyoutAnimationService.CloseAnimation(this);
                         await Task.Delay(FlyoutAnimationService.GetDuration());
                         if (_isHiding == false) return;
                         Hide();
@@ -1541,9 +1551,9 @@ public partial class MainWindow : MicaWindow
 
     private async void MicaWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        Hide();
         UpdateUILayout();
         ThemeManager.ApplySavedTheme();
+        Hide();
 
         try
         {

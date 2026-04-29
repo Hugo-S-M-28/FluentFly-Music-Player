@@ -112,6 +112,7 @@ public partial class NowPlayingViewModel : ObservableObject
             var pos = MusicPlayerService.Instance.CurrentPosition;
             SeekValue = pos.TotalSeconds;
             CurrentTime = pos.ToString(@"mm\:ss");
+            CurrentPositionTimeSpan = pos;
         }
         else
         {
@@ -121,6 +122,7 @@ public partial class NowPlayingViewModel : ObservableObject
                 var timeline = session.ControlSession.GetTimelineProperties();
                 SeekValue = timeline.Position.TotalSeconds;
                 CurrentTime = timeline.Position.ToString(@"mm\:ss");
+                CurrentPositionTimeSpan = timeline.Position;
             }
         }
     }
@@ -139,6 +141,9 @@ public partial class NowPlayingViewModel : ObservableObject
 
     [ObservableProperty]
     private string currentTime = "0:00";
+
+    [ObservableProperty]
+    private TimeSpan currentPositionTimeSpan;
 
     [ObservableProperty]
     private string totalTime = "0:00";
@@ -175,4 +180,7 @@ public partial class NowPlayingViewModel : ObservableObject
 
     [ObservableProperty]
     private bool hasLyrics;
+
+    [ObservableProperty]
+    private System.Windows.Media.Brush pressedForeground = System.Windows.Media.Brushes.White;
 }

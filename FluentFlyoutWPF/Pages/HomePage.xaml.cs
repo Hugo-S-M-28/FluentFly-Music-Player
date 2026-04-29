@@ -4,6 +4,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Input;
+using System.Windows.Threading;
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF.Classes;
@@ -22,6 +24,11 @@ public partial class HomePage : Page
     private bool _isDraggingSeekbar;
     private readonly NowPlayingViewModel _viewModel = new();
 
+    // Lyrics scroll management
+    private bool _isAutoScrollPaused;
+    private DateTime _lastScrollTime;
+    private readonly DispatcherTimer _resumeAutoScrollTimer;
+
     public HomePage()
     {
         _viewModel.Volume = MusicPlayerService.Instance.Volume;
@@ -36,6 +43,9 @@ public partial class HomePage : Page
         {
             Dispatcher.Invoke(() => ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault()));
         });
+
+        _resumeAutoScrollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _resumeAutoScrollTimer.Tick += (s, e) => ResumeAutoScroll();
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -284,7 +294,7 @@ public partial class HomePage : Page
         _viewModel.Lyrics = line?.Text ?? "";
 
         // Auto-scroll to current line smoothly
-        if (line != null)
+        if (line != null && !_isAutoScrollPaused)
         {
             var lyricsList = FindVisualChild<ListBox>(this, "LyricsList") ?? FindVisualChild<ListBox>(this, "FullLyricsList");
             if (lyricsList != null)
@@ -306,8 +316,7 @@ public partial class HomePage : Page
                     {
                         // Ensure containers are generated
                         lyricsList.UpdateLayout();
-                        var item = lyricsList.ItemContainerGenerator.ContainerFromItem(lyricsList.SelectedItem) as FrameworkElement;
-                        if (item != null)
+                        if (lyricsList.ItemContainerGenerator.ContainerFromItem(lyricsList.SelectedItem) is FrameworkElement item)
                         {
                             var transform = item.TransformToAncestor(_currentScrollViewer);
                             var positionInScrollViewer = transform.Transform(new Point(0, 0));
@@ -344,6 +353,63 @@ public partial class HomePage : Page
                 }
             }
         }
+    }
+
+    private void LyricsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is ListBox)
+        {
+            var element = e.OriginalSource as FrameworkElement;
+            if (element?.DataContext is LyricLine line)
+            {
+                MusicPlayerService.Instance.Seek(line.Time);
+                ResumeAutoScroll();
+            }
+            else if (element?.DataContext is LyricWord word)
+            {
+                MusicPlayerService.Instance.Seek(word.Time);
+                ResumeAutoScroll();
+            }
+        }
+    }
+
+    private void LyricsList_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        PauseAutoScroll();
+    }
+
+    private void LyricsList_PreviewTouchDown(object sender, System.Windows.Input.TouchEventArgs e)
+    {
+        PauseAutoScroll();
+    }
+
+    private void PauseAutoScroll()
+    {
+        _isAutoScrollPaused = true;
+        _lastScrollTime = DateTime.Now;
+        _resumeAutoScrollTimer.Stop();
+        _resumeAutoScrollTimer.Start();
+
+        if (FindVisualChild<Wpf.Ui.Controls.Button>(this, "ResumeSyncButton") is { } btn) btn.Visibility = Visibility.Visible;
+        
+        if (FindVisualChild<Wpf.Ui.Controls.Button>(this, "ResumeSyncButtonFull") is { } btnFull) btnFull.Visibility = Visibility.Visible;
+    }
+
+    private void ResumeAutoScroll()
+    {
+        _isAutoScrollPaused = false;
+        _resumeAutoScrollTimer.Stop();
+        
+        if (FindVisualChild<Wpf.Ui.Controls.Button>(this, "ResumeSyncButton") is { } btn) btn.Visibility = Visibility.Collapsed;
+
+        if (FindVisualChild<Wpf.Ui.Controls.Button>(this, "ResumeSyncButtonFull") is { } btnFull) btnFull.Visibility = Visibility.Collapsed;
+
+        UpdateLyrics();
+    }
+
+    private void ResumeSyncButton_Click(object sender, RoutedEventArgs e)
+    {
+        ResumeAutoScroll();
     }
 
     private T? FindVisualChild<T>(DependencyObject obj, string? name) where T : DependencyObject

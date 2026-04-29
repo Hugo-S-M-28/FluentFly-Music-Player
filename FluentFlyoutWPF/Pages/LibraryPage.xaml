@@ -9,6 +9,7 @@
       xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
       xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
       xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+      xmlns:settings="clr-namespace:FluentFlyout.Classes.Settings"
       mc:Ignorable="d"
       d:DesignHeight="800"
       d:DesignWidth="1200"
@@ -26,11 +27,8 @@
     </Page.Background>
 
     <Page.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-            </ResourceDictionary.MergedDictionaries>
-            <classes:PathToImageConverter x:Key="PathToImageConverter"/>
-            <utils:HalfValueConverter x:Key="HalfValueConverter"/>
+        <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+        <utils:HalfValueConverter x:Key="HalfValueConverter"/>
             
             <!-- Global Styles -->
             <Style TargetType="ContextMenu" BasedOn="{StaticResource {x:Type ContextMenu}}">
@@ -46,17 +44,22 @@
             </Style>
 
             <Style x:Key="AnimatedListViewStyle" TargetType="ListView" BasedOn="{StaticResource {x:Type ListView}}">
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform X="0" Y="0"/>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsVisible" Value="True">
                         <Trigger.EnterActions>
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2"/>
-                                    <ThicknessAnimation Storyboard.TargetProperty="Margin" From="-20,0,20,0" To="0,0,0,0" Duration="0:0:0.3">
-                                        <ThicknessAnimation.EasingFunction>
-                                            <QuadraticEase EasingMode="EaseOut"/>
-                                        </ThicknessAnimation.EasingFunction>
-                                    </ThicknessAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="-30" To="0" Duration="0:0:0.4">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
                                 </Storyboard>
                             </BeginStoryboard>
                         </Trigger.EnterActions>
@@ -91,7 +94,7 @@
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
-        </ResourceDictionary>
+
     </Page.Resources>
 
     <Grid HorizontalAlignment="Stretch"
@@ -331,10 +334,11 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0"
-                    Margin="0,0,16,0">
+                    Margin="0,0,8,0">
                 <!-- SONGS VIEW -->
                 <ListView x:Name="TracksListView"
                           Style="{StaticResource AnimatedListViewStyle}"
@@ -343,16 +347,16 @@
                           MouseDoubleClick="TracksListView_MouseDoubleClick"
                           Background="Transparent"
                           BorderThickness="0"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalContentAlignment="Center"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.ScrollUnit="Item"
+                          VirtualizingPanel.ScrollUnit="Pixel"
                           VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.CacheLength="5"
-                          VirtualizingPanel.CacheLengthUnit="Item"
-                           HorizontalContentAlignment="Stretch"
-                           VerticalContentAlignment="Center">
+                          VirtualizingPanel.CacheLength="20"
+                          VirtualizingPanel.CacheLengthUnit="Item">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="ContextMenu"
@@ -369,7 +373,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
                                         <Border x:Name="ItemBorder"
-                                                CornerRadius="8"
+                                                CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
                                                 Background="Transparent"
                                                 Padding="{TemplateBinding Padding}">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -403,21 +407,24 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Column="0"
-                                        Width="{Binding DataContext.LibraryTrackIconSize, ElementName=PageRoot}"
-                                        Height="{Binding DataContext.LibraryTrackIconSize, ElementName=PageRoot}"
+                                        Width="{Binding LibraryTrackIconSize, Source={x:Static settings:SettingsManager.Current}}"
+                                        Height="{Binding LibraryTrackIconSize, Source={x:Static settings:SettingsManager.Current}}"
                                         Margin="0,0,12,0"
-                                        CornerRadius="8"
+                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
                                     </Border.Effect>
-                                    <Border CornerRadius="8" ClipToBounds="True">
+                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="MusicNote124"
                                                            Opacity="0.3"
                                                            FontSize="20"/>
-                                            <Image Source="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=80, Mode=OneWay, IsAsync=True}"
-                                                   Stretch="UniformToFill"/>
+                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=120, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                </Border.Background>
+                                            </Border>
                                         </Grid>
                                     </Border>
                                 </Border>
@@ -470,28 +477,37 @@
                           Visibility="{Binding IsChecked, ElementName=AlbumsTab, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                           Background="Transparent"
                           BorderThickness="0"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment="Top"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.ScrollUnit="Item"
                           VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.CacheLength="3"
-                          VirtualizingPanel.CacheLengthUnit="Item"
-                          HorizontalContentAlignment="Stretch"
-                           VerticalContentAlignment="Center"
-                           Padding="0,0,0,20">
+                          VirtualizingPanel.CacheLength="2"
+                          VirtualizingPanel.CacheLengthUnit="Page"
+                          VirtualizingPanel.ScrollUnit="Pixel"
+                          Padding="0,0,0,20">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment"
                                     Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment"
-                                    Value="Center"/>
+                                    Value="Stretch"/>
+                            <Setter Property="Padding" Value="4"/>
+                            <Setter Property="Margin" Value="4"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" Background="Transparent" x:Name="ContainerBorder">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ContainerBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -499,59 +515,62 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"
-                                    Margin="8,0,0,0"/>
+                            <ui:VirtualizingWrapPanel Orientation="Horizontal" IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,0,24,32"
-                                  Width="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
+                            <Grid Width="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                                  Margin="8"
                                   Cursor="Hand"
                                   MouseLeftButtonDown="Album_Click">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
-                                        Width="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
-                                        Height="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
-                                        CornerRadius="12"
+                                        Height="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
                                         ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
-                                    <Grid>
-                                        <ui:SymbolIcon Symbol="Album24"
-                                                       Opacity="0.1"
-                                                       FontSize="48"/>
-                                        <Image Source="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=200, Mode=OneWay, IsAsync=True}"
-                                               Stretch="UniformToFill"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
+                                    </Border.Effect>
+                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
+                                        <Grid>
+                                            <ui:SymbolIcon Symbol="Album24"
+                                                           Opacity="0.1"
+                                                           FontSize="48"/>
+                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.CachingHint="Cache">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                </Border.Background>
+                                            </Border>
 
-                                        <!-- Play Overlay on Hover (Simulado con un borde que se muestra en IsMouseOver del parent) -->
-                                        <Border x:Name="Overlay"
-                                                Background="#40000000"
-                                                Opacity="0">
-                                            <ui:SymbolIcon Symbol="Play24"
-                                                           Foreground="White"
-                                                           FontSize="36"/>
-                                        </Border>
-                                    </Grid>
+                                            <Border x:Name="Overlay"
+                                                    Background="#40000000"
+                                                    Opacity="0">
+                                                <ui:SymbolIcon Symbol="Play24"
+                                                               Foreground="White"
+                                                               FontSize="32"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
                                 </Border>
 
-                                <TextBlock Grid.Row="1"
-                                           Text="{Binding Title}"
-                                           Margin="0,12,0,0"
-                                           FontWeight="SemiBold"
-                                           FontSize="14"
-                                           TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Grid.Row="2"
-                                           Text="{Binding Artist}"
-                                           Opacity="0.6"
-                                           FontSize="12"
-                                           TextTrimming="CharacterEllipsis"
-                                           Margin="0,2,0,0"/>
+                                <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,12,0,0">
+                                    <TextBlock Text="{Binding Title}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding Artist}"
+                                               Opacity="0.6"
+                                               FontSize="12"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
                             </Grid>
                             <DataTemplate.Triggers>
                                 <Trigger Property="IsMouseOver"
@@ -559,9 +578,6 @@
                                     <Setter TargetName="Overlay"
                                             Property="Opacity"
                                             Value="1"/>
-                                    <Setter TargetName="ArtBorder"
-                                            Property="Background"
-                                            Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
                                 </Trigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
@@ -574,27 +590,37 @@
                           Visibility="{Binding IsChecked, ElementName=ArtistsTab, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                           Background="Transparent"
                           BorderThickness="0"
+                          HorizontalContentAlignment="Left"
+                          VerticalContentAlignment="Top"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.ScrollUnit="Item"
                           VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.CacheLength="3"
-                          VirtualizingPanel.CacheLengthUnit="Item"
-                          HorizontalContentAlignment="Stretch"
-                           VerticalContentAlignment="Center"
-                           Padding="0,0,0,20">
+                          VirtualizingPanel.CacheLength="2"
+                          VirtualizingPanel.CacheLengthUnit="Page"
+                          VirtualizingPanel.ScrollUnit="Pixel"
+                          Padding="0,0,0,20">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment"
                                     Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment"
-                                    Value="Center"/>
+                                    Value="Stretch"/>
+                            <Setter Property="Padding" Value="4"/>
+                            <Setter Property="Margin" Value="4"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <ContentPresenter/>
+                                        <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" Background="Transparent" x:Name="ContainerBorder">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ContainerBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -602,52 +628,57 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"
-                                    Margin="8,0,0,0"/>
+                            <ui:VirtualizingWrapPanel Orientation="Horizontal" IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,0,24,32"
-                                  Width="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
+                            <Grid Width="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                                  Margin="8"
                                   Cursor="Hand"
                                   MouseLeftButtonDown="Artist_Click">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
-                                        Width="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
-                                        Height="{Binding DataContext.LibraryGridItemSize, ElementName=PageRoot}"
-                                        CornerRadius="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource HalfValueConverter}}"
-                                        HorizontalAlignment="Center"
-                                        ClipToBounds="True"
+                                        Height="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
+                                                                                ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
-                                    <Grid>
-                                        <ui:SymbolIcon Symbol="Person24"
-                                                       Opacity="0.1"
-                                                       FontSize="48"/>
-                                        <Image Source="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=200, Mode=OneWay, IsAsync=True}"
-                                               Stretch="UniformToFill"/>
-                                    </Grid>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
+                                    </Border.Effect>
+                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
+                                        <Grid>
+                                            <ui:SymbolIcon Symbol="Person24"
+                                                           Opacity="0.1"
+                                                           FontSize="48"/>
+                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.CachingHint="Cache">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                </Border.Background>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
                                 </Border>
 
-                                <TextBlock Grid.Row="1"
-                                           Text="{Binding Name}"
-                                           Margin="0,12,0,0"
-                                           FontWeight="SemiBold"
-                                           FontSize="14"
-                                           TextAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Grid.Row="2"
-                                           Text="{Binding Songs.Count, StringFormat={DynamicResource Lib_SongsCountFormat}}"
-                                           Opacity="0.6"
-                                           FontSize="12"
-                                           TextAlignment="Center"
-                                           Margin="0,2,0,0"/>
+                                <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,12,0,0">
+                                    <TextBlock Text="{Binding Name}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               HorizontalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Opacity="0.6"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="0,2,0,0">
+                                        <Run Text="{Binding Songs.Count, Mode=OneWay}"/><Run Text=" "/><Run Text="{DynamicResource Lib_Songs}"/>
+                                    </TextBlock>
+                                </StackPanel>
                             </Grid>
                             <DataTemplate.Triggers>
                                 <Trigger Property="IsMouseOver"
@@ -662,9 +693,31 @@
                 </ListView>
             </Grid>
 
+            <!-- Alphabetical Index Sidebar -->
+            <ItemsControl x:Name="AlphabetIndex"
+                          Grid.Column="1"
+                          VerticalAlignment="Center"
+                          Margin="0,0,8,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:Button Content="{Binding}"
+                                   Appearance="Transparent"
+                                   Padding="4,1"
+                                   Margin="0,1"
+                                   MinHeight="18"
+                                   MinWidth="24"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Cursor="Hand"
+                                   Click="AlphabetButton_Click"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- Playlist -->
             <controls:PlaylistControl x:Name="PlaylistControl"
-                                      Grid.Column="1"
+                                      Grid.Column="2"
                                       Width="340"
                                       VerticalAlignment="Stretch"
                                       Visibility="{Binding LibraryPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>

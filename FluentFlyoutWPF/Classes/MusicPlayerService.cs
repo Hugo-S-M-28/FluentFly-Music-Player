@@ -596,6 +596,62 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         Logger.Info($"Added to queue: {track.Title} - {track.Artist}");
     }
 
+    /// <summary>
+    /// Removes a track from the queue without interrupting playback.
+    /// If the removed track is the currently playing one, advances to the next track.
+    /// Adjusts _currentQueueIndex so the playing track is not disrupted.
+    /// </summary>
+    public void RemoveFromQueue(TrackModel track)
+    {
+        if (track == null) return;
+
+        var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+        int removeIndex = queue.IndexOf(track);
+        if (removeIndex < 0) return;
+
+        bool isCurrentTrack = removeIndex == _currentQueueIndex;
+
+        // Remove from both queues
+        _originalQueue.Remove(track);
+        if (_isShuffleEnabled)
+            _shuffledQueue.Remove(track);
+
+        // Refresh removeIndex after removal from active queue
+        // Adjust _currentQueueIndex
+        if (isCurrentTrack)
+        {
+            // The playing track was removed — play the next one
+            // After removal, the track at _currentQueueIndex is already the "next" one
+            // unless we were at the end
+            var activeQueue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+            if (_currentQueueIndex >= activeQueue.Count)
+                _currentQueueIndex = activeQueue.Count - 1;
+
+            if (_currentQueueIndex >= 0)
+            {
+                QueueChanged?.Invoke(this, EventArgs.Empty);
+                PlayTrackDirectly(activeQueue[_currentQueueIndex]);
+            }
+            else
+            {
+                // Queue is now empty
+                Stop();
+                CurrentTrack = null;
+                QueueChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        else
+        {
+            // Recalculate index: if we removed something before the current, shift down
+            if (removeIndex < _currentQueueIndex)
+                _currentQueueIndex--;
+
+            QueueChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        Logger.Info($"Removed from queue: {track.Title} - {track.Artist}");
+    }
+
     private void InitializePlayback(string filePath)
     {
         try

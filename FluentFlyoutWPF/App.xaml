@@ -10,7 +10,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemesDictionary Theme="Unknown"/>
+                <ui:ThemesDictionary Theme="Dark"/>
                 <ui:ControlsDictionary/>
                 <mica:ThemeDictionary Theme="Auto"
                                       DesignModeTheme="Auto"/>

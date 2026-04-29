@@ -543,6 +543,12 @@ public partial class UserSettings : ObservableObject
     public partial bool TaskbarVisualizerBaseline { get; set; }
 
     /// <summary>
+    /// Stereo processing mode for the visualizer. 0 = Mono (averaged L+R), 1 = Stereo Mirror (L|R).
+    /// </summary>
+    [ObservableProperty]
+    public partial int TaskbarVisualizerStereoMode { get; set; }
+
+    /// <summary>
     /// Gets or sets the audio sensitivity for the taskbar visualizer from 1 to 3, where 2 is the default.
     /// </summary>
     [ObservableProperty]
@@ -561,6 +567,13 @@ public partial class UserSettings : ObservableObject
     [XmlIgnore]
     [ObservableProperty]
     public partial double TaskbarVisualizerCurrentLevel { get; set; }
+
+    /// <summary>
+    /// Current calibrated level mapped within the user's sensitivity and peak limits (0-100). Not persisted.
+    /// </summary>
+    [XmlIgnore]
+    [ObservableProperty]
+    public partial double TaskbarVisualizerCalibratedLevel { get; set; }
 
     /// <summary>
     /// Gets whether premium features are unlocked (runtime only, not persisted)
@@ -617,6 +630,12 @@ public partial class UserSettings : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial double LibraryGridItemSize { get; set; } = 160.0;
+    
+    /// <summary>
+    /// Corner radius for library items
+    /// </summary>
+    [ObservableProperty]
+    public partial double LibraryItemCornerRadius { get; set; } = 12.0;
 
     /// <summary>
     /// Preferred library sort property
@@ -724,6 +743,7 @@ public partial class UserSettings : ObservableObject
         TaskbarVisualizerBaseline = false;
         TaskbarVisualizerAudioSensitivity = 5;
         TaskbarVisualizerAudioPeakLevel = 8;
+        TaskbarVisualizerStereoMode = 0;
         AcrylicBlurOpacity = 175;
         UseAlbumArtAsAccentColor = false;
         LastUpdateNotificationUnixSeconds = 0;
@@ -737,6 +757,7 @@ public partial class UserSettings : ObservableObject
         LibrarySelectedTab = 0;
         LibraryLyricsFilterEnabled = false;
         LibraryPlaylistVisible = false;
+        LibraryItemCornerRadius = 12.0;
     }
 
     /// <summary>
@@ -870,6 +891,40 @@ public partial class UserSettings : ObservableObject
         if (oldValue == newValue || _initializing || newValue == false) return;
         TaskbarVisualizerHasContent = true;
     }
+
+    partial void OnTaskbarVisualizerAudioSensitivityChanged(int oldValue, int newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+
+        // Sensitivity controls minDb = -20 - (val * 8)
+        // Peak controls maxDb = -45 + (val * 5)
+        // Ensure minDb < maxDb with at least 10dB range
+        float minDb = -20f - (newValue * 8f);
+        float maxDb = -45f + (TaskbarVisualizerAudioPeakLevel * 5f);
+
+        if (minDb >= maxDb - 10f)
+        {
+            // Adjust peak to maintain 10dB minimum range
+            int requiredPeak = (int)Math.Ceiling((minDb + 10f + 45f) / 5f);
+            TaskbarVisualizerAudioPeakLevel = Math.Clamp(requiredPeak, 1, 10);
+        }
+    }
+
+    partial void OnTaskbarVisualizerAudioPeakLevelChanged(int oldValue, int newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+
+        float maxDb = -45f + (newValue * 5f);
+        float minDb = -20f - (TaskbarVisualizerAudioSensitivity * 8f);
+
+        if (maxDb <= minDb + 10f)
+        {
+            // Adjust sensitivity to maintain 10dB minimum range
+            int requiredSens = (int)Math.Floor((-20f - (maxDb - 10f)) / 8f);
+            TaskbarVisualizerAudioSensitivity = Math.Clamp(requiredSens, 1, 10);
+        }
+    }
+
 
     partial void OnUseAlbumArtAsAccentColorChanged(bool oldValue, bool newValue)
     {

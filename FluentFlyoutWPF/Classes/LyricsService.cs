@@ -6,10 +6,17 @@ using System.Text.RegularExpressions;
 
 namespace FluentFlyoutWPF.Classes;
 
+public struct LyricWord
+{
+    public TimeSpan Time { get; set; }
+    public string Text { get; set; }
+}
+
 public struct LyricLine
 {
     public TimeSpan Time { get; set; }
     public string Text { get; set; }
+    public List<LyricWord>? Words { get; set; }
 }
 
 public class LyricsService
@@ -32,6 +39,8 @@ public class LyricsService
         }
     }
 
+    private static readonly Regex WordTimestampRegex = new(@"<(?<time>\d{2}:\d{2}(?:\.\d{1,3})?)>(?<text>[^<]*)", RegexOptions.Compiled);
+
     public List<LyricLine> ParseLrcText(string lrcText)
     {
         var lyrics = new List<LyricLine>();
@@ -45,10 +54,34 @@ public class LyricsService
             {
                 if (TimeSpan.TryParse("00:" + match.Groups["time"].Value, out var time))
                 {
+                    string rawText = match.Groups["text"].Value.Trim();
+                    var words = new List<LyricWord>();
+
+                    // Parse enhanced LRC word timings if present
+                    var wordMatches = WordTimestampRegex.Matches(rawText);
+                    if (wordMatches.Count > 0)
+                    {
+                        foreach (Match wordMatch in wordMatches)
+                        {
+                            if (TimeSpan.TryParse("00:" + wordMatch.Groups["time"].Value, out var wordTime))
+                            {
+                                words.Add(new LyricWord
+                                {
+                                    Time = wordTime,
+                                    Text = wordMatch.Groups["text"].Value
+                                });
+                            }
+                        }
+                        
+                        // Strip tags for the display text
+                        rawText = WordTimestampRegex.Replace(rawText, "$2");
+                    }
+
                     lyrics.Add(new LyricLine
                     {
                         Time = time,
-                        Text = match.Groups["text"].Value.Trim()
+                        Text = rawText,
+                        Words = words.Count > 0 ? words : null
                     });
                 }
             }

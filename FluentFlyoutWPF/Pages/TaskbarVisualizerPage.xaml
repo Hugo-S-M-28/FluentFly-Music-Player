@@ -229,6 +229,26 @@
                                            IsEnabled="{Binding IsPremiumUnlocked}"/>
                 </ui:CardControl>
 
+                <ui:CardControl Icon="{ui:SymbolIcon Speaker224, Filled=True}"
+                                Margin="0,0,0,12">
+                    <ui:CardControl.Header>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Stereo Mode"
+                                       FontSize="14"
+                                       FontWeight="Regular"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="How audio channels are processed for visualization"
+                                       FontSize="12"
+                                       Opacity="0.5"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ComboBox SelectedIndex="{Binding TaskbarVisualizerStereoMode}"
+                              IsEnabled="{Binding IsPremiumUnlocked}">
+                        <ComboBoxItem Content="Mono (L+R averaged)"/>
+                        <ComboBoxItem Content="Stereo Mirror (L|R)"/>
+                    </ComboBox>
+                </ui:CardControl>
+
                 <!-- Audio Calibration Monitor -->
                 <ui:Card Padding="16,12,16,16"
                         Margin="0,0,0,24">
@@ -254,8 +274,19 @@
                                     CornerRadius="6"/>
                             <ProgressBar Value="{Binding TaskbarVisualizerCurrentLevel}"
                                          Minimum="0"
-                                    Maximum="100"
+                                         Maximum="100"
                                          Height="16"
+                                         VerticalAlignment="Center"
+                                         Margin="8,0"
+                                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Opacity="0.5"/>
+
+                            <ProgressBar Value="{Binding TaskbarVisualizerCalibratedLevel}"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         Height="6"
                                          VerticalAlignment="Center"
                                          Margin="8,0"
                                          Foreground="{DynamicResource AccentFillColorDefaultBrush}"

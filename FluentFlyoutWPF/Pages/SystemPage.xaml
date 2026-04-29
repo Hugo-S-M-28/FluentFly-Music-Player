@@ -284,10 +284,43 @@
             </ui:CardControl>
 
             <!-- library appearance section -->
-            <TextBlock Text="{DynamicResource LibraryAppearanceSectionTitle}"
-                    FontSize="14"
-                    FontWeight="SemiBold"
-                    Margin="0,12,0,6"/>
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,6">
+                <TextBlock Text="{DynamicResource LibraryAppearanceSectionTitle}"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"/>
+                <ui:Button Icon="{ui:SymbolIcon ArrowCounterclockwise20}"
+                           Appearance="Transparent"
+                           Margin="12,0,0,0"
+                           Padding="4"
+                           ToolTip="Restablecer diseño"
+                           Click="ResetLibraryLayout_Click"/>
+            </StackPanel>
+
+            <!-- Live Preview Card -->
+            <ui:Card Margin="0,0,0,12" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Vista Previa" FontWeight="SemiBold" Margin="12,0,0,4"/>
+                        <TextBlock Text="Así se verá tu biblioteca" FontSize="12" Opacity="0.5" Margin="12,0,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" 
+                            Width="80" 
+                            Height="80" 
+                            Margin="12"
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            CornerRadius="{Binding LibraryItemCornerRadius}">
+                        <ui:SymbolIcon Symbol="MusicNote124" FontSize="32" Opacity="0.3"/>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
             <ui:CardControl Icon="{ui:SymbolIcon Table24}" Margin="0,0,0,3">
                 <ui:CardControl.Header>
                     <StackPanel Orientation="Vertical">
@@ -300,19 +333,26 @@
                                 Opacity="0.5"/>
                     </StackPanel>
                 </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal">
-                    <Slider Minimum="100"
-                            Maximum="250"
-                            Value="{Binding LibraryGridItemSize, Mode=TwoWay}"
-                            TickFrequency="10"
-                            IsSnapToTickEnabled="True"
-                            Width="150"/>
-                    <ui:TextBlock Text="{Binding LibraryGridItemSize}"
-                            Width="24"
-                            TextAlignment="Center"
-                            Margin="12,0,0,0"/>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Pequeño" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Slider Minimum="100"
+                                Maximum="250"
+                                Value="{Binding LibraryGridItemSize, Mode=TwoWay}"
+                                TickFrequency="10"
+                                IsSnapToTickEnabled="True"
+                                Width="150"
+                                VerticalAlignment="Center"/>
+                        <TextBlock Text="Grande" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <ui:TextBlock Text="{Binding LibraryGridItemSize}"
+                                Width="30"
+                                TextAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="12,0,0,0"/>
+                    </StackPanel>
                 </StackPanel>
             </ui:CardControl>
+
             <ui:CardControl Icon="{ui:SymbolIcon MusicNote124}" Margin="0,0,0,3">
                 <ui:CardControl.Header>
                     <StackPanel Orientation="Vertical">
@@ -326,15 +366,49 @@
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Pequeño" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <Slider Minimum="32"
-                            Maximum="64"
+                            Maximum="96"
                             Value="{Binding LibraryTrackIconSize, Mode=TwoWay}"
                             TickFrequency="4"
                             IsSnapToTickEnabled="True"
-                            Width="150"/>
+                            Width="150"
+                            VerticalAlignment="Center"/>
+                    <TextBlock Text="Grande" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <ui:TextBlock Text="{Binding LibraryTrackIconSize}"
-                            Width="24"
-                            TextAlignment="Center"
+                            Width="30"
+                            TextAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="12,0,0,0"/>
+                </StackPanel>
+            </ui:CardControl>
+
+            <ui:CardControl Icon="{ui:SymbolIcon Shapes24}" Margin="0,0,0,3">
+                <ui:CardControl.Header>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Redondeo de Bordes"
+                                FontSize="14"
+                                FontWeight="Regular"
+                                VerticalAlignment="Center"/>
+                        <TextBlock Text="Ajusta el radio de las esquinas para las portadas y tarjetas."
+                                FontSize="12"
+                                Opacity="0.5"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="Square24" FontSize="12" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Slider Minimum="0"
+                            Maximum="32"
+                            Value="{Binding LibraryItemCornerRadius, Mode=TwoWay}"
+                            TickFrequency="2"
+                            IsSnapToTickEnabled="True"
+                            Width="150"
+                            VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Symbol="Circle24" FontSize="12" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <ui:TextBlock Text="{Binding LibraryItemCornerRadius}"
+                            Width="30"
+                            TextAlignment="Right"
+                            VerticalAlignment="Center"
                             Margin="12,0,0,0"/>
                 </StackPanel>
             </ui:CardControl>

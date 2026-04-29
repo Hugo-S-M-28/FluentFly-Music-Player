@@ -9,6 +9,7 @@
       xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
       xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
       xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+      xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
       mc:Ignorable="d"
       d:DesignHeight="800"
       d:DesignWidth="1200"
@@ -22,10 +23,8 @@
       ScrollViewer.VerticalScrollBarVisibility="Disabled">
     
     <Page.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-            </ResourceDictionary.MergedDictionaries>
-            <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+        <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+        <utils:LyricWordHighlightConverter x:Key="LyricWordHighlightConverter"/>
 
         <!-- Estilo para botones de transporte secundarios (Prev, Next, etc) -->
         <Style x:Key="IconButtonStyle"
@@ -130,7 +129,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        </ResourceDictionary>
+
     </Page.Resources>
     <Grid Margin="24"
             VerticalAlignment="Stretch">
@@ -265,10 +264,11 @@
                                             <ui:SymbolIcon Symbol="TextQuote24" FontSize="20" Margin="0,0,12,0"/>
                                         </StackPanel>
                                         <ui:Button HorizontalAlignment="Right" 
-                                                   Icon="{ui:SymbolIcon Edit24}" 
                                                    Appearance="Transparent" 
                                                    Click="EditLyrics_Click" 
-                                                   ToolTip="{DynamicResource Edit_WindowTitle}" />
+                                                   ToolTip="{DynamicResource Edit_WindowTitle}">
+                                            <ui:SymbolIcon Symbol="Edit24"/>
+                                        </ui:Button>
                                     </Grid>
                                     <ListBox x:Name="LyricsList" ScrollViewer.CanContentScroll="False" VirtualizingStackPanel.IsVirtualizing="False"
                                              Grid.Row="1"
@@ -280,6 +280,9 @@
                                              ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              SelectionMode="Single"
+                                             PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
+                                             PreviewMouseWheel="LyricsList_PreviewMouseWheel"
+                                             PreviewTouchDown="LyricsList_PreviewTouchDown"
                                              Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
                                             <ListBox.ItemContainerStyle>
                                                 <Style TargetType="ListBoxItem">
@@ -355,13 +358,71 @@
                                             </ListBox.ItemContainerStyle>
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Text}"
-                                                               TextWrapping="Wrap"
-                                                               TextAlignment="Center"
-                                                               FontSize="32"
-                                                               FontWeight="Bold"
-                                                               LineHeight="40">
-                                                    </TextBlock>
+                                                    <Grid>
+                                                        <!-- Simple Line (Fallback) -->
+                                                        <TextBlock Text="{Binding Text}"
+                                                                   TextWrapping="Wrap"
+                                                                   TextAlignment="Center"
+                                                                   FontSize="32"
+                                                                   FontWeight="Bold"
+                                                                   LineHeight="40"
+                                                                   Visibility="{Binding Words, Converter={StaticResource NullToVisibleConverter}}"/>
+                                                        
+                                                        <!-- Enhanced Line (Word by Word) -->
+                                                        <ItemsControl ItemsSource="{Binding Words}"
+                                                                      Visibility="{Binding Words, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <WrapPanel HorizontalAlignment="Center"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Text}"
+                                                                               FontSize="32"
+                                                                               FontWeight="Bold"
+                                                                               Margin="4,0"
+                                                                               RenderTransformOrigin="0.5,0.5">
+                                                                         <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Opacity" Value="0.4"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Value="True">
+                                                                                        <DataTrigger.Binding>
+                                                                                            <MultiBinding Converter="{StaticResource LyricWordHighlightConverter}">
+                                                                                                <Binding Path="DataContext.CurrentPositionTimeSpan" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                                                                <Binding Path="Time"/>
+                                                                                                <Binding Path="IsSelected" RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
+                                                                                            </MultiBinding>
+                                                                                        </DataTrigger.Binding>
+                                                                                        <DataTrigger.EnterActions>
+                                                                                            <BeginStoryboard>
+                                                                                                <Storyboard>
+                                                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.2"/>
+                                                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
+                                                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
+                                                                                                </Storyboard>
+                                                                                            </BeginStoryboard>
+                                                                                        </DataTrigger.EnterActions>
+                                                                                        <DataTrigger.ExitActions>
+                                                                                            <BeginStoryboard>
+                                                                                                <Storyboard>
+                                                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.3"/>
+                                                                                                </Storyboard>
+                                                                                            </BeginStoryboard>
+                                                                                        </DataTrigger.ExitActions>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                        <TextBlock.RenderTransform>
+                                                                            <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                                                        </TextBlock.RenderTransform>
+                                                                    </TextBlock>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
                                         </ListBox>
@@ -377,6 +438,22 @@
                                                       Opacity="0.5"
                                                       TextAlignment="Center"/>
                                     </StackPanel>
+
+                                    <!-- Overlay: Back to Sync Button -->
+                                    <ui:Button x:Name="ResumeSyncButton"
+                                               Grid.Row="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom"
+                                               Margin="0,0,0,20"
+                                               Appearance="Secondary"
+                                               Visibility="Collapsed"
+                                               Click="ResumeSyncButton_Click"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Sincronizar"/>
+                                        </StackPanel>
+                                    </ui:Button>
                                 </Grid>
                             </Border>
                         </Grid>
@@ -398,10 +475,11 @@
                                         <ui:SymbolIcon Symbol="TextQuote24" FontSize="20" Margin="0,0,12,0"/>
                                     </StackPanel>
                                     <ui:Button HorizontalAlignment="Right" 
-                                               Icon="{ui:SymbolIcon Edit24}" 
                                                Appearance="Transparent" 
                                                Click="EditLyrics_Click" 
-                                               ToolTip="{DynamicResource Edit_WindowTitle}" />
+                                               ToolTip="{DynamicResource Edit_WindowTitle}">
+                                        <ui:SymbolIcon Symbol="Edit24"/>
+                                    </ui:Button>
                                 </Grid>
                                 <ListBox x:Name="FullLyricsList" ScrollViewer.CanContentScroll="False" VirtualizingStackPanel.IsVirtualizing="False"
                                           Grid.Row="1"
@@ -411,6 +489,10 @@
                                           BorderThickness="0"
                                           HorizontalContentAlignment="Center"
                                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                          SelectionMode="Single"
+                                          PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
+                                          PreviewMouseWheel="LyricsList_PreviewMouseWheel"
+                                          PreviewTouchDown="LyricsList_PreviewTouchDown"
                                           Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
@@ -482,12 +564,71 @@
                                     </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Text}"
-                                                       TextWrapping="Wrap"
-                                                       TextAlignment="Center"
-                                                       FontSize="42"
-                                                       FontWeight="Bold"
-                                                       Margin="0,20"/>
+                                            <Grid>
+                                                <!-- Simple Line (Fallback) -->
+                                                <TextBlock Text="{Binding Text}"
+                                                           TextWrapping="Wrap"
+                                                           TextAlignment="Center"
+                                                           FontSize="42"
+                                                           FontWeight="Bold"
+                                                           Margin="0,20"
+                                                           Visibility="{Binding Words, Converter={StaticResource NullToVisibleConverter}}"/>
+
+                                                <!-- Enhanced Line (Word by Word) -->
+                                                <ItemsControl ItemsSource="{Binding Words}"
+                                                              Visibility="{Binding Words, Converter={StaticResource NullToCollapsedConverter}}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel HorizontalAlignment="Center"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Text}"
+                                                                       FontSize="42"
+                                                                       FontWeight="Bold"
+                                                                       Margin="6,20"
+                                                                       RenderTransformOrigin="0.5,0.5">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Opacity" Value="0.4"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Value="True">
+                                                                                <DataTrigger.Binding>
+                                                                                    <MultiBinding Converter="{StaticResource LyricWordHighlightConverter}">
+                                                                                        <Binding Path="DataContext.CurrentPositionTimeSpan" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                                                        <Binding Path="Time"/>
+                                                                                        <Binding Path="IsSelected" RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
+                                                                                    </MultiBinding>
+                                                                                </DataTrigger.Binding>
+                                                                                <DataTrigger.EnterActions>
+                                                                                    <BeginStoryboard>
+                                                                                        <Storyboard>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.2"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
+                                                                                        </Storyboard>
+                                                                                    </BeginStoryboard>
+                                                                                </DataTrigger.EnterActions>
+                                                                                <DataTrigger.ExitActions>
+                                                                                    <BeginStoryboard>
+                                                                                        <Storyboard>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.3"/>
+                                                                                        </Storyboard>
+                                                                                    </BeginStoryboard>
+                                                                                </DataTrigger.ExitActions>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                                <TextBlock.RenderTransform>
+                                                                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                                                </TextBlock.RenderTransform>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
@@ -509,6 +650,22 @@
                                                   Margin="0,8,0,0"
                                                   TextAlignment="Center"/>
                                 </StackPanel>
+
+                                <!-- Overlay: Back to Sync Button (Full View) -->
+                                <ui:Button x:Name="ResumeSyncButtonFull"
+                                           Grid.Row="1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Bottom"
+                                           Margin="0,0,0,40"
+                                           Appearance="Secondary"
+                                           Visibility="Collapsed"
+                                           Click="ResumeSyncButton_Click"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Sincronizar"/>
+                                    </StackPanel>
+                                </ui:Button>
                             </Grid>
                         </Border>
                     </DataTemplate>

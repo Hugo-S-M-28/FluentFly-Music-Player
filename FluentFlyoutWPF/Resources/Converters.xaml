@@ -13,5 +13,7 @@
     <utils:PeakLevelToPercentageConverter x:Key="PeakLevelToPercentageConverter"/>
     <utils:SensitivityToGridLengthConverter x:Key="SensitivityToGridLengthConverter"/>
     <utils:PeakLevelToGridLengthConverter x:Key="PeakLevelToGridLengthConverter"/>
+    <utils:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullValue="Visible" NotNullValue="Collapsed"/>
+    <utils:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullValue="Collapsed" NotNullValue="Visible"/>
 
 </ResourceDictionary>

@@ -56,6 +56,8 @@ public partial class LibraryPage : Page
             await LibraryManager.Instance.InitializeAsync();
         }
         
+        AlphabetIndex.ItemsSource = new string[] { "#", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+
         _ = Dispatcher.BeginInvoke(new Action(() => {
             // Restore search text
             SearchBox.Text = SettingsManager.Current.LibrarySearchText;
@@ -251,12 +253,15 @@ public partial class LibraryPage : Page
 
     private void RefreshFilters()
     {
-        if (SongsTab.IsChecked == true)
-            CollectionViewSource.GetDefaultView(LibraryManager.Instance.Tracks).Refresh();
-        else if (AlbumsTab.IsChecked == true)
-            CollectionViewSource.GetDefaultView(LibraryManager.Instance.Albums).Refresh();
-        else if (ArtistsTab.IsChecked == true)
-            CollectionViewSource.GetDefaultView(LibraryManager.Instance.Artists).Refresh();
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (SongsTab.IsChecked == true)
+                CollectionViewSource.GetDefaultView(LibraryManager.Instance.Tracks).Refresh();
+            else if (AlbumsTab.IsChecked == true)
+                CollectionViewSource.GetDefaultView(LibraryManager.Instance.Albums).Refresh();
+            else if (ArtistsTab.IsChecked == true)
+                CollectionViewSource.GetDefaultView(LibraryManager.Instance.Artists).Refresh();
+        }, DispatcherPriority.Background);
     }
 
     private void OnTabChanged(object sender, RoutedEventArgs e)
@@ -423,5 +428,70 @@ public partial class LibraryPage : Page
             return fe.DataContext as TrackModel;
         }
         return null;
+    }
+
+    private void AlphabetButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is string letter)
+        {
+            ScrollToLetter(letter);
+        }
+    }
+
+    private void ScrollToLetter(string letter)
+    {
+        System.Windows.Controls.ListView? activeListView = null;
+        if (SongsTab.IsChecked == true) activeListView = TracksListView;
+        else if (AlbumsTab.IsChecked == true) activeListView = AlbumsListView;
+        else if (ArtistsTab.IsChecked == true) activeListView = ArtistsListView;
+
+        if (activeListView == null || activeListView.Items.Count == 0) return;
+
+        object? itemToScroll = null;
+        string sortProperty = SettingsManager.Current.LibrarySortProperty;
+
+        foreach (var item in activeListView.Items)
+        {
+            string title = "";
+            if (item is TrackModel track)
+            {
+                if (sortProperty == "Artist") title = track.Artist;
+                else if (sortProperty == "Album") title = track.Album;
+                else title = track.Title;
+            }
+            else if (item is LibraryAlbum album)
+            {
+                if (sortProperty == "Artist") title = album.Artist;
+                else title = album.Title;
+            }
+            else if (item is LibraryArtist artist)
+            {
+                title = artist.Name;
+            }
+
+            if (string.IsNullOrWhiteSpace(title)) continue;
+
+            if (letter == "#")
+            {
+                if (!char.IsLetter(title[0]))
+                {
+                    itemToScroll = item;
+                    break;
+                }
+            }
+            else
+            {
+                if (title.StartsWith(letter, StringComparison.OrdinalIgnoreCase))
+                {
+                    itemToScroll = item;
+                    break;
+                }
+            }
+        }
+
+        if (itemToScroll != null)
+        {
+            activeListView.ScrollIntoView(itemToScroll);
+        }
     }
 }

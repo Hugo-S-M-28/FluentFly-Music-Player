@@ -22,6 +22,22 @@ namespace FluentFlyoutWPF.Classes
         private readonly int ImageHeight = 32 * 3;
         private readonly int BarSpacing = 2 * 3;
 
+        // Pre-computed frequency band data to avoid recalculating every frame
+        private const double MinFreq = 40.0;   // Hz
+        private const double MaxFreq = 8000.0; // Hz
+
+        private struct FrequencyBand
+        {
+            public int StartBin;
+            public int EndBin;
+            public float AWeightMultiplier;
+        }
+
+        private FrequencyBand[]? _frequencyBands;
+        private int _cachedSampleRate;
+        private int _cachedBarCount;
+        private int _cachedStereoMode;
+
         private WasapiLoopbackCapture? _capture;
         private MMDevice? _renderDevice;
         private float[]? _barValues;
@@ -53,11 +69,17 @@ namespace FluentFlyoutWPF.Classes
         public bool ShouldBeRunning => SettingsManager.Current.TaskbarVisualizerEnabled || _clientCount > 0;
 
         private readonly int _fftLength = 1024;
-        private int _fftPos = 0;
-        private readonly Complex[] _fftBuffer;
+        private int _fftPosL = 0;
+        private readonly Complex[] _fftBufferL;
+        private readonly Complex[] _fftBufferR;
+        private readonly float[] _hammingWindow;
 
         private readonly int _targetFps = 60;
         private DateTime _lastUpdateTime = DateTime.MinValue;
+        private DateTime _lastFftTime = DateTime.UtcNow;
+        private SolidColorBrush? _cachedAccentBrush;
+        private DateTime _lastBrushUpdate = DateTime.MinValue;
+
 
         private System.Timers.Timer? _captureWatchdog;
         private DateTime _lastDataAvailableUtc = DateTime.MinValue;
@@ -98,7 +120,13 @@ namespace FluentFlyoutWPF.Classes
         {
             InitializeBitmap();
 
-            _fftBuffer = new Complex[_fftLength];
+            _fftBufferL = new Complex[_fftLength];
+            _fftBufferR = new Complex[_fftLength];
+            _hammingWindow = new float[_fftLength];
+            for (int i = 0; i < _fftLength; i++)
+            {
+                _hammingWindow[i] = (float)FastFourierTransform.HammingWindow(i, _fftLength);
+            }
 
             SetBarCountInternal(SettingsManager.Current.TaskbarVisualizerBarCount);
             AudioDeviceMonitor.Instance.DefaultDeviceChanged += OnDefaultDeviceChanged;
@@ -224,6 +252,7 @@ namespace FluentFlyoutWPF.Classes
         {
             BarCount = newBarCount;
             _barValues = new float[BarCount];
+            RebuildFrequencyBands();
         }
 
         public void Start()
@@ -253,6 +282,9 @@ namespace FluentFlyoutWPF.Classes
                 _capture.StartRecording();
                 _isRunning = true;
                 _lastDataAvailableUtc = DateTime.UtcNow;
+
+                // Rebuild frequency bands if sample rate changed
+                RebuildFrequencyBands();
 
                 // automatic update timer in case audio data is not updated
                 _captureWatchdog = new(500)
@@ -326,34 +358,44 @@ namespace FluentFlyoutWPF.Classes
             _captureWatchdog?.Start();
 
             int bytesPerSample = _capture!.WaveFormat.BitsPerSample / 8;
-            int samplesRecorded = e.BytesRecorded / bytesPerSample;
+            int channels = _capture.WaveFormat.Channels;
+            int frameCount = e.BytesRecorded / (bytesPerSample * channels);
             bool ignoreAudio = !SettingsManager.Current.SystemMediaControlEnabled && !MusicPlayerService.Instance.IsPlaying;
 
-            for (int i = 0; i < samplesRecorded; i++)
+            for (int frame = 0; frame < frameCount; frame++)
             {
-                float sampleValue = 0;
+                float sampleL = 0, sampleR = 0;
+
                 if (!ignoreAudio)
                 {
+                    int offset = frame * channels * bytesPerSample;
+
                     if (bytesPerSample == 4)
                     {
-                        sampleValue = BitConverter.ToSingle(e.Buffer, i * 4);
+                        sampleL = BitConverter.ToSingle(e.Buffer, offset);
+                        sampleR = channels >= 2 ? BitConverter.ToSingle(e.Buffer, offset + 4) : sampleL;
                     }
                     else if (bytesPerSample == 2)
                     {
-                        sampleValue = BitConverter.ToInt16(e.Buffer, i * 2) / 32768f;
+                        sampleL = BitConverter.ToInt16(e.Buffer, offset) / 32768f;
+                        sampleR = channels >= 2 ? BitConverter.ToInt16(e.Buffer, offset + 2) / 32768f : sampleL;
                     }
                 }
 
-                _fftBuffer[_fftPos].X = (float)(sampleValue * FastFourierTransform.HammingWindow(_fftPos, _fftLength));
-                _fftBuffer[_fftPos].Y = 0;
-                _fftPos++;
+                float windowVal = _hammingWindow[_fftPosL];
+
+                _fftBufferL[_fftPosL].X = sampleL * windowVal;
+                _fftBufferL[_fftPosL].Y = 0;
+                _fftBufferR[_fftPosL].X = sampleR * windowVal;
+                _fftBufferR[_fftPosL].Y = 0;
+                _fftPosL++;
 
                 // When buffer isn't full, skip processing and continue filling
-                if (_fftPos < _fftLength)
+                if (_fftPosL < _fftLength)
                     continue;
 
-                // perform FFT
-                _fftPos = 0;
+                // perform FFT on both channels
+                _fftPosL = 0;
                 ProcessFftData();
 
                 // Update UI with frame rate limiting
@@ -393,64 +435,167 @@ namespace FluentFlyoutWPF.Classes
             }
         }
 
-        private void ProcessFftData()
+        /// <summary>
+        /// Rebuilds the cached frequency band lookup table.
+        /// Called when BarCount or sample rate changes.
+        /// </summary>
+        private void RebuildFrequencyBands()
         {
-            FastFourierTransform.FFT(true, (int)Math.Log(_fftLength, 2.0), _fftBuffer);
-
             int sampleRate = _capture?.WaveFormat.SampleRate ?? 44100;
+            int barCount = BarCount;
+            int stereoMode = SettingsManager.Current.TaskbarVisualizerStereoMode;
+
+            // Skip if nothing changed
+            if (_frequencyBands != null && _cachedSampleRate == sampleRate && _cachedBarCount == barCount && _cachedStereoMode == stereoMode)
+                return;
+
+            _cachedSampleRate = sampleRate;
+            _cachedBarCount = barCount;
+            _cachedStereoMode = stereoMode;
+
             double frequencyPerBin = (double)sampleRate / _fftLength;
+            int halfFft = _fftLength / 2;
 
-            double minFreq = 40;   // Hz
-            double maxFreq = 8000; // Hz
-            //double minFreq = 40;  // Hz // could be a setting to be bass only
-            //double maxFreq = 120; // Hz
-            float minDb = -30f - (SettingsManager.Current.TaskbarVisualizerAudioSensitivity * 5f);
-            float maxDb = -45f + (SettingsManager.Current.TaskbarVisualizerAudioPeakLevel * 5f);
+            // In stereo mirror mode, each side (half of the bars) displays the full frequency range.
+            int distinctBands = (stereoMode == 1) ? (barCount / 2) : barCount;
+            if (distinctBands < 1) distinctBands = 1;
 
-            if (minDb >= maxDb) minDb = maxDb - 3;
+            var bands = new FrequencyBand[distinctBands];
 
-            float[] currentBars = new float[BarCount];
-            float maxDbDetected = -100f;
-
-            for (int i = 0; i < BarCount; i++)
+            for (int i = 0; i < distinctBands; i++)
             {
-                double startFreq = minFreq * Math.Pow(maxFreq / minFreq, (double)i / BarCount);
-                double endFreq = minFreq * Math.Pow(maxFreq / minFreq, (double)(i + 1) / BarCount);
+                double startFreq = MinFreq * Math.Pow(MaxFreq / MinFreq, (double)i / distinctBands);
+                double endFreq = MinFreq * Math.Pow(MaxFreq / MinFreq, (double)(i + 1) / distinctBands);
 
                 int startBin = (int)(startFreq / frequencyPerBin);
                 int endBin = (int)(endFreq / frequencyPerBin);
 
                 if (endBin <= startBin) endBin = startBin + 1;
-                if (endBin >= _fftBuffer.Length / 2) endBin = _fftBuffer.Length / 2 - 1;
+                if (endBin >= halfFft) endBin = halfFft - 1;
 
-                float maxAmplitude = 0;
+                // Pre-compute A-weighting multiplier for the center frequency of this band
+                double centerFreq = startFreq + (endFreq - startFreq) / 2.0;
+                float aWeight = AWeighting(centerFreq);
 
-                // Find max amplitude
-                for (int j = startBin; j < endBin; j++)
+                bands[i] = new FrequencyBand
                 {
-                    float amplitude = (float)Math.Sqrt(_fftBuffer[j].X * _fftBuffer[j].X + _fftBuffer[j].Y * _fftBuffer[j].Y);
-                    if (amplitude > maxAmplitude)
-                        maxAmplitude = amplitude;
-                }
-
-                float progress = (float)i / BarCount;
-                float linearBoost = 1.0f + (progress * 75.0f);
-                maxAmplitude *= linearBoost;
-
-                if (maxAmplitude < 0.001f) maxAmplitude = 0.001f;
-
-                float db = 20f * (float)Math.Log10(maxAmplitude);
-                if (db > maxDbDetected) maxDbDetected = db;
-
-                float intensity = (db - minDb) / (maxDb - minDb);
-                intensity = Math.Clamp(intensity, 0f, 1f);
-
-                currentBars[i] = intensity;
+                    StartBin = startBin,
+                    EndBin = endBin,
+                    AWeightMultiplier = MathF.Pow(10f, aWeight / 20f)
+                };
             }
 
-            // Update UI level meter (Map -80dB..10dB to 0..100)
-            float level = (maxDbDetected + 80f) / 90f * 100f;
+            _frequencyBands = bands;
+            Logger.Debug($"Rebuilt frequency bands: {distinctBands} bands, {sampleRate} Hz sample rate, StereoMode: {stereoMode}");
+        }
+
+        private void ProcessFftData()
+        {
+            int fftLog = (int)Math.Log(_fftLength, 2.0);
+
+            // Run FFT on both channels
+            FastFourierTransform.FFT(true, fftLog, _fftBufferL);
+            FastFourierTransform.FFT(true, fftLog, _fftBufferR);
+
+            // Ensure frequency bands are cached and correct for current mode
+            RebuildFrequencyBands();
+
+            var bands = _frequencyBands!;
+
+            float minDb = -20f - (SettingsManager.Current.TaskbarVisualizerAudioSensitivity * 8f);
+            float maxDb = -45f + (SettingsManager.Current.TaskbarVisualizerAudioPeakLevel * 5f);
+
+            if (minDb >= maxDb) minDb = maxDb - 10f;
+            
+            float dbRangeInv = 1f / (maxDb - minDb);
+
+            bool stereoMirror = SettingsManager.Current.TaskbarVisualizerStereoMode == 1;
+            float[] currentBars = new float[BarCount];
+            float maxDbDetected = -100f;
+
+            if (stereoMirror && BarCount >= 2)
+            {
+                // Stereo mirror mode: left half = L channel, right half = R channel
+                int halfBars = BarCount / 2;
+                bool isOdd = BarCount % 2 != 0;
+
+                // Process left channel (rendered from center to left, so reversed)
+                for (int i = 0; i < halfBars; i++)
+                {
+                    ref readonly FrequencyBand band = ref bands[i];
+                    float maxAmp = GetMaxAmplitude(_fftBufferL, band);
+                    maxAmp *= band.AWeightMultiplier;
+                    if (maxAmp < 1e-7f) maxAmp = 1e-7f;
+                    float db = 20f * (float)Math.Log10(maxAmp);
+                    if (db > maxDbDetected) maxDbDetected = db;
+                    float intensity = Math.Clamp((db - minDb) * dbRangeInv, 0f, 1f);
+                    // Map band i to mirrored position: center-1 going left
+                    currentBars[halfBars - 1 - i] = intensity;
+                }
+
+                // Process right channel (rendered from center to right)
+                for (int i = 0; i < halfBars; i++)
+                {
+                    ref readonly FrequencyBand band = ref bands[i];
+                    float maxAmp = GetMaxAmplitude(_fftBufferR, band);
+                    maxAmp *= band.AWeightMultiplier;
+                    if (maxAmp < 1e-7f) maxAmp = 1e-7f;
+                    float db = 20f * (float)Math.Log10(maxAmp);
+                    if (db > maxDbDetected) maxDbDetected = db;
+                    float intensity = Math.Clamp((db - minDb) * dbRangeInv, 0f, 1f);
+                    // Right channel starts at halfBars if even, or halfBars + 1 if odd
+                    currentBars[halfBars + (isOdd ? 1 : 0) + i] = intensity;
+                }
+
+                // If odd, fill the very center bar with the average of the lowest bands (i=0) of L and R
+                if (isOdd)
+                {
+                    ref readonly FrequencyBand band = ref bands[0];
+                    float maxAmpL = GetMaxAmplitude(_fftBufferL, band);
+                    float maxAmpR = GetMaxAmplitude(_fftBufferR, band);
+                    float maxAmp = (maxAmpL + maxAmpR) * 0.5f;
+                    maxAmp *= band.AWeightMultiplier;
+                    if (maxAmp < 1e-7f) maxAmp = 1e-7f;
+                    float db = 20f * (float)Math.Log10(maxAmp);
+                    if (db > maxDbDetected) maxDbDetected = db;
+                    float intensity = Math.Clamp((db - minDb) * dbRangeInv, 0f, 1f);
+                    currentBars[halfBars] = intensity;
+                }
+            }
+            else
+            {
+                // Mono mode: average L+R channels
+                for (int i = 0; i < BarCount; i++)
+                {
+                    ref readonly FrequencyBand band = ref bands[i];
+
+                    float maxAmpL = GetMaxAmplitude(_fftBufferL, band);
+                    float maxAmpR = GetMaxAmplitude(_fftBufferR, band);
+                    float maxAmplitude = (maxAmpL + maxAmpR) * 0.5f;
+
+                    maxAmplitude *= band.AWeightMultiplier;
+                    if (maxAmplitude < 1e-7f) maxAmplitude = 1e-7f;
+
+                    float db = 20f * (float)Math.Log10(maxAmplitude);
+                    if (db > maxDbDetected) maxDbDetected = db;
+
+                    float intensity = Math.Clamp((db - minDb) * dbRangeInv, 0f, 1f);
+                    currentBars[i] = intensity;
+                }
+            }
+
+            // Update UI absolute level meter (Map -100dB..10dB to 0..100)
+            float level = (maxDbDetected + 100f) / 110f * 100f;
             SettingsManager.Current.TaskbarVisualizerCurrentLevel = Math.Clamp(level, 0, 100);
+
+            // Update calibrated level meter based on user sensitivity and peak settings
+            float calibratedLevel = (maxDbDetected - minDb) / (maxDb - minDb) * 100f;
+            SettingsManager.Current.TaskbarVisualizerCalibratedLevel = Math.Clamp(calibratedLevel, 0, 100);
+
+            DateTime now = DateTime.UtcNow;
+            float elapsed = (float)(now - _lastFftTime).TotalSeconds;
+            _lastFftTime = now;
+            float decay = MathF.Pow(0.005f, elapsed); // Adapts to FFT rate, ~0.92 at 60fps
 
             if (_barValues != null)
             {
@@ -465,13 +610,37 @@ namespace FluentFlyoutWPF.Classes
                         }
                         else
                         {
-                            // Fall down slowly
-                            _barValues[i] = (_barValues[i] * 0.92f) + (currentBars[i] * 0.08f);
+                            // Fall down smoothly based on elapsed time
+                            _barValues[i] = (_barValues[i] * decay) + (currentBars[i] * (1f - decay));
                         }
                     }
                 }
             }
         }
+
+        /// <summary>
+        /// Finds the maximum amplitude within a pre-computed frequency band from an FFT buffer.
+        /// </summary>
+        private static float GetMaxAmplitude(Complex[] fftBuffer, in FrequencyBand band)
+        {
+            float maxAmplitude = 0;
+            for (int j = band.StartBin; j < band.EndBin; j++)
+            {
+                float amplitude = (float)Math.Sqrt(fftBuffer[j].X * fftBuffer[j].X + fftBuffer[j].Y * fftBuffer[j].Y);
+                if (amplitude > maxAmplitude)
+                    maxAmplitude = amplitude;
+            }
+            return maxAmplitude;
+        }
+
+        private static float AWeighting(double f)
+        {
+            double f2 = f * f;
+            double num = 12194.0 * 12194.0 * f2 * f2;
+            double den = (f2 + 20.6 * 20.6) * Math.Sqrt((f2 + 107.7 * 107.7) * (f2 + 737.9 * 737.9)) * (f2 + 12194.0 * 12194.0);
+            return (float)(2.0 + 20.0 * Math.Log10(num / den));
+        }
+
 
         private void UpdateBitmap()
         {
@@ -514,17 +683,24 @@ namespace FluentFlyoutWPF.Classes
 
         private unsafe void DrawBars(int stride, Span<byte> buffer)
         {
-            // Resolve brush once 
-            SolidColorBrush brush = BitmapHelper.SavedDominantColors.Count > 0
-                ? BitmapHelper.SavedDominantColors.Last()
-                : (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary");
+            // Resolve brush with caching (once per second or if not cached)
+            DateTime now = DateTime.UtcNow;
+            if (_cachedAccentBrush == null || (now - _lastBrushUpdate).TotalSeconds > 1)
+            {
+                _cachedAccentBrush = BitmapHelper.SavedDominantColors.Count > 0
+                    ? BitmapHelper.SavedDominantColors.Last()
+                    : (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary")
+                    ?? new SolidColorBrush(Colors.DeepSkyBlue);
+                _lastBrushUpdate = now;
+            }
+            
+            byte b = _cachedAccentBrush.Color.B;
+            byte g = _cachedAccentBrush.Color.G;
+            byte r = _cachedAccentBrush.Color.R;
 
-            byte b = brush.Color.B;
-            byte g = brush.Color.G;
-            byte r = brush.Color.R;
-
-            bool centeredBars = SettingsManager.Current.TaskbarVisualizerCenteredBars;
-            int barBaseline = SettingsManager.Current.TaskbarVisualizerBaseline ? 4 : 0;
+            var settings = SettingsManager.Current;
+            bool centeredBars = settings.TaskbarVisualizerCenteredBars;
+            int barBaseline = settings.TaskbarVisualizerBaseline ? 4 : 0;
 
             int centerY = ImageHeight / 2;
 

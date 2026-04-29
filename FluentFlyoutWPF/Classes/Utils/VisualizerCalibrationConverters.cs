@@ -10,8 +10,8 @@ namespace FluentFlyoutWPF.Classes.Utils
         {
             if (value is int sensitivity)
             {
-                float minDb = -30f - (sensitivity * 5f);
-                float level = (minDb + 80f) / 90f * 100f;
+                float minDb = -20f - (sensitivity * 8f);
+                float level = (minDb + 100f) / 110f * 100f;
                 
                 if (parameter != null && double.TryParse(parameter.ToString(), out double width))
                 {
@@ -32,7 +32,7 @@ namespace FluentFlyoutWPF.Classes.Utils
             if (value is int peak)
             {
                 float maxDb = -45f + (peak * 5f);
-                float level = (maxDb + 80f) / 90f * 100f;
+                float level = (maxDb + 100f) / 110f * 100f;
 
                 if (parameter != null && double.TryParse(parameter.ToString(), out double width))
                 {
@@ -52,8 +52,8 @@ namespace FluentFlyoutWPF.Classes.Utils
         {
             if (value is int sensitivity)
             {
-                float minDb = -30f - (sensitivity * 5f);
-                float level = (minDb + 80f) / 90f * 100f;
+                float minDb = -20f - (sensitivity * 8f);
+                float level = (minDb + 100f) / 110f * 100f;
                 
                 if (level < 0) level = 0;
                 if (level > 100) level = 100;
@@ -72,7 +72,7 @@ namespace FluentFlyoutWPF.Classes.Utils
             if (value is int peak)
             {
                 float maxDb = -45f + (peak * 5f);
-                float level = (maxDb + 80f) / 90f * 100f;
+                float level = (maxDb + 100f) / 110f * 100f;
 
                 if (level < 0) level = 0;
                 if (level > 100) level = 100;
