@@ -592,6 +592,12 @@ public partial class UserSettings : ObservableObject
     public partial bool UseAlbumArtAsAccentColor { get; set; }
 
     /// <summary>
+    /// Enable turntable mode in the home page
+    /// </summary>
+    [ObservableProperty]
+    public partial bool TurntableModeEnabled { get; set; }
+
+    /// <summary>
     /// Gets whether this is a Store version. Once false, always false (only if last known version was not null).
     /// </summary>
     [ObservableProperty]
@@ -758,6 +764,7 @@ public partial class UserSettings : ObservableObject
         LibraryLyricsFilterEnabled = false;
         LibraryPlaylistVisible = false;
         LibraryItemCornerRadius = 12.0;
+        TurntableModeEnabled = false;
     }
 
     /// <summary>

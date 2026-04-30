@@ -233,19 +233,19 @@
                                 Margin="0,0,0,12">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Stereo Mode"
+                            <TextBlock Text="{DynamicResource TaskbarVisualizerStereoModeTitle}"
                                        FontSize="14"
                                        FontWeight="Regular"
                                        VerticalAlignment="Center"/>
-                            <TextBlock Text="How audio channels are processed for visualization"
+                            <TextBlock Text="{DynamicResource TaskbarVisualizerStereoModeDescription}"
                                        FontSize="12"
                                        Opacity="0.5"/>
                         </StackPanel>
                     </ui:CardControl.Header>
                     <ComboBox SelectedIndex="{Binding TaskbarVisualizerStereoMode}"
                               IsEnabled="{Binding IsPremiumUnlocked}">
-                        <ComboBoxItem Content="Mono (L+R averaged)"/>
-                        <ComboBoxItem Content="Stereo Mirror (L|R)"/>
+                        <ComboBoxItem Content="{DynamicResource TaskbarVisualizerStereoModeMono}"/>
+                        <ComboBoxItem Content="{DynamicResource TaskbarVisualizerStereoModeStereoMirror}"/>
                     </ComboBox>
                 </ui:CardControl>
 
@@ -392,7 +392,7 @@
                                            FontSize="14"
                                            FontWeight="Regular"
                                            VerticalAlignment="Center"/>
-                                <ui:InfoBadge Value=" NEW "
+                                <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                               FontWeight="Medium"
                                               FontSize="10"
                                               Margin="6,-2,0,-2"
@@ -468,7 +468,7 @@
                                            FontSize="14"
                                            FontWeight="Regular"
                                            VerticalAlignment="Center"/>
-                                <ui:InfoBadge Value=" NEW "
+                                <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                               FontWeight="Medium"
                                               FontSize="10"
                                               Margin="6,-2,0,-2"

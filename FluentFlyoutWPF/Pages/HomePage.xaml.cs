@@ -28,6 +28,7 @@ public partial class HomePage : Page
     private bool _isAutoScrollPaused;
     private DateTime _lastScrollTime;
     private readonly DispatcherTimer _resumeAutoScrollTimer;
+    
 
     public HomePage()
     {
@@ -46,6 +47,7 @@ public partial class HomePage : Page
 
         _resumeAutoScrollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _resumeAutoScrollTimer.Tick += (s, e) => ResumeAutoScroll();
+
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -355,10 +357,26 @@ public partial class HomePage : Page
         }
     }
 
+    private Point _lyricsMouseDownPos;
+
+    private void LyricsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _lyricsMouseDownPos = e.GetPosition(this);
+    }
+
     private void LyricsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        if (_isDraggingSeekbar) return;
+
         if (sender is ListBox)
         {
+            // Verify it was a click, not a scroll drag
+            var currentPos = e.GetPosition(this);
+            if (Math.Abs(currentPos.X - _lyricsMouseDownPos.X) > 10 || Math.Abs(currentPos.Y - _lyricsMouseDownPos.Y) > 10)
+            {
+                return;
+            }
+
             var element = e.OriginalSource as FrameworkElement;
             if (element?.DataContext is LyricLine line)
             {
@@ -610,5 +628,6 @@ public partial class HomePage : Page
             }
         }
     }
+
 
 }

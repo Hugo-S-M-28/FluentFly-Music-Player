@@ -1,691 +1,395 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-    <system:String x:Key="AboutContributorsDescription">A big thank you to all the amazing people who have contributed to FluentFlyout's development and success!</system:String>
-
-    <system:String x:Key="AboutContributorsTitle">❤️ Meet Our Contributors</system:String>
-
-    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout is built with the following open source packages:</system:String>
-
-    <system:String x:Key="AboutOpenSourceLicensesTitle">Open Source Licenses</system:String>
-
-    <system:String x:Key="AboutPremiumTitle">About Premium</system:String>
-
+    <system:String x:Key="AboutContributorsDescription">Suuri kiitos kaikille mahtaville ihmisille, jotka ovat osallistuneet FluentFlyoutin kehitykseen ja menestykseen!</system:String>
+    <system:String x:Key="AboutContributorsTitle">❤️ Tutustu avustajiimme</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout on rakennettu seuraavilla avoimen lähdekoodin paketeilla:</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesTitle">Avoimen lähdekoodin lisenssit</system:String>
+    <system:String x:Key="AboutPremiumTitle">Tietoja Premiumista</system:String>
     <system:String x:Key="AboutTitle">Tietoja</system:String>
+    <system:String x:Key="AcrylicBlurOpacityDescription">Säädä akryyli-ikkunoiden läpinäkyvyyttä (oletus: 175)</system:String>
+    <system:String x:Key="AcrylicBlurOpacityPerk">Akryylin sumennuksen peittävyys</system:String>
+    <system:String x:Key="AcrylicBlurOpacityTitle">Akryylin sumennuksen peittävyys</system:String>
+    <system:String x:Key="AcrylicWindowDescription">Käytä läpinäkyvää akryylisumennusta ikkunaan (pois kytkeminen palauttaa Mica-efektin)</system:String>
+    <system:String x:Key="AcrylicWindowTitle">Akryyli-ikkuna</system:String>
+    <system:String x:Key="AdvancedSettingsTitle">Lisäasetukset</system:String>
+    <system:String x:Key="AllFuturePremiumFeatures">Kaikki tulevat Premium-ominaisuudet</system:String>
+    <system:String x:Key="AnimationDurationScaleDescription">Ikkunan animaation nopeus (oletus: 1x)</system:String>
+    <system:String x:Key="AnimationDurationScaleTitle">Animaation keston skaala</system:String>
+    <system:String x:Key="AnimationEasingStyleDescription">(oletus: Quadratic)</system:String>
+    <system:String x:Key="AnimationEasingStyleTitle">Animaation pehmennystyyli</system:String>
+    <system:String x:Key="AnimationSettingsDescription">Säädä animaatioita mieltymyksesi mukaan</system:String>
+    <system:String x:Key="AnimationSettingsTitle">Animaatioasetukset</system:String>
+    <system:String x:Key="AnimationSpeedOff">Pois päältä</system:String>
+    <system:String x:Key="AppLanguageDescription">Jos kieltäsi ei ole luettelossa tai se on puutteellinen, sovellus käyttää oletuksena englantia.
 
-    <system:String x:Key="AcrylicBlurOpacityDescription">Adjust the see-through effect on Acrylic flyouts (default: 175)</system:String>
-
-    <system:String x:Key="AcrylicBlurOpacityPerk">Acrylic Blur Opacity</system:String>
-
-    <system:String x:Key="AcrylicBlurOpacityTitle">Acrylic Blur Opacity</system:String>
-
-    <system:String x:Key="AcrylicWindowDescription">Apply transparent acrylic blur effect to the flyout (off reverts to Mica)</system:String>
-
-    <system:String x:Key="AcrylicWindowTitle">Acrylic Window</system:String>
-
-    <system:String x:Key="AdvancedSettingsTitle">Advanced Settings</system:String>
-
-    <system:String x:Key="AllFuturePremiumFeatures">All future Premium features</system:String>
-
-    <system:String x:Key="AnimationDurationScaleDescription">Faster or slower flyout animation speed (default: 1x)</system:String>
-
-    <system:String x:Key="AnimationDurationScaleTitle">Animation Duration Scale</system:String>
-
-    <system:String x:Key="AnimationEasingStyleDescription">(default: Quadratic)</system:String>
-
-    <system:String x:Key="AnimationEasingStyleTitle">Animation Easing Style</system:String>
-
-    <system:String x:Key="AnimationSettingsDescription">Tweak the animations to your liking</system:String>
-
-    <system:String x:Key="AnimationSettingsTitle">Animation Settings</system:String>
-
-    <system:String x:Key="AnimationSpeedOff">Off</system:String>
-
-    <system:String x:Key="AppLanguageDescription">If your language is not listed or incomplete, it will default to English.
-
-
-
-You can help contribute translations on</system:String>
-
+Voit auttaa kääntämisessä täällä:</system:String>
     <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
-
-    <system:String x:Key="AppLanguageTitle">App Language</system:String>
-
-    <system:String x:Key="AppThemeDark"> Dark</system:String>
-
-    <system:String x:Key="AppThemeDefault"> Windows Default</system:String>
-
-    <system:String x:Key="AppThemeLight"> Light</system:String>
-
-    <system:String x:Key="AppThemeTitle">App Theme</system:String>
-
-    <system:String x:Key="AppearanceBehaviorSectionTitle">Appearance &amp; behavior</system:String>
-
-    <system:String x:Key="BackgroundBlurOption1"> None</system:String>
-
-    <system:String x:Key="BackgroundBlurOption2"> Style 1 (Cover Glow)</system:String>
-
-    <system:String x:Key="BackgroundBlurOption3"> Style 2 (Rising Glow)</system:String>
-
-    <system:String x:Key="BackgroundBlurOption4"> Style 3 (Blur)</system:String>
-
-    <system:String x:Key="BackgroundBlurTitle">Background Blur</system:String>
-
-    <system:String x:Key="BackupRestoreCardTitle">Back up and restore your settings</system:String>
-
-    <system:String x:Key="BackupRestoreSectionTitle">Back up &amp; restore</system:String>
-
-    <system:String x:Key="BuyMeCoffeeLink">Buy me a coffee</system:String>
-
-    <system:String x:Key="CenterTitleArtistDescription">Align text to the center instead of the left</system:String>
-
-    <system:String x:Key="CenterTitleArtistTitle">Center Title and Artist</system:String>
-
-    <system:String x:Key="CheckingForUpdates">Checking...</system:String>
-
+    <system:String x:Key="AppLanguageTitle">Sovelluksen kieli</system:String>
+    <system:String x:Key="AppThemeDark"> Tumma</system:String>
+    <system:String x:Key="AppThemeDefault"> Windowsin oletus</system:String>
+    <system:String x:Key="AppThemeLight"> Vaalea</system:String>
+    <system:String x:Key="AppThemeTitle">Sovelluksen teema</system:String>
+    <system:String x:Key="AppearanceBehaviorSectionTitle">Ulkoasu ja käyttäytyminen</system:String>
+    <system:String x:Key="BackgroundBlurOption1" xml:space="preserve"> Ei mitään</system:String>
+    <system:String x:Key="BackgroundBlurOption2" xml:space="preserve"> Tyyli 1 (Kannen hehku)</system:String>
+    <system:String x:Key="BackgroundBlurOption3" xml:space="preserve"> Tyyli 2 (Nouseva hehku)</system:String>
+    <system:String x:Key="BackgroundBlurOption4" xml:space="preserve"> Tyyli 3 (Sumennus)</system:String>
+    <system:String x:Key="BackgroundBlurTitle">Taustan sumennus</system:String>
+    <system:String x:Key="BackupRestoreCardTitle">Varmuuskopioi ja palauta asetuksesi</system:String>
+    <system:String x:Key="BackupRestoreSectionTitle">Varmuuskopiointi ja palautus</system:String>
+    <system:String x:Key="BuyMeCoffeeLink">Tarjoa minulle kahvi</system:String>
+    <system:String x:Key="CenterTitleArtistDescription">Keskitä teksti vasemmalle tasauksen sijaan</system:String>
+    <system:String x:Key="CenterTitleArtistTitle">Keskitä nimi ja artisti</system:String>
+    <system:String x:Key="CheckingForUpdates">Tarkistetaan päivityksiä...</system:String>
     <system:String x:Key="CloseButton">Sulje</system:String>
+    <system:String x:Key="CompactLayoutDescription" xml:space="preserve">Ohuempi ja vähemmän häiritsevä asettelu
 
-    <system:String x:Key="CompactLayoutDescription">Slimmer and less intrusive layout
-
-
-
-hides repeat, shuffle and player info</system:String>
-
-    <system:String x:Key="CompactLayoutTitle">Compact Layout</system:String>
-
-    <system:String x:Key="DefaultLockLayoutPosition">Default (Flyout Target Display)</system:String>
-
-    <system:String x:Key="DevelopersTitle">Developers</system:String>
-
-    <system:String x:Key="DisableOnFullscreenDescription">Prevents DirectX games in exclusive fullscreen from minimizing if a flyout pops up</system:String>
-
-    <system:String x:Key="DisableOnFullscreenTitle">Disable Flyouts if DirectX fullscreen program is detected</system:String>
-
+Piilottaa toiston, sekoituksen ja soittimen tiedot</system:String>
+    <system:String x:Key="CompactLayoutTitle">Kompakti asettelu</system:String>
+    <system:String x:Key="DefaultLockLayoutPosition">Oletus (Kohdenäyttö)</system:String>
+    <system:String x:Key="DevelopersTitle">Kehittäjät</system:String>
+    <system:String x:Key="DisableOnFullscreenDescription">Estää DirectX-pelien pienenemisen kokoruututilassa, kun ikkuna ilmestyy</system:String>
+    <system:String x:Key="DisableOnFullscreenTitle">Poista käytöstä kokoruudun DirectX-ohjelman aikana</system:String>
     <system:String x:Key="Disabled">Ei käytössä</system:String>
-
-    <system:String x:Key="EasingCubic"> Cubic</system:String>
-
-    <system:String x:Key="EasingLinear"> Linear</system:String>
-
-    <system:String x:Key="EasingQuadratic"> Quadratic</system:String>
-
-    <system:String x:Key="EasingSine"> Sine</system:String>
-
-    <system:String x:Key="Edit_AlbumLabel">Album</system:String>
-
-    <system:String x:Key="Edit_AlbumPlaceholder">Album name</system:String>
-
-    <system:String x:Key="Edit_ArtFilter">Images|*.jpg;*.jpeg;*.png;*.bmp;*.webp|All files|*.*</system:String>
-
-    <system:String x:Key="Edit_ArtistLabel">Artist</system:String>
-
-    <system:String x:Key="Edit_ArtistPlaceholder">Artist name</system:String>
-
-    <system:String x:Key="Edit_Cancel">Cancel</system:String>
-
-    <system:String x:Key="Edit_ChangeArtOverlay">Change</system:String>
-
-    <system:String x:Key="Edit_ChangeArtTooltip">Click to change cover art</system:String>
-
-    <system:String x:Key="Edit_CollaboratorsLabel">Collaborators</system:String>
-
-    <system:String x:Key="Edit_CollaboratorsPlaceholder">Guest artists (separated by ;)</system:String>
-
-    <system:String x:Key="Edit_ErrorTitle">Error</system:String>
-
-    <system:String x:Key="Edit_FileInfoSection">Music file information</system:String>
-
-    <system:String x:Key="Edit_GenreLabel">Genre</system:String>
-
-    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock, etc.</system:String>
-
-    <system:String x:Key="Edit_HeaderSummary">Edit metadata</system:String>
-
-    <system:String x:Key="Edit_InfoNote">Changes will be permanently saved to the original audio file.</system:String>
-
-    <system:String x:Key="Edit_LoadLrc">Load file</system:String>
-
-    <system:String x:Key="Edit_LrcLoadError">Could not load the selected file.</system:String>
-
-    <system:String x:Key="Edit_LyricsFormatInfo">LRC Format</system:String>
-
-    <system:String x:Key="Edit_LyricsFormatMsg">Enter lyrics in [mm:ss.xx]Text format for automatic synchronization.</system:String>
-
-    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Lyrics here...</system:String>
-
+    <system:String x:Key="EasingCubic" xml:space="preserve"> Cubic</system:String>
+    <system:String x:Key="EasingLinear" xml:space="preserve"> Linear</system:String>
+    <system:String x:Key="EasingQuadratic" xml:space="preserve"> Quadratic</system:String>
+    <system:String x:Key="EasingSine" xml:space="preserve"> Sine</system:String>
+    <system:String x:Key="Edit_AlbumLabel">Albumi</system:String>
+    <system:String x:Key="Edit_AlbumPlaceholder">Albumin nimi</system:String>
+    <system:String x:Key="Edit_ArtFilter">Kuvat|*.jpg;*.jpeg;*.png;*.bmp;*.webp|Kaikki tiedostot|*.*</system:String>
+    <system:String x:Key="Edit_ArtistLabel">Artisti</system:String>
+    <system:String x:Key="Edit_ArtistPlaceholder">Artistin nimi</system:String>
+    <system:String x:Key="Edit_Cancel">Peruuta</system:String>
+    <system:String x:Key="Edit_ChangeArtOverlay">Muuta</system:String>
+    <system:String x:Key="Edit_ChangeArtTooltip">Klikkaa muuttaaksesi kansikuvaa</system:String>
+    <system:String x:Key="Edit_CollaboratorsLabel">Yhteistyökumppanit</system:String>
+    <system:String x:Key="Edit_CollaboratorsPlaceholder">Vierailevat artistit (eroteltu ;-merkillä)</system:String>
+    <system:String x:Key="Edit_ErrorTitle">Virhe</system:String>
+    <system:String x:Key="Edit_FileInfoSection">Musiikkitiedoston tiedot</system:String>
+    <system:String x:Key="Edit_GenreLabel">Tyylilaji</system:String>
+    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock jne.</system:String>
+    <system:String x:Key="Edit_HeaderSummary">Muokkaa metatietoja</system:String>
+    <system:String x:Key="Edit_InfoNote">Muutokset tallennetaan pysyvästi alkuperäiseen tiedostoon.</system:String>
+    <system:String x:Key="Edit_LoadLrc">Lataa tiedosto</system:String>
+    <system:String x:Key="Edit_LrcLoadError">Valittua tiedostoa ei voitu ladata.</system:String>
+    <system:String x:Key="Edit_LyricsFormatInfo">LRC-muoto</system:String>
+    <system:String x:Key="Edit_LyricsFormatMsg">Syötä sanoitukset muodossa [mm:ss.xx]Teksti automaattista synkronointia varten.</system:String>
+    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Kirjoita sanoitukset tähän...</system:String>
     <system:String x:Key="Edit_Ok">OK</system:String>
-
-    <system:String x:Key="Edit_OpenLocation">Open location</system:String>
-
-    <system:String x:Key="Edit_Save">Save changes</system:String>
-
-    <system:String x:Key="Edit_SaveErrorMsg">Could not save changes. Make sure the file is not being used by another process.</system:String>
-
-    <system:String x:Key="Edit_SelectArtTitle">Select cover image</system:String>
-
-    <system:String x:Key="Edit_SelectLrcTitle">Select lyrics file</system:String>
-
-    <system:String x:Key="Edit_SyncCurrentTime">Sync current time</system:String>
-
-    <system:String x:Key="Edit_SyncLyricsTip">Inserts the current player time at the cursor position.</system:String>
-
-    <system:String x:Key="Edit_TabLyrics">Lyrics (.lrc)</system:String>
-
-    <system:String x:Key="Edit_TabMetadata">Metadata</system:String>
-
-    <system:String x:Key="Edit_TitleLabel">Song title</system:String>
-
-    <system:String x:Key="Edit_TitlePlaceholder">Enter title</system:String>
-
-    <system:String x:Key="Edit_TrackNumberLabel">Track #</system:String>
-
-    <system:String x:Key="Edit_UnknownArtist">Unknown Artist</system:String>
-
-    <system:String x:Key="Edit_Untitled">Untitled</system:String>
-
-    <system:String x:Key="Edit_WindowTitle">Edit Track Info</system:String>
-
-    <system:String x:Key="EnableInsertKeyDescription">Determines whether pressing insert/overwrite will show the flyout</system:String>
-
-    <system:String x:Key="EnableInsertKeyTitle">Enable Insert Key Popup</system:String>
-
-    <system:String x:Key="EnableLockKeysDescription">Displays whether the specified lock key is on or off</system:String>
-
-    <system:String x:Key="EnableLockKeysTitle">Enable Lock Keys Flyout</system:String>
-
-    <system:String x:Key="EnableNextUpDescription">Shows what's next when a song/video ends</system:String>
-
-    <system:String x:Key="EnableNextUpTitle">Enable Next Up Flyout</system:String>
-
+    <system:String x:Key="Edit_OpenLocation">Avaa sijainti</system:String>
+    <system:String x:Key="Edit_Save">Tallenna muutokset</system:String>
+    <system:String x:Key="Edit_SaveErrorMsg">Muutoksia ei voitu tallentaa. Varmista, ettei tiedosto ole toisen ohjelman käytössä.</system:String>
+    <system:String x:Key="Edit_SelectArtTitle">Valitse kansikuva</system:String>
+    <system:String x:Key="Edit_SelectLrcTitle">Valitse sanoitustiedosto</system:String>
+    <system:String x:Key="Edit_SyncCurrentTime">Synkronoi nykyinen aika</system:String>
+    <system:String x:Key="Edit_SyncLyricsTip">Lisää soittimen nykyisen ajan kursoriin.</system:String>
+    <system:String x:Key="Edit_TabLyrics">Sanoitukset (.lrc)</system:String>
+    <system:String x:Key="Edit_TabMetadata">Metatiedot</system:String>
+    <system:String x:Key="Edit_TitleLabel">Kappaleen nimi</system:String>
+    <system:String x:Key="Edit_TitlePlaceholder">Syötä nimi</system:String>
+    <system:String x:Key="Edit_TrackNumberLabel">Kappalenumero #</system:String>
+    <system:String x:Key="Edit_UnknownArtist">Tuntematon artisti</system:String>
+    <system:String x:Key="Edit_Untitled">Nimetön</system:String>
+    <system:String x:Key="Edit_WindowTitle">Muokkaa kappaleen tietoja</system:String>
+    <system:String x:Key="EnableInsertKeyDescription">Määrittää, näyttääkö Insert/Overwrite-näppäimen painaminen ikkunan</system:String>
+    <system:String x:Key="EnableInsertKeyTitle">Ota Insert-näppäin käyttöön</system:String>
+    <system:String x:Key="EnableLockKeysDescription">Näyttää, ovatko lukitusnäppäimet päällä vai pois</system:String>
+    <system:String x:Key="EnableLockKeysTitle">Ota lukitusnäppäinten ikkunat käyttöön</system:String>
+    <system:String x:Key="EnableNextUpDescription">Näyttää seuraavan kappaleen jonossa kappaleen/videon päättyessä</system:String>
+    <system:String x:Key="EnableNextUpTitle">Ota "Seuraavaksi" -ikkuna käyttöön</system:String>
     <system:String x:Key="Enabled">Käytössä</system:String>
+    <system:String x:Key="EnjoyingAppText" xml:space="preserve">Pidätkö sovelluksesta? Anna meille tähti GitHubissa
 
-    <system:String x:Key="EnjoyingAppText">Enjoying the app? Star it on GitHub,
-
-
-
-or leave a review on Microsoft Store!</system:String>
-
-    <system:String x:Key="Eq_Enable">Enable Equalizer</system:String>
-
-    <system:String x:Key="Eq_Presets">Presets</system:String>
-
-    <system:String x:Key="Eq_Title">Equalizer</system:String>
-
-    <system:String x:Key="Error_RestoreSettings">Failed to restore settings</system:String>
-
-    <system:String x:Key="ExportFailed">Export Failed</system:String>
-
-    <system:String x:Key="ExportSettings">Export Settings</system:String>
-
-    <system:String x:Key="ExportSuccessful">Export Successful</system:String>
-
-    <system:String x:Key="ExternalMediaSectionTitle">External Media Integration</system:String>
-
-    <system:String x:Key="FailedToExportSettings">Failed to export settings. Check the logs for details.</system:String>
-
-    <system:String x:Key="FailedToImportSettings">Failed to import settings. Check the logs for details.</system:String>
-
-    <system:String x:Key="FeaturesLayoutSectionTitle">Features &amp; Layout</system:String>
-
-    <system:String x:Key="FlyoutPositionTitle">Flyout Position</system:String>
-
-    <system:String x:Key="FlyoutStayDurationDescription">(default: 3000 ms)</system:String>
-
-    <system:String x:Key="FlyoutStayDurationTitle">Flyout Stay Duration</system:String>
-
-    <system:String x:Key="General_Loading">Loading...</system:String>
-
+tai jätä arvostelu Microsoft Storessa!</system:String>
+    <system:String x:Key="Eq_Enable">Ota taajuuskorjain käyttöön</system:String>
+    <system:String x:Key="Eq_Presets">Esiasetukset</system:String>
+    <system:String x:Key="Eq_Title">Taajuuskorjain</system:String>
+    <system:String x:Key="Error_RestoreSettings">Asetusten palauttaminen epäonnistui</system:String>
+    <system:String x:Key="ExportFailed">Vienti epäonnistui</system:String>
+    <system:String x:Key="ExportSettings">Vie asetukset</system:String>
+    <system:String x:Key="ExportSuccessful">Vienti onnistui</system:String>
+    <system:String x:Key="ExternalMediaSectionTitle">Ulkoinen mediatiedosto-integraatio</system:String>
+    <system:String x:Key="FailedToExportSettings">Asetusten vienti epäonnistui. Tarkista lokitiedot.</system:String>
+    <system:String x:Key="FailedToImportSettings">Asetusten tuonti epäonnistui. Tarkista lokitiedot.</system:String>
+    <system:String x:Key="FeaturesLayoutSectionTitle">Ominaisuudet ja asettelu</system:String>
+    <system:String x:Key="FlyoutPositionTitle">Ikkunan sijainti</system:String>
+    <system:String x:Key="FlyoutStayDurationDescription">(oletus: 3000 ms)</system:String>
+    <system:String x:Key="FlyoutStayDurationTitle">Ikkunan näkyvyyden kesto</system:String>
+    <system:String x:Key="General_Loading">Ladataan...</system:String>
     <system:String x:Key="General_No">Ei</system:String>
-
     <system:String x:Key="General_Ok">OK</system:String>
-
     <system:String x:Key="General_Yes">Kyllä</system:String>
-
-    <system:String x:Key="GitHubRepoLink">GitHub Repository</system:String>
-
-    <system:String x:Key="HideTrayIconDescription">Access settings from launching the program twice</system:String>
-
-    <system:String x:Key="HideTrayIconPerk">Hide Tray Icon</system:String>
-
-    <system:String x:Key="HideTrayIconTitle">Hide Tray Icon Completely</system:String>
-
-    <system:String x:Key="HomeDashboardTitle">Dashboard</system:String>
-
+    <system:String x:Key="GitHubRepoLink">GitHub-repo</system:String>
+    <system:String x:Key="HideTrayIconDescription">Pääset asetuksiin käynnistämällä ohjelman kahdesti</system:String>
+    <system:String x:Key="HideTrayIconPerk">Piilota kuvake tehtäväpalkista</system:String>
+    <system:String x:Key="HideTrayIconTitle">Piilota tehtäväpalkin kuvake kokonaan</system:String>
+    <system:String x:Key="HomeDashboardTitle">Kojelauta</system:String>
     <system:String x:Key="HomeTitle">Koti</system:String>
-
-    <system:String x:Key="HomeUpdateDescription">Learn what's new</system:String>
-
-    <system:String x:Key="Home_LyricsNotAvailable">Lyrics not available</system:String>
-
-    <system:String x:Key="Home_Repeat">Repeat</system:String>
-
-    <system:String x:Key="Home_SelectSongToSeeLyrics">Select a song to see its lyrics</system:String>
-
-    <system:String x:Key="Home_Shuffle">Shuffle</system:String>
-
-    <system:String x:Key="Home_Title">Music Player</system:String>
-
-    <system:String x:Key="ImportFailed">Import Failed</system:String>
-
-    <system:String x:Key="ImportSettings">Import Settings</system:String>
-
-    <system:String x:Key="ImportSettingsWarning">This will replace all your current settings. Continue?</system:String>
-
-    <system:String x:Key="ImportSuccessful">Import Successful</system:String>
-
-    <system:String x:Key="InternalMusicPlayerSectionTitle">Internal Music Player</system:String>
-
-    <system:String x:Key="InternalPlayerEnabledDescription">Use FluentFlyout as a standalone local music player for your library</system:String>
-
-    <system:String x:Key="InternalPlayerEnabledTitle">Enable Internal Music Player</system:String>
-
-    <system:String x:Key="LastChecked">Last checked: {0}</system:String>
-
-    <system:String x:Key="LaunchOnStartupDescription">Start minimized to tray when you log in to Windows</system:String>
-
-    <system:String x:Key="LaunchOnStartupTitle">Launch on Startup</system:String>
-
-    <system:String x:Key="LegacyTaskbarWidthDescription">Use the legacy Taskbar width system for Taskbar Widgets</system:String>
-
-    <system:String x:Key="LegacyTaskbarWidthTitle">Legacy Taskbar Width System</system:String>
-
-    <system:String x:Key="Lib_Albums">Albums</system:String>
-
-    <system:String x:Key="Lib_AppearanceTitle">Library Appearance</system:String>
-
-    <system:String x:Key="Lib_Artists">Artists</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_AddToQueue">Add to queue</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_Edit">Edit info</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">Open file location</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_Play">Play</system:String>
-
-    <system:String x:Key="Lib_Folders">Folders</system:String>
-
-    <system:String x:Key="Lib_GridSizeDescription">Grid Size (Albums)</system:String>
-
-    <system:String x:Key="Lib_GridSizeTitle">Grid Size</system:String>
-
-    <system:String x:Key="Lib_IconSizeDescription">Icon Size (List)</system:String>
-
-    <system:String x:Key="Lib_IconSizeTitle">Icon Size</system:String>
-
-    <system:String x:Key="Lib_LyricsBadge">LYRICS</system:String>
-
-    <system:String x:Key="Lib_LyricsFilterTooltip">Show only songs with lyrics</system:String>
-
-    <system:String x:Key="Lib_PlayAll">Play all</system:String>
-
-    <system:String x:Key="Lib_ResetAppearance">Reset appearance</system:String>
-
-    <system:String x:Key="Lib_SearchPlaceholder">Search your collection...</system:String>
-
-    <system:String x:Key="Lib_SelectFolderDescription">Select a folder to add to your music library</system:String>
-
-    <system:String x:Key="Lib_Shuffle">Shuffle</system:String>
-
-    <system:String x:Key="Lib_Songs">Songs</system:String>
-
-    <system:String x:Key="Lib_SongsCountFormat">{0} songs</system:String>
-
-    <system:String x:Key="Lib_SortBy">Sort by:</system:String>
-
-    <system:String x:Key="Lib_SortDirection">Change direction (↑/↓)</system:String>
-
-    <system:String x:Key="Lib_Sort_Album">Album</system:String>
-
-    <system:String x:Key="Lib_Sort_Artist">Artist</system:String>
-
-    <system:String x:Key="Lib_Sort_Duration">Duration</system:String>
-
-    <system:String x:Key="Lib_Sort_PlayCount">Most played</system:String>
-
-    <system:String x:Key="Lib_Sort_Title">Title (A-Z)</system:String>
-
-    <system:String x:Key="Lib_Title">Music Library</system:String>
-
-    <system:String x:Key="Lib_ToggleList">Show/hide list</system:String>
-
-    <system:String x:Key="Lib_ViewSettingsTooltip">View Settings</system:String>
-
-    <system:String x:Key="LibraryAppearanceSectionTitle">Library Appearance</system:String>
-
-    <system:String x:Key="LibraryGridSizeDescription">Adjust the size of albums and artists (default: 160px)</system:String>
-
-    <system:String x:Key="LibraryGridSizeTitle">Grid Size</system:String>
-
-    <system:String x:Key="LibraryTrackIconSizeDescription">Adjust the size of icons in the song list (default: 40px)</system:String>
-
-    <system:String x:Key="LibraryTrackIconSizeTitle">Track Icon Size</system:String>
-
-    <system:String x:Key="LockKeysAnimatedDescription">Enable subtle animations for the lock key indicator</system:String>
-
-    <system:String x:Key="LockKeysAnimatedTitle">Indicator Animations</system:String>
-
-    <system:String x:Key="LockKeysBoldUIDescription">Emphasizes the flyout symbol and font</system:String>
-
-    <system:String x:Key="LockKeysBoldUITitle">Bold Symbol and Font</system:String>
-
-    <system:String x:Key="LockKeysCursorUIDescription">Choose which monitor to display the flyout.</system:String>
-
-    <system:String x:Key="LockKeysCursorUITitle">Preferred Target Display</system:String>
-
-    <system:String x:Key="LockKeysCustomizationTitle">Lock Keys Flyout</system:String>
-
-    <system:String x:Key="LockKeysDescription">Check your lock key status at a glance. Appears after pressing Caps Lock, Num Lock or Scroll Lock. Convenient for laptops/keyboards without lock key indicators.</system:String>
-
-    <system:String x:Key="LockKeysStayDurationDescription">(default: 2000 ms)</system:String>
-
-    <system:String x:Key="LockKeysStayDurationTitle">Lock Keys Stay Duration</system:String>
-
+    <system:String x:Key="HomeUpdateDescription">Lue, mitä uutta on tullut</system:String>
+    <system:String x:Key="Home_LyricsNotAvailable">Sanoituksia ei saatavilla</system:String>
+    <system:String x:Key="Home_Repeat">Toisto</system:String>
+    <system:String x:Key="Home_SelectSongToSeeLyrics">Valitse kappale nähdäksesi sanoitukset</system:String>
+    <system:String x:Key="Home_Shuffle">Sekoitus</system:String>
+    <system:String x:Key="Home_Title">Musiikkisoitin</system:String>
+    <system:String x:Key="ImportFailed">Tuonti epäonnistui</system:String>
+    <system:String x:Key="ImportSettings">Tuo asetukset</system:String>
+    <system:String x:Key="ImportSettingsWarning">Tämä korvaa kaikki nykyiset asetuksesi. Jatketaanko?</system:String>
+    <system:String x:Key="ImportSuccessful">Tuonti onnistui</system:String>
+    <system:String x:Key="InternalMusicPlayerSectionTitle">Sisäinen musiikkisoitin</system:String>
+    <system:String x:Key="InternalPlayerEnabledDescription">Käytä FluentFlyoutia itsenäisenä paikallisena musiikkisoittimena</system:String>
+    <system:String x:Key="InternalPlayerEnabledTitle">Ota sisäinen musiikkisoitin käyttöön</system:String>
+    <system:String x:Key="LastChecked">Viimeksi tarkistettu: {0}</system:String>
+    <system:String x:Key="LaunchOnStartupDescription">Käynnistä pienennettynä tehtäväpalkkiin kirjauduttaessa Windowsiin</system:String>
+    <system:String x:Key="LaunchOnStartupTitle">Käynnistä järjestelmän mukana</system:String>
+    <system:String x:Key="LegacyTaskbarWidthDescription">Käytä vanhaa tehtäväpalkin leveyttä widgeteille</system:String>
+    <system:String x:Key="LegacyTaskbarWidthTitle">Vanha tehtäväpalkin leveysjärjestelmä</system:String>
+    <system:String x:Key="Lib_Albums">Albumit</system:String>
+    <system:String x:Key="Lib_AppearanceTitle">Kirjaston ulkoasu</system:String>
+    <system:String x:Key="Lib_Artists">Artistit</system:String>
+    <system:String x:Key="Lib_ContextMenu_AddToQueue">Lisää jonoon</system:String>
+    <system:String x:Key="Lib_ContextMenu_Edit">Muokkaa tietoja</system:String>
+    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">Avaa tiedoston sijainti</system:String>
+    <system:String x:Key="Lib_ContextMenu_Play">Toista</system:String>
+    <system:String x:Key="Lib_Folders">Kansiot</system:String>
+    <system:String x:Key="Lib_GridSizeDescription">Ruudukon koko (Albumit)</system:String>
+    <system:String x:Key="Lib_GridSizeTitle">Ruudukon koko</system:String>
+    <system:String x:Key="Lib_IconSizeDescription">Kuvakkeen koko (Lista)</system:String>
+    <system:String x:Key="Lib_IconSizeTitle">Kuvakkeen koko</system:String>
+    <system:String x:Key="Lib_LyricsBadge">SANOITUKSET</system:String>
+    <system:String x:Key="Lib_LyricsFilterTooltip">Näytä vain kappaleet, joissa on sanoitukset</system:String>
+    <system:String x:Key="Lib_PlayAll">Toista kaikki</system:String>
+    <system:String x:Key="Lib_ResetAppearance">Nollaa ulkoasu</system:String>
+    <system:String x:Key="Lib_SearchPlaceholder">Etsi kokoelmasta...</system:String>
+    <system:String x:Key="Lib_SelectFolderDescription">Valitse kansio lisättäväksi musiikkikirjastoon</system:String>
+    <system:String x:Key="Lib_Shuffle">Toista kaikki sekoitettuna</system:String>
+    <system:String x:Key="Lib_Songs">Kappaleet</system:String>
+    <system:String x:Key="Lib_SongsCountFormat">{0} kappaletta</system:String>
+    <system:String x:Key="Lib_SortBy">Lajittele:</system:String>
+    <system:String x:Key="Lib_SortDirection">Vaihda suuntaa (↑/↓)</system:String>
+    <system:String x:Key="Lib_Sort_Album">Albumi</system:String>
+    <system:String x:Key="Lib_Sort_Artist">Artisti</system:String>
+    <system:String x:Key="Lib_Sort_Duration">Kesto</system:String>
+    <system:String x:Key="Lib_Sort_PlayCount">Toistetuin</system:String>
+    <system:String x:Key="Lib_Sort_Title">Nimi (A-Z)</system:String>
+    <system:String x:Key="Lib_Title">Musiikkikirjasto</system:String>
+    <system:String x:Key="Lib_ToggleList">Näytä/piilota lista</system:String>
+    <system:String x:Key="Lib_ViewSettingsTooltip">Näytä asetukset</system:String>
+    <system:String x:Key="LibraryAppearanceSectionTitle">Kirjaston ulkoasu</system:String>
+    <system:String x:Key="LibraryGridSizeDescription">Säädä albumien ja artistien kokoa (oletus: 160px)</system:String>
+    <system:String x:Key="LibraryGridSizeTitle">Ruudukon koko</system:String>
+    <system:String x:Key="LibraryTrackIconSizeDescription">Säädä kuvakkeiden kokoa kappalelistassa (oletus: 40px)</system:String>
+    <system:String x:Key="LibraryTrackIconSizeTitle">Kappaleen kuvakekoko</system:String>
+    <system:String x:Key="LockKeysAnimatedDescription">Ota käyttöön hienovaraiset animaatiot lukitusnäppäimille</system:String>
+    <system:String x:Key="LockKeysAnimatedTitle">Ilmaisimien animaatiot</system:String>
+    <system:String x:Key="LockKeysBoldUIDescription">Korostaa ikkunan symbolia ja fonttia</system:String>
+    <system:String x:Key="LockKeysBoldUITitle">Lihavoitu symboli ja fontti</system:String>
+    <system:String x:Key="LockKeysCursorUIDescription">Valitse, millä näytöllä haluat näyttää ikkunan.</system:String>
+    <system:String x:Key="LockKeysCursorUITitle">Ensisijainen kohdenäyttö</system:String>
+    <system:String x:Key="LockKeysCustomizationTitle">Lukitusnäppäinten ikkuna</system:String>
+    <system:String x:Key="LockKeysDescription" xml:space="preserve">Tarkista lukitusnäppäinten tila yhdellä silmäyksellä. Ilmestyy Caps Lockin, Num Lockin tai Scroll Lockin painamisen jälkeen. Hyödyllinen kannettaville ilman LED-merkkivaloja.</system:String>
+    <system:String x:Key="LockKeysStayDurationDescription">(oletus: 2000 ms)</system:String>
+    <system:String x:Key="LockKeysStayDurationTitle">Lukitusnäppäinten näkyvyyden kesto</system:String>
     <system:String x:Key="LockWindow_CapsLock">Caps Lock</system:String>
-
     <system:String x:Key="LockWindow_Insert">Insert</system:String>
-
-    <system:String x:Key="LockWindow_InsertPressed">Insert Pressed</system:String>
-
-    <system:String x:Key="LockWindow_LockOff">off</system:String>
-
-    <system:String x:Key="LockWindow_LockOn">on</system:String>
-
+    <system:String x:Key="LockWindow_InsertPressed">Insert painettu</system:String>
+    <system:String x:Key="LockWindow_LockOff">pois</system:String>
+    <system:String x:Key="LockWindow_LockOn">päällä</system:String>
     <system:String x:Key="LockWindow_NumLock">Num Lock</system:String>
-
     <system:String x:Key="LockWindow_ScrollLock">Scroll Lock</system:String>
-
-    <system:String x:Key="MediaFlyoutAlwaysDisplay">Always Display</system:String>
-
-    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">The flyout stays open until you click the close button</system:String>
-
-    <system:String x:Key="MediaFlyoutDescription">When listening to media, press any media or volume key (play/pause, volume up/down, etc.) on your keyboard to display the flyout. Displays media info, along with playback controls and more.</system:String>
-
-    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Do not display the flyout when pressing volume up/down/mute</system:String>
-
-    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Exclude Volume Keys</system:String>
-
-    <system:String x:Key="MediaFlyoutTitle">Media Flyout</system:String>
-
+    <system:String x:Key="MediaFlyoutAlwaysDisplay">Näytä aina</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">Ikkuna pysyy auki, kunnes klikkaat sulkemispainiketta</system:String>
+    <system:String x:Key="MediaFlyoutDescription">Kun kuuntelet mediaa, paina mitä tahansa medianäppäintä tai äänenvoimakkuusnäppäintä ikkunan avaamiseksi. Näyttää mediatiedot, soittimen ohjaimet ja paljon muuta.</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Älä näytä ikkunaa äänenvoimakkuus/vaimennus-näppäimiä painettaessa</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Sulje pois äänenvoimakkuusnäppäimet</system:String>
+    <system:String x:Key="MediaFlyoutTitle">Media-ikkuna</system:String>
     <system:String x:Key="MillisecondsUnit">ms</system:String>
-
-    <system:String x:Key="MonitorWithCursor">Monitor with cursor</system:String>
-
-    <system:String x:Key="MonitorWithFocusedWindow">Monitor with focused window</system:String>
-
-    <system:String x:Key="NativeExperienceInfo">For the native Windows 11 experience, the settings should be kept at default.</system:String>
-
-    <system:String x:Key="NextUpCustomizationTitle">Next Up Flyout</system:String>
-
-    <system:String x:Key="NextUpDescription">A flyout shows what's next when a song/video ends. Only appears if the next item plays automatically, if next/previous is pressed manually, the main flyout appears instead.</system:String>
-
-    <system:String x:Key="NextUpStayDurationDescription">(default: 2000 ms)</system:String>
-
-    <system:String x:Key="NextUpStayDurationTitle">Next Up Stay Duration</system:String>
-
-    <system:String x:Key="NextUpWindow_UpNextText">Up next:</system:String>
-
-    <system:String x:Key="PauseOtherMediaDescription">When you play or focus on new media, other active sessions are automatically paused</system:String>
-
-    <system:String x:Key="PauseOtherMediaTitle">Pause Other Media Automatically</system:String>
-
+    <system:String x:Key="MonitorWithCursor">Näyttö, jossa on kursori</system:String>
+    <system:String x:Key="MonitorWithFocusedWindow">Näyttö, jossa on aktiivinen ikkuna</system:String>
+    <system:String x:Key="NativeExperienceInfo">Windows 11:n natiivikokemusta varten asetukset tulisi pitää oletuksina.</system:String>
+    <system:String x:Key="NextUpCustomizationTitle">"Seuraavaksi" -ikkuna</system:String>
+    <system:String x:Key="NextUpDescription" xml:space="preserve">Ikkuna näyttää seuraavan jonossa olevan kappaleen/videon päättyessä. Ilmestyy vain, jos seuraava kohde toistetaan automaattisesti.</system:String>
+    <system:String x:Key="NextUpStayDurationDescription">(oletus: 2000 ms)</system:String>
+    <system:String x:Key="NextUpStayDurationTitle">"Seuraavaksi" -näkyvyyden kesto</system:String>
+    <system:String x:Key="NextUpWindow_UpNextText">Seuraavaksi:</system:String>
+    <system:String x:Key="PauseOtherMediaDescription">Kun toistat tai valitset uutta mediaa, muut aktiiviset istunnot keskeytetään automaattisesti</system:String>
+    <system:String x:Key="PauseOtherMediaTitle">Keskeytä muu media automaattisesti</system:String>
     <system:String x:Key="PixelsUnit">px</system:String>
-
-    <system:String x:Key="Player_NoTrack">No track playing</system:String>
-
-    <system:String x:Key="Player_SelectTrackMsg">Select a track from the library</system:String>
-
-    <system:String x:Key="Playlist_Title">Playlist</system:String>
-
-    <system:String x:Key="PositionBottomCenter"> Bottom Center</system:String>
-
-    <system:String x:Key="PositionBottomLeft"> Bottom Left</system:String>
-
-    <system:String x:Key="PositionBottomRight"> Bottom Right</system:String>
-
-    <system:String x:Key="PositionLeft">Left</system:String>
-
-    <system:String x:Key="PositionRight">Right</system:String>
-
-    <system:String x:Key="PositionTopCenter"> Top Center</system:String>
-
-    <system:String x:Key="PositionTopLeft"> Top Left</system:String>
-
-    <system:String x:Key="PositionTopRight"> Top Right</system:String>
-
-    <system:String x:Key="PremiumFeatureDescription">Your one-time contribution helps me keep FluentFlyout alive and updated. It instantly unlocks all premium customization features, forever.
-
-
-
-        
-
-
-
-Note: As an open-source project, these features are also available for free via the manual installer on GitHub. The only trade-off is that updates and installation must be done manually.</system:String>
-
-    <system:String x:Key="PremiumFeatureTitle">Premium Feature</system:String>
-
-    <system:String x:Key="PremiumGitHubMessage">Premium features are unlocked for GitHub/self-compiled versions</system:String>
-
-    <system:String x:Key="PremiumLockedMessage">This feature is part of the premium package</system:String>
-
-    <system:String x:Key="PremiumPurchaseCancelled">Purchase cancelled.</system:String>
-
-    <system:String x:Key="PremiumPurchaseFailed">Purchase failed. Please try again.</system:String>
-
-    <system:String x:Key="PremiumPurchaseSuccess">Premium unlocked successfully!</system:String>
-
-    <system:String x:Key="PremiumUnlockedMessage">Premium features unlocked. Thank you for your support!</system:String>
-
-    <system:String x:Key="RepeatButtonDescription">Choose between repeat all or repeat one, increases flyout width</system:String>
-
-    <system:String x:Key="RepeatButtonTitle">Repeat Button*</system:String>
-
-    <system:String x:Key="SelectedMonitorTitle">Flyout Target Display</system:String>
-
-    <system:String x:Key="SettingsExportedSuccessfully">Settings exported successfully!</system:String>
-
-    <system:String x:Key="SettingsImportedSuccessfully">Settings imported successfully! The application will now restart to apply changes.</system:String>
-
-    <system:String x:Key="ShowMediaPlayerNameTitle">Show Media Player name</system:String>
-
-    <system:String x:Key="ShowSeekbarDescription">An interactable seekbar will automatically display if the player supports it</system:String>
-
-    <system:String x:Key="ShowSeekbarTitle">Show Seekbar*</system:String>
-
-    <system:String x:Key="ShowUpdateNotificationsTitle">Show notifications for new updates</system:String>
-
-    <system:String x:Key="ShuffleButtonDescription">Increases flyout width</system:String>
-
-    <system:String x:Key="ShuffleButtonTitle">Shuffle Button*</system:String>
-
-    <system:String x:Key="SponsorMeLink">Sponsor me</system:String>
-
-    <system:String x:Key="StartupAppsHyperlinkText">Startup Apps</system:String>
-
-    <system:String x:Key="StartupAppsSettingsInfo">If this setting does not work as expected, check</system:String>
-
-    <system:String x:Key="SystemConfigure">Configure</system:String>
-
-    <system:String x:Key="SystemMediaControlEnabledDescription">Show and control media from other apps (Spotify, YouTube, Chrome, etc.)</system:String>
-
-    <system:String x:Key="SystemMediaControlEnabledTitle">Control External Applications</system:String>
-
-    <system:String x:Key="SystemSettingsTitle">System</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">How loud audio must be for the bars to reach their maximum height</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">Audio Peak Threshold</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">How loud audio must be before the bars start moving</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">Audio Sensitivity</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBarCountDescription">The amount of visualizer bars</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBarCountTitle">Bar Count</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBaselineDescription">Displays a thin line when audio levels are at zero</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBaselineTitle">Show Baseline</system:String>
-
-    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">Bars that expand symmetrically from the center instead of rising from the bottom</system:String>
-
-    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">Centered Bars</system:String>
-
-    <system:String x:Key="TaskbarVisualizerClickableDescription">Clicking the visualizer will open its settings page</system:String>
-
-    <system:String x:Key="TaskbarVisualizerClickableTitle">Click to open Settings</system:String>
-
-    <system:String x:Key="TaskbarVisualizerDescription">A real-time audio visualizer on your taskbar. Designed to have minimal performance impact on modern systems.</system:String>
-
-    <system:String x:Key="TaskbarVisualizerEnabledDescription">Experimental: This feature will only work if the Taskbar Widget is enabled</system:String>
-
-    <system:String x:Key="TaskbarVisualizerEnabledTitle">Enable Taskbar Visualizer (Experimental)</system:String>
-
-    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">Change what the visualizer listens to by switching FluentFlyout's output device.</system:String>
-
-    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">Output Device</system:String>
-
-    <system:String x:Key="TaskbarVisualizerPositionTitle">Visualizer Position Relative to Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarVisualizerTitle">Taskbar Visualizer</system:String>
-
-    <system:String x:Key="TaskbarWidgetAnimatedDescription">Enable subtle animations for the widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetAnimatedTitle">Widget Animations</system:String>
-
-    <system:String x:Key="TaskbarWidgetAutoHideDescription">Hides the widget automatically when media is paused</system:String>
-
-    <system:String x:Key="TaskbarWidgetAutoHideTitle">Autohide Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Add background blur effect to the taskbar widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Background Blur</system:String>
-
-    <system:String x:Key="TaskbarWidgetClickableDescription">Jos media flyout on aktivoitu, voit avata sen klikkaamalla tehtäväpalkin widgetiä</system:String>
-
-    <system:String x:Key="TaskbarWidgetClickableTitle">Paina avataksesi Media Flyout kun media on läsnä</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsDescription">Show media control buttons on the widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsPositionDescription">Choose where to display the media control buttons</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsPositionTitle">Media Controls Position</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsTitle">Widget Media Controls</system:String>
-
-    <system:String x:Key="TaskbarWidgetCustomizationPerk">Taskbar Widget and Visualizer</system:String>
-
-    <system:String x:Key="TaskbarWidgetCustomizationTitle">Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetDescription">A compact, built-in widget that lives right on your Windows Taskbar for instant access to your media. Click the widget to expand the full Media Flyout.</system:String>
-
-    <system:String x:Key="TaskbarWidgetEnabledDescription">Show a compact media widget on the taskbar</system:String>
-
-    <system:String x:Key="TaskbarWidgetEnabledTitle">Enable Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">Hides the entire widget when no media is available, instead of displaying a media icon</system:String>
-
-    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Hide Completely When No Media Is Present</system:String>
-
-    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Add extra padding (default: 0px)</system:String>
-
-    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Custom Padding</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingDescription">Turn this feature on if you have Windows Widgets enabled</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Adjust the padding around the widget to fit your taskbar style</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Widget Padding Settings</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingTitle">Automatic Padding for Windows Widgets button</system:String>
-
-    <system:String x:Key="TaskbarWidgetPosition">Widget Position</system:String>
-
-    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Widget Target Display</system:String>
-
-    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Configure the options below if you experience visual issues.</system:String>
-
-    <system:String x:Key="TextBlockText1">Enable Media Flyout</system:String>
-
-    <system:String x:Key="TextBlockText2">Choose from a preset of modern background blur styles</system:String>
-
-    <system:String x:Key="TextBlockText3">Display a flyout when you press a media key</system:String>
-
+    <system:String x:Key="Player_NoTrack">Ei toistettavaa kappaletta</system:String>
+    <system:String x:Key="Player_SelectTrackMsg">Valitse kappale kirjastosta</system:String>
+    <system:String x:Key="Playlist_Title">Soittolista</system:String>
+    <system:String x:Key="PositionBottomCenter" xml:space="preserve"> Alhaalla keskellä</system:String>
+    <system:String x:Key="PositionBottomLeft" xml:space="preserve"> Alhaalla vasemmalla</system:String>
+    <system:String x:Key="PositionBottomRight" xml:space="preserve"> Alhaalla oikealla</system:String>
+    <system:String x:Key="PositionLeft">Vasemmalla</system:String>
+    <system:String x:Key="PositionRight">Oikealla</system:String>
+    <system:String x:Key="PositionTopCenter" xml:space="preserve"> Ylhäällä keskellä</system:String>
+    <system:String x:Key="PositionTopLeft" xml:space="preserve"> Ylhäällä vasemmalla</system:String>
+    <system:String x:Key="PositionTopRight" xml:space="preserve"> Ylhäällä oikealla</system:String>
+    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">Osallistumisesi auttaa minua ylläpitämään FluentFlyoutia. Se avaa välittömästi ja pysyvästi kaikki Premium-muokkausominaisuudet.
+
+Huomautus: Avoimen lähdekoodin projektina nämä ominaisuudet ovat saatavilla myös ilmaiseksi GitHubin manuaalisen asennusohjelman kautta.</system:String>
+    <system:String x:Key="PremiumFeatureTitle">Premium-ominaisuus</system:String>
+    <system:String x:Key="PremiumGitHubMessage">Premium-ominaisuudet on avattu GitHub/itsekäännetyille versioille</system:String>
+    <system:String x:Key="PremiumLockedMessage">Tämä ominaisuus on osa Premium-pakettia</system:String>
+    <system:String x:Key="PremiumPurchaseCancelled">Osto peruutettu.</system:String>
+    <system:String x:Key="PremiumPurchaseFailed">Osto epäonnistui. Yritä uudelleen.</system:String>
+    <system:String x:Key="PremiumPurchaseSuccess">Premium avattu onnistuneesti!</system:String>
+    <system:String x:Key="PremiumUnlockedMessage">Premium-ominaisuudet avattu. Kiitos tuestasi!</system:String>
+    <system:String x:Key="RepeatButtonDescription">Vaihda toista kaikki tai toista yksi välillä, lisää ikkunan leveyttä</system:String>
+    <system:String x:Key="RepeatButtonTitle">Toistopainike*</system:String>
+    <system:String x:Key="SelectedMonitorTitle">Ikkunan kohdenäyttö</system:String>
+    <system:String x:Key="SettingsExportedSuccessfully">Asetukset viety onnistuneesti!</system:String>
+    <system:String x:Key="SettingsImportedSuccessfully">Asetukset tuotu onnistuneesti! Sovellus käynnistyy nyt uudelleen.</system:String>
+    <system:String x:Key="ShowMediaPlayerNameTitle">Näytä mediasoittimen nimi</system:String>
+    <system:String x:Key="ShowSeekbarDescription">Interaktiivinen aikajana näkyy automaattisesti, jos soitin tukee sitä</system:String>
+    <system:String x:Key="ShowSeekbarTitle">Näytä aikajana*</system:String>
+    <system:String x:Key="ShowUpdateNotificationsTitle">Näytä ilmoitukset uusista päivityksistä</system:String>
+    <system:String x:Key="ShuffleButtonDescription">Lisää ikkunan leveyttä</system:String>
+    <system:String x:Key="ShuffleButtonTitle">Sekoituspainike*</system:String>
+    <system:String x:Key="SponsorMeLink">Ryhdy sponsoriksi</system:String>
+    <system:String x:Key="StartupAppsHyperlinkText">Käynnistyssovellukset</system:String>
+    <system:String x:Key="StartupAppsSettingsInfo">Jos tämä asetus ei toimi odotetusti, tarkista</system:String>
+    <system:String x:Key="SystemConfigure">Määritä</system:String>
+    <system:String x:Key="SystemMediaControlEnabledDescription">Näytä ja ohjaa mediaa muista sovelluksista (Spotify, YouTube, Chrome jne.)</system:String>
+    <system:String x:Key="SystemMediaControlEnabledTitle">Ohjaa ulkoisia sovelluksia</system:String>
+    <system:String x:Key="SystemSettingsTitle">Järjestelmä</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">Kuinka kovaa äänen on oltava, jotta palkit saavuttavat maksimikorkeuden</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">Äänen piikkikynnys</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">Kuinka kovaa äänen on oltava, ennen kuin palkit alkavat liikkua</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">Äänen herkkyys</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountDescription">Visualisoijan palkkien määrä</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountTitle">Palkkien määrä</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineDescription">Näyttää ohuen viivan, kun äänitaso on nolla</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineTitle">Näytä perusviiva (Baseline)</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">Palkit laajenevat symmetrisesti keskeltä sen sijaan, että ne nousisivat alhaalta</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">Keskitetyt palkit</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableDescription">Visualisoijan klikkaaminen avaa sen asetussivun</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableTitle">Klikkaa avataksesi asetukset</system:String>
+    <system:String x:Key="TaskbarVisualizerDescription">Reaaliaikainen äänivisualisoija tehtäväpalkissasi. Suunniteltu minimaalisella vaikutuksella suorituskykyyn.</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledDescription">Kokeellinen: Toimii vain, jos tehtäväpalkin widget on käytössä</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledTitle">Ota tehtäväpalkin visualisoija käyttöön (Kokeellinen)</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">Vaihda visualisoijan kuuntelemaa laitetta vaihtamalla FluentFlyoutin ulostulolaitetta.</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">Ulostulolaite</system:String>
+    <system:String x:Key="TaskbarVisualizerPositionTitle">Visualisoijan sijainti suhteessa tehtäväpalkin widgetiin</system:String>
+    <system:String x:Key="TaskbarVisualizerTitle">Tehtäväpalkin visualisoija</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedDescription">Ota käyttöön hienovaraiset animaatiot widgetille</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedTitle">Widget-animaatiot</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideDescription">Piilota widget automaattisesti, kun media on keskeytetty</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideTitle">Piilota widget automaattisesti</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Lisää taustan sumennusefekti tehtäväpalkin widgetille</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Taustan sumennus</system:String>
+    <system:String x:Key="TaskbarWidgetClickableDescription">Widgetin klikkaaminen avaa täyden media-ikkunan</system:String>
+    <system:String x:Key="TaskbarWidgetClickableTitle">Klikkaa avataksesi media-ikkunan</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutDescription">Sulkee ikkunan, jos se on jo auki, kun widgetiä klikataan</system:String>
+    <system:String x:Key="TaskbarWidgetCloseableFlyoutTitle">Tuplaklikkaa sulkeaksesi ikkunan</system:String>
+    <system:String x:Key="TaskbarWidgetControlsDescription">Näytä median ohjauspainikkeet widgetissä</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionDescription">Valitse, missä median ohjauspainikkeet näytetään</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionTitle">Median ohjaimien sijainti</system:String>
+    <system:String x:Key="TaskbarWidgetControlsTitle">Widgetin median ohjaimet</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationPerk">Tehtäväpalkin widget ja visualisoija</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationTitle">Tehtäväpalkin widget</system:String>
+    <system:String x:Key="TaskbarWidgetDescription">Kompakti widget, joka on integroitu suoraan Windowsin tehtäväpalkkiin nopeaa pääsyä varten mediaasi.</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledDescription">Näytä kompakti media-widget tehtäväpalkissa</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledTitle">Ota tehtäväpalkin widget käyttöön</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">Piilota widget kokonaan, kun mediaa ei ole saatavilla</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Piilota kokonaan ilman mediaa</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Lisää ylimääräistä välistystä (oletus: 0px)</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Mukautettu välistys</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingDescription">Ota tämä käyttöön, jos sinulla on "Windows Widgets" -painike aktiivisena</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Säädä widgetin välistystä tehtäväpalkin tyyliin sopivaksi</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Widgetin välistysasetukset</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingTitle">Automaattinen välistys Windows Widgets -painikkeelle</system:String>
+    <system:String x:Key="TaskbarWidgetPosition">Widgetin sijainti</system:String>
+    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Widgetin kohdenäyttö</system:String>
+    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Määritä alla olevat asetukset, jos sinulla on visuaalisia ongelmia.</system:String>
+    <system:String x:Key="TextBlockText1">Ota media-ikkuna käyttöön</system:String>
+    <system:String x:Key="TextBlockText2">Valitse moderneista taustan sumennustyyleistä</system:String>
+    <system:String x:Key="TextBlockText3">Näyttää ikkunan, kun medianäppäintä painetaan</system:String>
     <system:String x:Key="TitleText">FluentFlyout Asetukset</system:String>
+    <system:String x:Key="TranslatorsTitle">Kääntäjät</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorDescription">Valitse, mitä tapahtuu klikattaessa tehtäväpalkin kuvaketta hiiren vasemmalla</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorTitle">Tehtäväpalkin kuvakkeen vasemman klikkauksen toiminta</system:String>
+    <system:String x:Key="TrayIconLeftClickOption1"> Avaa asetukset</system:String>
+    <system:String x:Key="TrayIconLeftClickOption2"> Näytä media-ikkuna</system:String>
+    <system:String x:Key="TrayIconSectionTitle">Tehtäväpalkin kuvake</system:String>
+    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repo</system:String>
+    <system:String x:Key="TrayIcon_QuitOption">Sulje FluentFlyout</system:String>
+    <system:String x:Key="TrayIcon_ReportBugOption">Ilmoita virheestä</system:String>
+    <system:String x:Key="TrayIcon_SettingsOption">Asetukset</system:String>
+    <system:String x:Key="TrayIcon_ViewLogsOption">Näytä lokitiedot</system:String>
+    <system:String x:Key="UnlockFullExperienceText">Avaa täysi FluentFlyout-kokemus:</system:String>
+    <system:String x:Key="UnlockPremiumButton">Avaa Premium</system:String>
+    <system:String x:Key="UnsupportedControlsWarning">*Jotkut selaimet/soittimet eivät tue toiston, sekoituksen ja aikajanan ohjausta.</system:String>
+    <system:String x:Key="UpToDate">Ajan tasalla</system:String>
+    <system:String x:Key="UpdateAvailable">Päivitys saatavilla</system:String>
+    <system:String x:Key="UpdateAvailableNotificationButton">Lataa päivitys</system:String>
+    <system:String x:Key="UpdateAvailableNotificationMessage">Uusi versio ({0}) on valmiina ladattavaksi.</system:String>
+    <system:String x:Key="UpdateAvailableNotificationTitle">Päivitys saatavilla!</system:String>
+    <system:String x:Key="UpdateToastButton">Näytä päivitykset</system:String>
+    <system:String x:Key="UpdateToastMessage">Käytät tällä hetkellä versiota {0}.</system:String>
+    <system:String x:Key="UpdateToastTitle">FluentFlyout on päivitetty!</system:String>
+    <system:String x:Key="UpdatesSectionTitle">Päivitykset</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorDescription">Jotkut UI-elementit käyttävät albumin kansikuvan värejä järjestelmän teeman sijaan</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorTitle">Käytä kansikuvaa korostusvärinä</system:String>
+    <system:String x:Key="Win11TrayIconDescription">Käytä Windows 11:n tyyliin sopivaa tehtäväpalkin kuvaketta (vaihda päivittääksesi teeman)</system:String>
+    <system:String x:Key="Win11TrayIconTitle">Windows 11 -tyylinen tehtäväpalkin kuvake</system:String>
 
-    <system:String x:Key="TranslatorsTitle">Translators</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Äänen kalibroinnin seuranta</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualisoi sisääntulon taso ja säädä katkaisupisteet reaaliajassa</system:String>
+    <system:String x:Key="TaskbarVisualizer_Silence">Hiljaisuus</system:String>
+    <system:String x:Key="TaskbarVisualizer_Max">Maksimi</system:String>
+    <system:String x:Key="TaskbarVisualizer_StartPoint">Aloituspiste (Herkkyys)</system:String>
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Piikkikynnys (Peak)</system:String>
+    <system:String x:Key="Edit_LrcFilter">LRC-tiedostot (*.lrc)|*.lrc|Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot|*.*</system:String>
+    <system:String x:Key="Error_FailedSetStartup">Käynnistyksen asettaminen epäonnistui</system:String>
 
-    <system:String x:Key="TrayIconLeftClickBehaviorDescription">Choose what happens when you left click the tray icon</system:String>
+    <system:String x:Key="TurntableModeTitle">Levysoitintila</system:String>
+    <system:String x:Key="TurntableModeDescription">Näytä pyörivä vinyylilevy kansikuvalla kotivälilehdellä</system:String>
+    <system:String x:Key="TurntableModeTooltip">Vaihda levysoitintilaa</system:String>
 
-    <system:String x:Key="TrayIconLeftClickBehaviorTitle">Tray Icon Left Click Behavior</system:String>
-
-    <system:String x:Key="TrayIconLeftClickOption1"> Open Settings</system:String>
-
-    <system:String x:Key="TrayIconLeftClickOption2"> Show Media Flyout</system:String>
-
-    <system:String x:Key="TrayIconSectionTitle">Tray Icon</system:String>
-
-    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repository</system:String>
-
-    <system:String x:Key="TrayIcon_QuitOption">Quit FluentFlyout</system:String>
-
-    <system:String x:Key="TrayIcon_ReportBugOption">Report bug</system:String>
-
-    <system:String x:Key="TrayIcon_SettingsOption">Settings</system:String>
-
-    <system:String x:Key="TrayIcon_ViewLogsOption">View logs</system:String>
-
-    <system:String x:Key="UnlockFullExperienceText">Unlock the full FluentFlyout experience:</system:String>
-
-    <system:String x:Key="UnlockPremiumButton">Unlock Premium</system:String>
-
-    <system:String x:Key="UnsupportedControlsWarning">*Some browsers/players do not support repeat, shuffle and seekbar control.</system:String>
-
-    <system:String x:Key="UpToDate">Up to date</system:String>
-
-    <system:String x:Key="UpdateAvailable">Update available</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationButton">Download Update</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationMessage">A new version ({0}) is available.</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationTitle">Update Available!</system:String>
-
-    <system:String x:Key="UpdateToastButton">View Updates</system:String>
-
-    <system:String x:Key="UpdateToastMessage">You are now on {0}.</system:String>
-
-    <system:String x:Key="UpdateToastTitle">FluentFlyout has been updated!</system:String>
-
-    <system:String x:Key="UpdatesSectionTitle">Updates</system:String>
-
-    <system:String x:Key="UseAlbumArtAccentColorDescription">Some UI elements will use the album art color instead of the system theme</system:String>
-
-    <system:String x:Key="UseAlbumArtAccentColorTitle">Use Album Art as Accent Color</system:String>
-
-    <system:String x:Key="Win11TrayIconDescription">Use a tray icon that matches Windows 11 (toggle to refresh theme)</system:String>
-
-    <system:String x:Key="Win11TrayIconTitle">Windows 11-like Tray Icon</system:String>
-
-
-
-    <!-- Missing translations -->
-
-    <system:String x:Key="Edit_LrcFilter">LRC Files (*.lrc)|*.lrc|Text Files (*.txt)|*.txt|All Files (*.*)|*.*</system:String>
-
-    <system:String x:Key="Error_FailedSetStartup">Failed to set startup</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualize the input level and adjust the cutoff points in real time</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Audio Calibration Monitor</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_Max">Maximum</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Peak Threshold (Peak)</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_Silence">Silence</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_StartPoint">Start Point (Sensitivity)</system:String>
-
+    <!-- Auto-added missing translations -->
+    <system:String x:Key="AnimationSpeed_05x">0.5x</system:String>
+    <system:String x:Key="AnimationSpeed_15x">1.5x</system:String>
+    <system:String x:Key="AnimationSpeed_1x">1x</system:String>
+    <system:String x:Key="AnimationSpeed_2x">2x</system:String>
+    <system:String x:Key="AnimationSpeed_3x">3x</system:String>
+    <system:String x:Key="Edit_AutoSyncAnalysisError">Could not analyze the audio file.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">The lyrics don't have timestamps to synchronize.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">No Timestamps</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessMsg">Lyrics shifted by {0:F1}s to match audio peaks.</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessTitle">Synchronized</system:String>
+    <system:String x:Key="Edit_AutoSyncTip">Auto-Sync: Analyze audio to align the first timestamp</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTip">Shift all timestamps forward or backward</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTitle">Sync Lyrics</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</system:String>
+    <system:String x:Key="General_NewLabel">NEW</system:String>
+    <system:String x:Key="General_Open">Open</system:String>
+    <system:String x:Key="General_Separator">-</system:String>
+    <system:String x:Key="Home_SyncButton">Sync</system:String>
+    <system:String x:Key="Lib_CornerRadiusDescription">Adjust the corner radius for covers and cards</system:String>
+    <system:String x:Key="Lib_CornerRadiusTitle">Corner Radius</system:String>
+    <system:String x:Key="Lib_PreviewDescription">This is how your library will look</system:String>
+    <system:String x:Key="Lib_PreviewTitle">Preview</system:String>
+    <system:String x:Key="Lib_ResetLayoutTooltip">Reset design</system:String>
+    <system:String x:Key="Lib_SizeLarge">Large</system:String>
+    <system:String x:Key="Lib_SizeSmall">Small</system:String>
+    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">Artist Name</system:String>
+    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">Song Title</system:String>
+    <system:String x:Key="Playlist_ClearQueue">Clear queue</system:String>
+    <system:String x:Key="Playlist_EmptyDescription">Drag music here or add it from the library.</system:String>
+    <system:String x:Key="Playlist_EmptyTitle">Your queue is empty</system:String>
+    <system:String x:Key="Playlist_OpenLocation">Open location</system:String>
+    <system:String x:Key="Playlist_PlayNext">Play next</system:String>
+    <system:String x:Key="Playlist_RemoveFromQueue">Remove from queue</system:String>
+    <system:String x:Key="Playlist_SearchPlaceholder">Search in queue...</system:String>
+    <system:String x:Key="Playlist_ViewInfo">View info</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeDescription">How audio channels are processed for visualization</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeMono">Mono (L+R averaged)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">Stereo Mirror (L|R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeTitle">Stereo Mode</system:String>
+    <system:String x:Key="ViewLogsDescription">Open the folder containing the application log files</system:String>
 </ResourceDictionary>

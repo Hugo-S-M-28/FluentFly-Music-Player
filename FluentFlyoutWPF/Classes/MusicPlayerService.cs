@@ -43,7 +43,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     }
 
     private IWavePlayer? _waveOut;
-    private AudioFileReader? _audioFileReader;
+    private WaveStream? _audioStream;
     private SampleAggregator? _sampleAggregator;
     private DispatcherTimer? _positionTimer;
 
@@ -132,18 +132,18 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
     public TimeSpan CurrentPosition
     {
-        get => _audioFileReader?.CurrentTime ?? TimeSpan.Zero;
+        get => _audioStream?.CurrentTime ?? TimeSpan.Zero;
         set
         {
-            if (_audioFileReader != null && value >= TimeSpan.Zero && value <= TotalDuration)
+            if (_audioStream != null && value >= TimeSpan.Zero && value <= TotalDuration)
             {
-                _audioFileReader.CurrentTime = value;
+                _audioStream.CurrentTime = value;
                 OnPropertyChanged(nameof(CurrentPosition));
             }
         }
     }
 
-    public TimeSpan TotalDuration => _audioFileReader?.TotalTime ?? TimeSpan.Zero;
+    public TimeSpan TotalDuration => _audioStream?.TotalTime ?? TimeSpan.Zero;
 
     private float _volume = 1.0f;
     public float Volume
@@ -356,7 +356,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     private int _stallCount;
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
-        if (IsPlaying && _audioFileReader != null)
+        if (IsPlaying && _audioStream != null)
         {
             OnPropertyChanged(nameof(CurrentPosition));
 
@@ -370,7 +370,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             }
 
             // Stall detection (Silence/Format error fallback)
-            if (_audioFileReader.Position == _lastPosition && IsPlaying)
+            if (_audioStream.Position == _lastPosition && IsPlaying)
             {
                 _stallCount++;
                 if (_stallCount > 10) // ~5 seconds of stall
@@ -383,7 +383,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             }
             else
             {
-                _lastPosition = _audioFileReader.Position;
+                _lastPosition = _audioStream.Position;
                 _stallCount = 0;
             }
         }
@@ -656,10 +656,27 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            _audioFileReader = new AudioFileReader(filePath);
+            var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+            ISampleProvider sampleProvider;
+
+            // AudioFileReader assumes 16-bit PCM output from MediaFoundationReader.
+            // If the FLAC/M4A is 24-bit, it causes heavy interference. 
+            // So we explicitly use MediaFoundationReader and .ToSampleProvider() which handles 24-bit/32-bit correctly.
+            if (extension == ".flac" || extension == ".m4a")
+            {
+                var mfReader = new MediaFoundationReader(filePath);
+                _audioStream = mfReader;
+                sampleProvider = mfReader.ToSampleProvider();
+            }
+            else
+            {
+                var afr = new AudioFileReader(filePath);
+                _audioStream = afr;
+                sampleProvider = afr;
+            }
 
             // Apply equalizer processing
-            var equalized = new EqualizerSampleProvider(_audioFileReader);
+            var equalized = new EqualizerSampleProvider(sampleProvider);
 
             // Wrap with aggregator for FFT (after EQ so visualizer shows equalized output)
             _sampleAggregator = new SampleAggregator(equalized);
@@ -901,19 +918,22 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
     private void CleanupPlayback()
     {
-        if (_audioFileReader != null)
+        if (_audioStream != null)
         {
             try
             {
-                _audioFileReader.Dispose();
+                _audioStream.Dispose();
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, "Error disposing audioFileReader");
+                Logger.Warn(ex, "Error disposing audioStream");
             }
             finally
             {
-                _audioFileReader = null;
+                _audioStream = null;
+                // Force a small collect to ensure COM objects from MediaFoundation are released
+                // This is specifically helpful for .m4a and .flac files on Windows
+                GC.Collect(1); 
             }
         }
     }
@@ -1013,7 +1033,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     /// </summary>
     public void Seek(TimeSpan position)
     {
-        if (_audioFileReader != null)
+        if (_audioStream != null)
         {
             CurrentPosition = position;
         }

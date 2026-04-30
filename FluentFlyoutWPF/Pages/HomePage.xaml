@@ -10,6 +10,7 @@
       xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
       xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
       xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
+       xmlns:settings="clr-namespace:FluentFlyout.Classes.Settings"
       mc:Ignorable="d"
       d:DesignHeight="800"
       d:DesignWidth="1200"
@@ -23,10 +24,13 @@
       ScrollViewer.VerticalScrollBarVisibility="Disabled">
     
     <Page.Resources>
-        <classes:PathToImageConverter x:Key="PathToImageConverter"/>
-        <utils:LyricWordHighlightConverter x:Key="LyricWordHighlightConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Converters.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- Estilo para botones de transporte secundarios (Prev, Next, etc) -->
+            <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+            <utils:LyricWordHighlightConverter x:Key="LyricWordHighlightConverter"/>
         <Style x:Key="IconButtonStyle"
                 TargetType="ui:Button"
                 BasedOn="{StaticResource {x:Type ui:Button}}">
@@ -130,6 +134,7 @@
             </Setter>
         </Style>
 
+        </ResourceDictionary>
     </Page.Resources>
     <Grid Margin="24"
             VerticalAlignment="Stretch">
@@ -158,12 +163,12 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
+
             <ui:TextBlock FontTypography="Title"
                     Text="{DynamicResource Home_Title}"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     VerticalAlignment="Center"/>
-            
+
             <StackPanel Grid.Column="1" 
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
@@ -182,7 +187,6 @@
                 </ui:Button>
             </StackPanel>
         </Grid>
-
 
         <!-- Área principal -->
         <Grid Grid.Row="1"
@@ -218,16 +222,78 @@
                                         <DropShadowEffect x:Name="AlbumArtShadow" BlurRadius="40" ShadowDepth="12" Opacity="0.4" Direction="270" Color="Black"/>
                                     </Border.Effect>
                                     <Grid>
-                                        <Border CornerRadius="12" Background="{DynamicResource ControlFillColorDefaultBrush}"/>
-                                        <!-- Fallback Icon if no art -->
-                                        <ui:SymbolIcon Symbol="MusicNote124" Opacity="0.1" FontSize="100" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                        <Image x:Name="AlbumArtImg"
-                                               Source="{Binding CoverImage}"
-                                               Stretch="UniformToFill">
-                                            <Image.Clip>
-                                                <RectangleGeometry RadiusX="12" RadiusY="12" Rect="0,0,300,300"/>
-                                            </Image.Clip>
-                                        </Image>
+                                        <!-- Normal View -->
+                                        <Grid x:Name="NormalCoverView" 
+                                              Visibility="{Binding Source={x:Static settings:SettingsManager.Current}, Path=TurntableModeEnabled, Converter={StaticResource BoolToCollapsedVisibleConverter}}">
+                                            <Border CornerRadius="12" Background="{DynamicResource ControlFillColorDefaultBrush}"/>
+                                            <!-- Fallback Icon if no art -->
+                                            <ui:SymbolIcon Symbol="MusicNote124" Opacity="0.1" FontSize="100" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <Image Source="{Binding CoverImage}"
+                                                   Stretch="UniformToFill">
+                                                <Image.Clip>
+                                                    <RectangleGeometry RadiusX="12" RadiusY="12" Rect="0,0,300,300"/>
+                                                </Image.Clip>
+                                            </Image>
+                                        </Grid>
+
+                                        <!-- Turntable View -->
+                                        <Grid x:Name="TurntableModeView" 
+                                              Visibility="{Binding Source={x:Static settings:SettingsManager.Current}, Path=TurntableModeEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
+                                            <Viewbox Width="300" Height="300">
+                                                <Grid Width="400" Height="400">
+                                                    <!-- Vinyl Record -->
+                                                    <Ellipse Width="400" Height="400" Fill="#0A0A0A">
+                                                        <Ellipse.Effect>
+                                                            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                                                        </Ellipse.Effect>
+                                                    </Ellipse>
+                                                    
+                                                    <!-- Vinyl Grooves (Subtle concentric circles) -->
+                                                    <Ellipse Width="380" Height="380" Stroke="#151515" StrokeThickness="1" Opacity="0.5"/>
+                                                    <Ellipse Width="360" Height="360" Stroke="#151515" StrokeThickness="1" Opacity="0.4"/>
+                                                    <Ellipse Width="340" Height="340" Stroke="#151515" StrokeThickness="1" Opacity="0.3"/>
+                                                    <Ellipse Width="320" Height="320" Stroke="#151515" StrokeThickness="1" Opacity="0.2"/>
+                                                    <Ellipse Width="300" Height="300" Stroke="#151515" StrokeThickness="1" Opacity="0.1"/>
+
+                                                    <!-- Rotating Part -->
+                                                    <Grid x:Name="RotatingDisc" RenderTransformOrigin="0.5,0.5">
+                                                        <Grid.RenderTransform>
+                                                            <RotateTransform x:Name="DiscRotation" Angle="0"/>
+                                                        </Grid.RenderTransform>
+
+                                                        <!-- Record Label / Cover Art -->
+                                                        <Grid Width="180" Height="180">
+                                                            <Image Source="{Binding CoverImage}" Stretch="UniformToFill">
+                                                                <Image.Clip>
+                                                                    <EllipseGeometry Center="90,90" RadiusX="90" RadiusY="90"/>
+                                                                </Image.Clip>
+                                                            </Image>
+                                                        </Grid>
+                                                        
+                                                        <!-- Center Hole -->
+                                                        <Ellipse Width="12" Height="12" Fill="#202020"/>
+                                                        <Ellipse Width="6" Height="6" Fill="#101010"/>
+                                                    </Grid>
+
+                                                    <!-- Tonearm (Static for now, but looks cool) -->
+                                                    <Canvas Width="400" Height="400">
+                                                        <Path Data="M 320,50 L 325,45 L 340,150 L 220,300 L 200,280" 
+                                                              Stroke="#E0E0E0" StrokeThickness="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                                              Opacity="0.9">
+                                                            <Path.Effect>
+                                                                <DropShadowEffect BlurRadius="10" ShadowDepth="4" Opacity="0.3"/>
+                                                            </Path.Effect>
+                                                        </Path>
+                                                        <Ellipse Canvas.Left="310" Canvas.Top="40" Width="30" Height="30" Fill="#A0A0A0"/>
+                                                        <Rectangle Canvas.Left="190" Canvas.Top="275" Width="30" Height="15" Fill="#333333" RadiusX="2" RadiusY="2" RenderTransformOrigin="0.5,0.5">
+                                                            <Rectangle.RenderTransform>
+                                                                <RotateTransform Angle="45"/>
+                                                            </Rectangle.RenderTransform>
+                                                        </Rectangle>
+                                                    </Canvas>
+                                                </Grid>
+                                            </Viewbox>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                                 <ui:TextBlock x:Name="TrackTitle"
@@ -280,6 +346,7 @@
                                              ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              SelectionMode="Single"
+                                             PreviewMouseLeftButtonDown="LyricsList_PreviewMouseLeftButtonDown"
                                              PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
                                              PreviewMouseWheel="LyricsList_PreviewMouseWheel"
                                              PreviewTouchDown="LyricsList_PreviewTouchDown"
@@ -451,13 +518,30 @@
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                         <StackPanel Orientation="Horizontal">
                                             <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Sincronizar"/>
+                                            <TextBlock Text="{DynamicResource Home_SyncButton}"/>
                                         </StackPanel>
                                     </ui:Button>
                                 </Grid>
                             </Border>
                         </Grid>
-                    </DataTemplate>
+                        <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Source={x:Static classes:MusicPlayerService.Instance}, Path=IsPlaying}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Name="TurntableAnim">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="DiscRotation"
+                                                                   Storyboard.TargetProperty="Angle"
+                                                                   From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <StopStoryboard BeginStoryboardName="TurntableAnim"/>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+
 
                     <!-- DataTemplate para estado LyricsFull (solo letra ampliada) -->
                     <DataTemplate x:Key="LyricsFullTemplate">
@@ -490,6 +574,7 @@
                                           HorizontalContentAlignment="Center"
                                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                           SelectionMode="Single"
+                                          PreviewMouseLeftButtonDown="LyricsList_PreviewMouseLeftButtonDown"
                                           PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
                                           PreviewMouseWheel="LyricsList_PreviewMouseWheel"
                                           PreviewTouchDown="LyricsList_PreviewTouchDown"
@@ -663,7 +748,7 @@
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
-                                        <TextBlock Text="Sincronizar"/>
+                                        <TextBlock Text="{DynamicResource Home_SyncButton}"/>
                                     </StackPanel>
                                 </ui:Button>
                             </Grid>

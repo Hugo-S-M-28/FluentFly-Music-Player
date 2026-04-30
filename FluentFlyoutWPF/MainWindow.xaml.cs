@@ -146,16 +146,6 @@ public partial class MainWindow : MicaWindow
             }
         }, _settingsListenerCts.Token);
 
-        try
-        {
-            SettingsManager.RestoreSettings();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"{Application.Current.FindResource("Error_RestoreSettings")}: {ex.Message}");
-            Logger.Error(ex, "Failed to restore settings");
-        }
-
         if (SettingsManager.Current.Startup == true) // add to startup programs if enabled, needs improvement
         {
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);

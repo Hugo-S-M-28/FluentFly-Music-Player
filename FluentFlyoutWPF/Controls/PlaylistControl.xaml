@@ -40,12 +40,12 @@
                 </Grid.ColumnDefinitions>
                 <ui:SymbolIcon Symbol="Collections24" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Grid.Column="0"/>
                 <ui:TextBlock FontTypography="Subtitle" Text="{DynamicResource Playlist_Title}" Grid.Column="1" VerticalAlignment="Center"/>
-                <ui:Button Grid.Column="2" Appearance="Transparent" Padding="4" ToolTip="Limpiar Cola" Click="ClearQueue_Click">
+                <ui:Button Grid.Column="2" Appearance="Transparent" Padding="4" ToolTip="{DynamicResource Playlist_ClearQueue}" Click="ClearQueue_Click">
                     <ui:SymbolIcon Symbol="Delete24" FontSize="16" Opacity="0.8"/>
                 </ui:Button>
             </Grid>
             
-            <ui:TextBox x:Name="SearchBox" Grid.Row="1" Margin="12,0,12,8" PlaceholderText="Buscar en la cola..." TextChanged="SearchBox_TextChanged" Icon="Search24"/>
+            <ui:TextBox x:Name="SearchBox" Grid.Row="1" Margin="12,0,12,8" PlaceholderText="{DynamicResource Playlist_SearchPlaceholder}" TextChanged="SearchBox_TextChanged" Icon="Search24"/>
 
 
 
@@ -80,17 +80,17 @@
                         <Grid Margin="0,4" Background="Transparent">
                             <Grid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Reproducir siguiente" Click="PlayNext_Click">
+                                    <MenuItem Header="{DynamicResource Playlist_PlayNext}" Click="PlayNext_Click">
                                         <MenuItem.Icon><ui:SymbolIcon Symbol="Play24"/></MenuItem.Icon>
                                     </MenuItem>
-                                    <MenuItem Header="Quitar de la cola" Click="RemoveFromQueue_Click">
+                                    <MenuItem Header="{DynamicResource Playlist_RemoveFromQueue}" Click="RemoveFromQueue_Click">
                                         <MenuItem.Icon><ui:SymbolIcon Symbol="Delete24"/></MenuItem.Icon>
                                     </MenuItem>
                                     <Separator/>
-                                    <MenuItem Header="Ver información" Click="ViewInfo_Click">
+                                    <MenuItem Header="{DynamicResource Playlist_ViewInfo}" Click="ViewInfo_Click">
                                         <MenuItem.Icon><ui:SymbolIcon Symbol="Info24"/></MenuItem.Icon>
                                     </MenuItem>
-                                    <MenuItem Header="Abrir ubicación" Click="OpenLocation_Click">
+                                    <MenuItem Header="{DynamicResource Playlist_OpenLocation}" Click="OpenLocation_Click">
                                         <MenuItem.Icon><ui:SymbolIcon Symbol="Folder24"/></MenuItem.Icon>
                                     </MenuItem>
                                 </ContextMenu>
@@ -184,8 +184,8 @@
                     </Style>
                 </StackPanel.Style>
                 <ui:SymbolIcon Symbol="MusicNote124" FontSize="48" Opacity="0.2" Margin="0,0,0,16"/>
-                <TextBlock Text="Tu cola está vacía" FontWeight="SemiBold" FontSize="16" TextAlignment="Center" Margin="0,0,0,8"/>
-                <TextBlock Text="Arrastra música aquí o añádela desde la biblioteca." TextAlignment="Center" Opacity="0.6" TextWrapping="Wrap"/>
+                <TextBlock Text="{DynamicResource Playlist_EmptyTitle}" FontWeight="SemiBold" FontSize="16" TextAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="{DynamicResource Playlist_EmptyDescription}" TextAlignment="Center" Opacity="0.6" TextWrapping="Wrap"/>
             </StackPanel>
         </Grid>
     </ui:Card>

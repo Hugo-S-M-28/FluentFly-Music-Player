@@ -104,7 +104,7 @@
                                     FontSize="14"
                                     FontWeight="Regular"
                                     VerticalAlignment="Center"/>
-                            <ui:InfoBadge Value=" NEW "
+                            <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                     FontWeight="Medium"
                                     FontSize="10"
                                     Margin="2,-2,0,-2"

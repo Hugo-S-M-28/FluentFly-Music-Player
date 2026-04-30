@@ -1,8 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="AboutContributorsDescription">A big thank you to all the amazing people who have contributed to FluentFlyout's development and success!</system:String>
 
-    <system:String x:Key="AboutContributorsTitle">❤️ Meet Our Contributors</system:String>
+    <system:String x:Key="AboutContributorsTitle">?? Meet Our Contributors</system:String>
 
     <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout is built with the following open source packages:</system:String>
 
@@ -332,7 +332,7 @@ or leave a review on Microsoft Store!</system:String>
 
     <system:String x:Key="Lib_SortBy">Sort by:</system:String>
 
-    <system:String x:Key="Lib_SortDirection">Change direction (↑/↓)</system:String>
+    <system:String x:Key="Lib_SortDirection">Change direction (?/?)</system:String>
 
     <system:String x:Key="Lib_Sort_Album">Album</system:String>
 
@@ -676,20 +676,66 @@ Note: As an open-source project, these features are also available for free via 
 
     <!-- Missing translations -->
 
-    <system:String x:Key="Edit_LrcFilter">LRC Files (*.lrc)|*.lrc|Text Files (*.txt)|*.txt|All Files (*.*)|*.*</system:String>
+    <system:String x:Key="Edit_LrcFilter">קבצי LRC (*.lrc)|*.lrc|קבצי טקסט (*.txt)|*.txt|כל הקבצים (*.*)|*.*</system:String>
 
-    <system:String x:Key="Error_FailedSetStartup">Failed to set startup</system:String>
+    <system:String x:Key="Error_FailedSetStartup">הגדרת ההפעלה בעת עליית המערכת נכשלה</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualize the input level and adjust the cutoff points in real time</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">הצג את רמת הקלט וכוונן את נקודות החיתוך בזמן אמת</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Audio Calibration Monitor</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">ניטור כיול שמע</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_Max">Maximum</system:String>
+    <system:String x:Key="TaskbarVisualizer_Max">מקסימום</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Peak Threshold (Peak)</system:String>
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">סף שיא (Peak)</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_Silence">Silence</system:String>
+    <system:String x:Key="TaskbarVisualizer_Silence">שקט</system:String>
 
-    <system:String x:Key="TaskbarVisualizer_StartPoint">Start Point (Sensitivity)</system:String>
+    <system:String x:Key="TaskbarVisualizer_StartPoint">נקודת התחלה (רגישות)</system:String>
 
+    <system:String x:Key="TurntableModeTitle">מצב גרמופון</system:String>
+    <system:String x:Key="TurntableModeDescription">הצג תקליט ויניל מסתובב עם עטיפת האלבום בכרטיסיית הבית</system:String>
+    <system:String x:Key="TurntableModeTooltip">הפעל/כבה מצב גרמופון</system:String>
+
+    <!-- Auto-added missing translations -->
+    <system:String x:Key="AnimationSpeed_05x">0.5x</system:String>
+    <system:String x:Key="AnimationSpeed_15x">1.5x</system:String>
+    <system:String x:Key="AnimationSpeed_1x">1x</system:String>
+    <system:String x:Key="AnimationSpeed_2x">2x</system:String>
+    <system:String x:Key="AnimationSpeed_3x">3x</system:String>
+    <system:String x:Key="Edit_AutoSyncAnalysisError">לא ניתן היה לנתח את קובץ השמע.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">למילים אין חותמות זמן לסנכרון.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">אין חותמות זמן</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessMsg">המילים הוזזו ב-{0:F1} שניות כדי להתאים לשיאי השמע.</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessTitle">סונכרן</system:String>
+    <system:String x:Key="Edit_AutoSyncTip">סנכרון אוטומטי: נתח שמע כדי ליישר את חותמת הזמן הראשונה</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTip">הזז את כל חותמות הזמן קדימה או אחורה</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTitle">סנכרן מילים</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</system:String>
+    <system:String x:Key="General_NewLabel">חדש</system:String>
+    <system:String x:Key="General_Open">פתח</system:String>
+    <system:String x:Key="General_Separator">-</system:String>
+    <system:String x:Key="Home_SyncButton">סנכרן</system:String>
+    <system:String x:Key="Lib_CornerRadiusDescription">כוונן את רדיוס הפינה לעטיפות ולכרטיסים</system:String>
+    <system:String x:Key="Lib_CornerRadiusTitle">רדיוס פינה</system:String>
+    <system:String x:Key="Lib_PreviewDescription">כך הספרייה שלך תיראה</system:String>
+    <system:String x:Key="Lib_PreviewTitle">תצוגה מקדימה</system:String>
+    <system:String x:Key="Lib_ResetLayoutTooltip">אפס עיצוב</system:String>
+    <system:String x:Key="Lib_SizeLarge">גדול</system:String>
+    <system:String x:Key="Lib_SizeSmall">קטן</system:String>
+    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">שם האמן</system:String>
+    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">שם השיר</system:String>
+    <system:String x:Key="Playlist_ClearQueue">נקה תור</system:String>
+    <system:String x:Key="Playlist_EmptyDescription">גרור מוזיקה לכאן או הוסף אותה מהספרייה.</system:String>
+    <system:String x:Key="Playlist_EmptyTitle">התור שלך ריק</system:String>
+    <system:String x:Key="Playlist_OpenLocation">פתח מיקום קובץ</system:String>
+    <system:String x:Key="Playlist_PlayNext">נגן הבא</system:String>
+    <system:String x:Key="Playlist_RemoveFromQueue">הסר מהתור</system:String>
+    <system:String x:Key="Playlist_SearchPlaceholder">חפש בתור...</system:String>
+    <system:String x:Key="Playlist_ViewInfo">הצג מידע</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeDescription">כיצד מעובדים ערוצי השמע לצורך ויזואליזציה</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeMono">מונו (ממוצע L+R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">סטריאו מראה (L|R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeTitle">מצב סטריאו</system:String>
+    <system:String x:Key="ViewLogsDescription">פתח את התיקייה המכילה את קבצי היומן של האפליקציה</system:String>
 </ResourceDictionary>

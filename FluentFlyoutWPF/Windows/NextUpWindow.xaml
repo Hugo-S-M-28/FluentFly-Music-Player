@@ -83,12 +83,12 @@
                     Orientation="Vertical"
                     VerticalAlignment="Center">
             <TextBlock Name="SongTitle"
-                       Text="Song Title"
+                       Text="{DynamicResource NextUpWindow_SongTitlePlaceholder}"
                        FontSize="14"
                        FontWeight="Medium"
                        TextTrimming="CharacterEllipsis"/>
             <TextBlock Name="SongArtist"
-                       Text="Artist Name"
+                       Text="{DynamicResource NextUpWindow_ArtistNamePlaceholder}"
                        FontSize="14"
                        FontWeight="Medium"
                        Opacity="0.5"

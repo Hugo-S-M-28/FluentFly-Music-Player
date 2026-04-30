@@ -332,7 +332,8 @@ public class LibraryManager : IDisposable
                 lastPosition = MusicPlayerService.Instance.CurrentPosition;
                 MusicPlayerService.Instance.Stop();
                 // Give the system a moment to release the file handle
-                await Task.Delay(200);
+                // Increased delay for .m4a and .flac files which often use MediaFoundation
+                await Task.Delay(500);
             }
 
             await Task.Run(() =>
@@ -344,7 +345,9 @@ public class LibraryManager : IDisposable
                     File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
                 }
 
-                using var file = TagLib.File.Create(track.FilePath);
+                var file = TagLib.File.Create(track.FilePath);
+                try
+                {
                 file.Tag.Title = newTitle;
                 
                 // Merge main artist and collaborators for the Performers tag
@@ -395,15 +398,32 @@ public class LibraryManager : IDisposable
                         file.Save();
                         break;
                     }
-                    catch (Exception ex) when (attempts < 3 && (ex is UnauthorizedAccessException || ex is IOException))
+                    catch (Exception ex) when (attempts < 5 && (ex is UnauthorizedAccessException || ex is IOException))
                     {
                         attempts++;
-                        System.Threading.Thread.Sleep(500);
+                        file.Dispose();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        System.Threading.Thread.Sleep(500 * attempts);
+                        
+                        // Re-open and re-apply tags for next attempt
+                        file = TagLib.File.Create(track.FilePath);
+                        file.Tag.Title = newTitle;
+                        file.Tag.Performers = performersList.ToArray();
+                        file.Tag.Album = newAlbum;
+                        file.Tag.AlbumArtists = new[] { newArtist };
+                        file.Tag.Genres = new[] { newGenre };
+                        file.Tag.Track = (uint)Math.Max(0, newTrackNumber);
                     }
                     catch
                     {
                         throw;
                     }
+                }
+                }
+                finally
+                {
+                    file?.Dispose();
                 }
             });
 
@@ -467,7 +487,7 @@ public class LibraryManager : IDisposable
                 wasPlaying = MusicPlayerService.Instance.IsPlaying;
                 lastPosition = MusicPlayerService.Instance.CurrentPosition;
                 MusicPlayerService.Instance.Stop();
-                await Task.Delay(200);
+                await Task.Delay(500);
             }
 
             // 1. Save to internal tags
@@ -480,8 +500,10 @@ public class LibraryManager : IDisposable
                     File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
                 }
 
-                using var file = TagLib.File.Create(track.FilePath);
-                file.Tag.Lyrics = lyricsText;
+                var file = TagLib.File.Create(track.FilePath);
+                try
+                {
+                    file.Tag.Lyrics = lyricsText;
                 
                 int attempts = 0;
                 while (true)
@@ -491,15 +513,25 @@ public class LibraryManager : IDisposable
                         file.Save();
                         break;
                     }
-                    catch (Exception ex) when (attempts < 3 && (ex is UnauthorizedAccessException || ex is IOException))
+                    catch (Exception ex) when (attempts < 5 && (ex is UnauthorizedAccessException || ex is IOException))
                     {
                         attempts++;
-                        System.Threading.Thread.Sleep(500);
+                        file.Dispose();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        System.Threading.Thread.Sleep(500 * attempts);
+                        file = TagLib.File.Create(track.FilePath);
+                        file.Tag.Lyrics = lyricsText;
                     }
                     catch
                     {
                         throw;
                     }
+                }
+                }
+                finally
+                {
+                    file?.Dispose();
                 }
             });
 

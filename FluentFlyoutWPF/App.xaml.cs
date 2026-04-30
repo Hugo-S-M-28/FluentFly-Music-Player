@@ -1,4 +1,4 @@
-﻿using FluentFlyout.Classes;
+using FluentFlyout.Classes;
 using Microsoft.Toolkit.Uwp.Notifications;
 using System.Windows;
 
@@ -11,6 +11,9 @@ public partial class App : Application
 {
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Restore settings as early as possible so that any UI created later has the correct data
+        FluentFlyout.Classes.Settings.SettingsManager.RestoreSettings();
+
         // log unhandled exceptions before crashing
         AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
         {
@@ -18,7 +21,7 @@ public partial class App : Application
             NLog.LogManager.Flush(); // Ensure logs are written before application dies
         };
 
-        // Register AUMID for toast notifications
+        // Register toast notification activation
         ToastNotificationManagerCompat.OnActivated += Notifications.HandleNotificationActivation;
         
         // Apply localization before any windows are created

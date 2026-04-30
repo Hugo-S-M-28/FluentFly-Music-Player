@@ -23,6 +23,7 @@
     <system:String x:Key="AnimationSettingsTitle">애니메이션 설정</system:String>
     <system:String x:Key="AnimationSpeedOff">꺼짐</system:String>
     <system:String x:Key="AppLanguageDescription">사용 중인 언어가 목록에 없거나 불완전한 경우 기본적으로 영어가 사용됩니다.
+
 번역 기여는 여기에서 하실 수 있습니다:</system:String>
     <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
     <system:String x:Key="AppLanguageTitle">앱 언어</system:String>
@@ -44,6 +45,7 @@
     <system:String x:Key="CheckingForUpdates">업데이트 확인 중...</system:String>
     <system:String x:Key="CloseButton">닫기</system:String>
     <system:String x:Key="CompactLayoutDescription" xml:space="preserve">더 얇고 방해가 적은 레이아웃
+
 반복, 셔플 및 플레이어 정보를 숨깁니다</system:String>
     <system:String x:Key="CompactLayoutTitle">콤팩트 레이아웃</system:String>
     <system:String x:Key="DefaultLockLayoutPosition">기본값 (플라이아웃 대상 모니터)</system:String>
@@ -93,13 +95,14 @@
     <system:String x:Key="Edit_Untitled">제목 없음</system:String>
     <system:String x:Key="Edit_WindowTitle">트랙 정보 편집</system:String>
     <system:String x:Key="EnableInsertKeyDescription">Insert/Overwrite 키를 눌렀을 때 플라이아웃을 표시할지 여부를 설정합니다</system:String>
-    <system:String x:Key="EnableInsertKeyTitle">Insert 키 표시 활성화</system:String>
+    <system:String x:Key="EnableInsertKeyTitle">Insert 키 팝업 활성화</system:String>
     <system:String x:Key="EnableLockKeysDescription">특정 잠금 키(Caps/Num/Scroll)의 온/오프 상태를 표시합니다</system:String>
     <system:String x:Key="EnableLockKeysTitle">잠금 키 플라이아웃 활성화</system:String>
     <system:String x:Key="EnableNextUpDescription">곡이나 비디오가 끝날 때 다음 항목을 표시합니다</system:String>
     <system:String x:Key="EnableNextUpTitle">"다음 항목" 플라이아웃 활성화</system:String>
     <system:String x:Key="Enabled">활성화됨</system:String>
     <system:String x:Key="EnjoyingAppText" xml:space="preserve">앱이 마음에 드시나요? GitHub에서 스타를 눌러주시거나,
+
 Microsoft Store에 리뷰를 남겨주세요!</system:String>
     <system:String x:Key="Eq_Enable">이퀄라이저 활성화</system:String>
     <system:String x:Key="Eq_Presets">프리셋</system:String>
@@ -225,9 +228,9 @@ Microsoft Store에 리뷰를 남겨주세요!</system:String>
     <system:String x:Key="PositionTopCenter" xml:space="preserve"> 상단 중앙</system:String>
     <system:String x:Key="PositionTopLeft" xml:space="preserve"> 상단 왼쪽</system:String>
     <system:String x:Key="PositionTopRight" xml:space="preserve"> 상단 오른쪽</system:String>
-    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">귀하의 후원은 FluentFlyout을 유지하는 데 큰 도움이 됩니다. 모든 Premium 커스터마이징 기능이 영구적으로 즉시 활성화됩니다.
+    <system:String x:Key="PremiumFeatureDescription" xml:space="preserve">귀하의 후원은 FluentFlyout을 유지하는 데 큰 도움이 됩니다. 모든 Premium 커스텀 기능이 영구적으로 즉시 활성화됩니다.
 
-참고: 오픈 소스 프로젝트이므로 이러한 기능은 GitHub의 수동 설치 프로그램을 통해 무료로 사용할 수도 있습니다.</system:String>
+참고: 오픈 소스 프로젝트이므로 이러한 기능은 GitHub의 수동 설치 프로그램을 통해 무료로 사용하실 수도 있습니다.</system:String>
     <system:String x:Key="PremiumFeatureTitle">Premium 기능</system:String>
     <system:String x:Key="PremiumGitHubMessage">GitHub/직접 빌드 버전은 Premium 기능이 활성화되어 있습니다</system:String>
     <system:String x:Key="PremiumLockedMessage">이 기능은 Premium 패키지의 일부입니다</system:String>
@@ -333,8 +336,7 @@ Microsoft Store에 리뷰를 남겨주세요!</system:String>
     <system:String x:Key="UseAlbumArtAccentColorTitle">앨범 아트를 강조 색상으로 사용</system:String>
     <system:String x:Key="Win11TrayIconDescription">Windows 11과 일치하는 트레이 아이콘 사용 (테마를 새로 고치려면 껐다 켜세요)</system:String>
     <system:String x:Key="Win11TrayIconTitle">Windows 11 스타일 트레이 아이콘</system:String>
-    
-    <!-- New Keys -->
+
     <system:String x:Key="TaskbarVisualizer_CalibrationTitle">오디오 교정 모니터</system:String>
     <system:String x:Key="TaskbarVisualizer_CalibrationDescription">입력 레벨을 시각화하고 컷오프 지점을 실시간으로 조정합니다</system:String>
     <system:String x:Key="TaskbarVisualizer_Silence">무음</system:String>
@@ -343,4 +345,51 @@ Microsoft Store에 리뷰를 남겨주세요!</system:String>
     <system:String x:Key="TaskbarVisualizer_PeakThreshold">피크 임계값 (Peak)</system:String>
     <system:String x:Key="Edit_LrcFilter">LRC 파일 (*.lrc)|*.lrc|텍스트 파일 (*.txt)|*.txt|모든 파일|*.*</system:String>
     <system:String x:Key="Error_FailedSetStartup">시작 프로그램 설정 실패</system:String>
+
+    <system:String x:Key="TurntableModeTitle">턴테이블 모드</system:String>
+    <system:String x:Key="TurntableModeDescription">홈 페이지에 커버 아트와 함께 회전하는 레코드를 표시합니다</system:String>
+    <system:String x:Key="TurntableModeTooltip">턴테이블 모드 전환</system:String>
+
+    <!-- Auto-added missing translations -->
+    <system:String x:Key="AnimationSpeed_05x">0.5x</system:String>
+    <system:String x:Key="AnimationSpeed_15x">1.5x</system:String>
+    <system:String x:Key="AnimationSpeed_1x">1x</system:String>
+    <system:String x:Key="AnimationSpeed_2x">2x</system:String>
+    <system:String x:Key="AnimationSpeed_3x">3x</system:String>
+    <system:String x:Key="Edit_AutoSyncAnalysisError">오디오 파일을 분석할 수 없습니다.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">가사에 동기화할 타임스탬프가 없습니다.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">타임스탬프 없음</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessMsg">오디오 피크에 맞춰 가사를 {0:F1}초 이동했습니다.</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessTitle">동기화됨</system:String>
+    <system:String x:Key="Edit_AutoSyncTip">자동 동기화: 오디오를 분석하여 첫 번째 타임스탬프 맞추기</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTip">모든 타임스탬프를 앞뒤로 이동</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTitle">가사 동기화</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</system:String>
+    <system:String x:Key="General_NewLabel">새로운 기능</system:String>
+    <system:String x:Key="General_Open">열기</system:String>
+    <system:String x:Key="General_Separator">-</system:String>
+    <system:String x:Key="Home_SyncButton">동기화</system:String>
+    <system:String x:Key="Lib_CornerRadiusDescription">커버 및 카드의 모서리 곡률 조정</system:String>
+    <system:String x:Key="Lib_CornerRadiusTitle">모서리 곡률</system:String>
+    <system:String x:Key="Lib_PreviewDescription">라이브러리가 이렇게 표시됩니다</system:String>
+    <system:String x:Key="Lib_PreviewTitle">미리보기</system:String>
+    <system:String x:Key="Lib_ResetLayoutTooltip">레이아웃 초기화</system:String>
+    <system:String x:Key="Lib_SizeLarge">크게</system:String>
+    <system:String x:Key="Lib_SizeSmall">작게</system:String>
+    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">아티스트 이름</system:String>
+    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">곡 제목</system:String>
+    <system:String x:Key="Playlist_ClearQueue">대기열 지우기</system:String>
+    <system:String x:Key="Playlist_EmptyDescription">여기에 음악을 드래그하거나 라이브러리에서 추가하세요.</system:String>
+    <system:String x:Key="Playlist_EmptyTitle">대기열이 비어 있습니다</system:String>
+    <system:String x:Key="Playlist_OpenLocation">파일 위치 열기</system:String>
+    <system:String x:Key="Playlist_PlayNext">다음에 재생</system:String>
+    <system:String x:Key="Playlist_RemoveFromQueue">대기열에서 제거</system:String>
+    <system:String x:Key="Playlist_SearchPlaceholder">대기열에서 검색...</system:String>
+    <system:String x:Key="Playlist_ViewInfo">정보 보기</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeDescription">시각화를 위한 오디오 채널 처리 방식</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeMono">모노 (L+R 평균)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">스테레오 미러 (L|R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeTitle">스테레오 모드</system:String>
+    <system:String x:Key="ViewLogsDescription">애플리케이션 로그 파일이 포함된 폴더 열기</system:String>
 </ResourceDictionary>

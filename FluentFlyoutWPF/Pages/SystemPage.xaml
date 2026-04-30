@@ -151,7 +151,7 @@
                                     FontSize="14"
                                     FontWeight="Regular"
                                     VerticalAlignment="Center"/>
-                            <ui:InfoBadge Value=" NEW "
+                            <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                     FontWeight="Medium"
                                     FontSize="10"
                                     Margin="6,-2,0,-2"
@@ -262,11 +262,37 @@
             </ui:CardControl>
 
 
+
             <!-- internal player section -->
             <TextBlock Text="{DynamicResource InternalMusicPlayerSectionTitle}"
                     FontSize="14"
                     FontWeight="SemiBold"
                     Margin="0,12,0,6"/>
+
+            <ui:CardControl Icon="{ui:SymbolIcon Record24}"
+                    Margin="0,0,0,3"
+                    Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
+                <ui:CardControl.Header>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{DynamicResource TurntableModeTitle}"
+                                    FontSize="14"
+                                    FontWeight="Regular"
+                                    VerticalAlignment="Center"/>
+                            <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
+                                    FontWeight="Medium"
+                                    FontSize="10"
+                                    Margin="6,-2,0,-2"
+                                    Severity="Success"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource TurntableModeDescription}"
+                                FontSize="12"
+                                Opacity="0.5"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <controls:ToggleSwitch IsChecked="{Binding TurntableModeEnabled, Mode=TwoWay}"/>
+            </ui:CardControl>
+
             <ui:CardControl Icon="{ui:SymbolIcon MusicNote124}"
                     Margin="0,0,0,3">
                 <ui:CardControl.Header>
@@ -293,7 +319,7 @@
                            Appearance="Transparent"
                            Margin="12,0,0,0"
                            Padding="4"
-                           ToolTip="Restablecer diseño"
+                           ToolTip="{DynamicResource Lib_ResetLayoutTooltip}"
                            Click="ResetLibraryLayout_Click"/>
             </StackPanel>
 
@@ -306,8 +332,8 @@
                     </Grid.ColumnDefinitions>
                     
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Vista Previa" FontWeight="SemiBold" Margin="12,0,0,4"/>
-                        <TextBlock Text="Así se verá tu biblioteca" FontSize="12" Opacity="0.5" Margin="12,0,0,0"/>
+                        <TextBlock Text="{DynamicResource Lib_PreviewTitle}" FontWeight="SemiBold" Margin="12,0,0,4"/>
+                        <TextBlock Text="{DynamicResource Lib_PreviewDescription}" FontSize="12" Opacity="0.5" Margin="12,0,0,0"/>
                     </StackPanel>
 
                     <Border Grid.Column="1" 
@@ -335,7 +361,7 @@
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Text="Pequeño" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{DynamicResource Lib_SizeSmall}" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <Slider Minimum="100"
                                 Maximum="250"
                                 Value="{Binding LibraryGridItemSize, Mode=TwoWay}"
@@ -343,7 +369,7 @@
                                 IsSnapToTickEnabled="True"
                                 Width="150"
                                 VerticalAlignment="Center"/>
-                        <TextBlock Text="Grande" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <TextBlock Text="{DynamicResource Lib_SizeLarge}" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
                         <ui:TextBlock Text="{Binding LibraryGridItemSize}"
                                 Width="30"
                                 TextAlignment="Right"
@@ -366,7 +392,7 @@
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Pequeño" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="{DynamicResource Lib_SizeSmall}" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <Slider Minimum="32"
                             Maximum="96"
                             Value="{Binding LibraryTrackIconSize, Mode=TwoWay}"
@@ -374,7 +400,7 @@
                             IsSnapToTickEnabled="True"
                             Width="150"
                             VerticalAlignment="Center"/>
-                    <TextBlock Text="Grande" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <TextBlock Text="{DynamicResource Lib_SizeLarge}" FontSize="10" Opacity="0.5" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <ui:TextBlock Text="{Binding LibraryTrackIconSize}"
                             Width="30"
                             TextAlignment="Right"
@@ -386,11 +412,11 @@
             <ui:CardControl Icon="{ui:SymbolIcon Shapes24}" Margin="0,0,0,3">
                 <ui:CardControl.Header>
                     <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Redondeo de Bordes"
+                        <TextBlock Text="{DynamicResource Lib_CornerRadiusTitle}"
                                 FontSize="14"
                                 FontWeight="Regular"
                                 VerticalAlignment="Center"/>
-                        <TextBlock Text="Ajusta el radio de las esquinas para las portadas y tarjetas."
+                        <TextBlock Text="{DynamicResource Lib_CornerRadiusDescription}"
                                 FontSize="12"
                                 Opacity="0.5"/>
                     </StackPanel>
@@ -487,7 +513,7 @@
                                 FontSize="14"
                                 FontWeight="Regular"
                                 VerticalAlignment="Center"/>
-                        <ui:InfoBadge Value=" NEW "
+                        <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                 FontWeight="Medium"
                                 FontSize="10"
                                 Margin="6,-2,0,-2"
@@ -542,7 +568,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <ui:TextBlock Text="{DynamicResource AdvancedSettingsTitle}"/>
-                        <ui:InfoBadge Value=" NEW "
+                        <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
                                 FontWeight="Medium"
                                 FontSize="10"
                                 Margin="6,-2,0,-2"

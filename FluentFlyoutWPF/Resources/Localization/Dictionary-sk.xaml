@@ -2,7 +2,7 @@
 
     <system:String x:Key="AboutContributorsDescription">A big thank you to all the amazing people who have contributed to FluentFlyout's development and success!</system:String>
 
-    <system:String x:Key="AboutContributorsTitle">❤️ Meet Our Contributors</system:String>
+    <system:String x:Key="AboutContributorsTitle">?? Meet Our Contributors</system:String>
 
     <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout is built with the following open source packages:</system:String>
 
@@ -10,7 +10,7 @@
 
     <system:String x:Key="AboutPremiumTitle">About Premium</system:String>
 
-    <system:String x:Key="AboutTitle">O aplikácii</system:String>
+    <system:String x:Key="AboutTitle">O aplik�cii</system:String>
 
     <system:String x:Key="AcrylicBlurOpacityDescription">Adjust the see-through effect on Acrylic flyouts (default: 175)</system:String>
 
@@ -82,7 +82,7 @@ You can help contribute translations on</system:String>
 
     <system:String x:Key="CheckingForUpdates">Checking...</system:String>
 
-    <system:String x:Key="CloseButton">Zavrieť</system:String>
+    <system:String x:Key="CloseButton">Zavriet</system:String>
 
     <system:String x:Key="CompactLayoutDescription">Slimmer and less intrusive layout
 
@@ -100,7 +100,7 @@ hides repeat, shuffle and player info</system:String>
 
     <system:String x:Key="DisableOnFullscreenTitle">Disable Flyouts if DirectX fullscreen program is detected</system:String>
 
-    <system:String x:Key="Disabled">Zakázané</system:String>
+    <system:String x:Key="Disabled">Zak�zan�</system:String>
 
     <system:String x:Key="EasingCubic"> Cubic</system:String>
 
@@ -196,7 +196,7 @@ hides repeat, shuffle and player info</system:String>
 
     <system:String x:Key="EnableNextUpTitle">Enable Next Up Flyout</system:String>
 
-    <system:String x:Key="Enabled">Povolené</system:String>
+    <system:String x:Key="Enabled">Povolen�</system:String>
 
     <system:String x:Key="EnjoyingAppText">Enjoying the app? Star it on GitHub,
 
@@ -238,7 +238,7 @@ or leave a review on Microsoft Store!</system:String>
 
     <system:String x:Key="General_Ok">OK</system:String>
 
-    <system:String x:Key="General_Yes">Áno</system:String>
+    <system:String x:Key="General_Yes">�no</system:String>
 
     <system:String x:Key="GitHubRepoLink">GitHub Repository</system:String>
 
@@ -332,7 +332,7 @@ or leave a review on Microsoft Store!</system:String>
 
     <system:String x:Key="Lib_SortBy">Sort by:</system:String>
 
-    <system:String x:Key="Lib_SortDirection">Change direction (↑/↓)</system:String>
+    <system:String x:Key="Lib_SortDirection">Change direction (?/?)</system:String>
 
     <system:String x:Key="Lib_Sort_Album">Album</system:String>
 
@@ -684,4 +684,50 @@ Note: As an open-source project, these features are also available for free via 
 
     <system:String x:Key="TaskbarVisualizer_StartPoint">Start Point (Sensitivity)</system:String>
 
+    <system:String x:Key="TurntableModeTitle">Turntable Mode</system:String>
+    <system:String x:Key="TurntableModeDescription">Display a rotating vinyl record with the cover art in the home tab</system:String>
+    <system:String x:Key="TurntableModeTooltip">Toggle Turntable Mode</system:String>
+
+    <!-- Auto-added missing translations -->
+    <system:String x:Key="AnimationSpeed_05x">0.5x</system:String>
+    <system:String x:Key="AnimationSpeed_15x">1.5x</system:String>
+    <system:String x:Key="AnimationSpeed_1x">1x</system:String>
+    <system:String x:Key="AnimationSpeed_2x">2x</system:String>
+    <system:String x:Key="AnimationSpeed_3x">3x</system:String>
+    <system:String x:Key="Edit_AutoSyncAnalysisError">Could not analyze the audio file.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">The lyrics don't have timestamps to synchronize.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">No Timestamps</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessMsg">Lyrics shifted by {0:F1}s to match audio peaks.</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessTitle">Synchronized</system:String>
+    <system:String x:Key="Edit_AutoSyncTip">Auto-Sync: Analyze audio to align the first timestamp</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTip">Shift all timestamps forward or backward</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTitle">Sync Lyrics</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</system:String>
+    <system:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</system:String>
+    <system:String x:Key="General_NewLabel">NEW</system:String>
+    <system:String x:Key="General_Open">Open</system:String>
+    <system:String x:Key="General_Separator">-</system:String>
+    <system:String x:Key="Home_SyncButton">Sync</system:String>
+    <system:String x:Key="Lib_CornerRadiusDescription">Adjust the corner radius for covers and cards</system:String>
+    <system:String x:Key="Lib_CornerRadiusTitle">Corner Radius</system:String>
+    <system:String x:Key="Lib_PreviewDescription">This is how your library will look</system:String>
+    <system:String x:Key="Lib_PreviewTitle">Preview</system:String>
+    <system:String x:Key="Lib_ResetLayoutTooltip">Reset design</system:String>
+    <system:String x:Key="Lib_SizeLarge">Large</system:String>
+    <system:String x:Key="Lib_SizeSmall">Small</system:String>
+    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">Artist Name</system:String>
+    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">Song Title</system:String>
+    <system:String x:Key="Playlist_ClearQueue">Clear queue</system:String>
+    <system:String x:Key="Playlist_EmptyDescription">Drag music here or add it from the library.</system:String>
+    <system:String x:Key="Playlist_EmptyTitle">Your queue is empty</system:String>
+    <system:String x:Key="Playlist_OpenLocation">Open location</system:String>
+    <system:String x:Key="Playlist_PlayNext">Play next</system:String>
+    <system:String x:Key="Playlist_RemoveFromQueue">Remove from queue</system:String>
+    <system:String x:Key="Playlist_SearchPlaceholder">Search in queue...</system:String>
+    <system:String x:Key="Playlist_ViewInfo">View info</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeDescription">How audio channels are processed for visualization</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeMono">Mono (L+R averaged)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">Stereo Mirror (L|R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeTitle">Stereo Mode</system:String>
+    <system:String x:Key="ViewLogsDescription">Open the folder containing the application log files</system:String>
 </ResourceDictionary>

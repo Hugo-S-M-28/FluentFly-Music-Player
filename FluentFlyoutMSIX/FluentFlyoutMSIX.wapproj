@@ -68,7 +68,7 @@
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
-  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" Condition="Exists('$(WapProjPath)\Microsoft.DesktopBridge.props')" />
   <PropertyGroup>
     <ProjectGuid>7c7cb0b2-26b9-4b8b-b5e8-30abf5e2b331</ProjectGuid>
     <TargetPlatformVersion>10.0.26100.0</TargetPlatformVersion>
@@ -138,7 +138,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
-  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" Condition="Exists('$(WapProjPath)\Microsoft.DesktopBridge.targets')" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" PrivateAssets="all" />
   </ItemGroup>
