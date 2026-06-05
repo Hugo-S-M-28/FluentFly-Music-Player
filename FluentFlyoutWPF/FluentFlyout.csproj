@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
@@ -10,14 +11,18 @@
     <StartupObject>FluentFlyoutWPF.App</StartupObject>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <Platforms>x64;ARM64</Platforms>
-	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <LangVersion>preview</LangVersion>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <Configurations>Debug;Release;GitHub Release</Configurations>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>Resources\FluentFlyout2.ico</ApplicationIcon>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>FluentFlyout.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'GitHub Release'">
     <DefineConstants>GITHUB_RELEASE</DefineConstants>
   </PropertyGroup>
@@ -25,26 +30,52 @@
     <None Remove="icon.ico" />
     <None Remove="NLog.config" />
     <None Remove="Resources\FluentFlyout2.ico" />
-
     <None Remove="Resources\FluentFlyoutDemo3.1.png" />
     <None Remove="Resources\FluentFlyoutDemo4.1.png" />
     <None Remove="Resources\FluentFlyoutDemo5.1.png" />
     <None Remove="Resources\FluentFlyoutDemo9.1.png" />
     <None Remove="Resources\FluentFlyoutHero-NoTitle.png" />
     <None Remove="Resources\FluentFlyoutTaskbar-NoTitle-Zoomed.png" />
-
     <None Remove="Resources\logo-change.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dubya.WindowsMediaController" Version="2.5.6" />
     <PackageReference Include="MicaWPF" Version="6.3.2" />
-	<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
-	<PackageReference Include="NAudio" Version="2.3.0" />
-    <PackageReference Include="NLog" Version="6.1.2" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <PackageReference Include="NAudio" Version="2.3.0" />
+    <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
-    <PackageReference Include="WPF-UI" Version="4.2.1" />
-    <PackageReference Include="WPF-UI.Tray" Version="4.2.1" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <PackageReference Include="WPF-UI.Tray" Version="4.3.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageReference Include="NLayer" Version="1.15.0" />
+    <PackageReference Include="BunLabs.NAudio.Flac" Version="2.0.1" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+    <PackageReference Include="Concentus" Version="2.2.2" />
+    <PackageReference Include="Concentus.Oggfile" Version="1.0.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NAudio.Flac" Condition="Exists('$(NuGetPackageRoot)bunlabs.naudio.flac\\2.0.1\\lib\\netstandard2.0\\NAudio.Flac.dll')">
+      <HintPath>$(NuGetPackageRoot)bunlabs.naudio.flac\2.0.1\lib\netstandard2.0\NAudio.Flac.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="NAudio.Vorbis" Condition="Exists('$(NuGetPackageRoot)naudio.vorbis\\1.5.0\\lib\\netstandard2.0\\NAudio.Vorbis.dll')">
+      <HintPath>$(NuGetPackageRoot)naudio.vorbis\1.5.0\lib\netstandard2.0\NAudio.Vorbis.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="NLayer" Condition="Exists('$(NuGetPackageRoot)nlayer\\1.15.0\\lib\\netstandard1.3\\NLayer.dll')">
+      <HintPath>$(NuGetPackageRoot)nlayer\1.15.0\lib\netstandard1.3\NLayer.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Concentus" Condition="Exists('$(NuGetPackageRoot)concentus\\2.2.2\\lib\\netstandard2.0\\Concentus.dll')">
+      <HintPath>$(NuGetPackageRoot)concentus\2.2.2\lib\netstandard2.0\Concentus.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Concentus.Oggfile" Condition="Exists('$(NuGetPackageRoot)concentus.oggfile\\1.0.7\\lib\\netstandard2.0\\Concentus.Oggfile.dll')">
+      <HintPath>$(NuGetPackageRoot)concentus.oggfile\1.0.7\lib\netstandard2.0\Concentus.Oggfile.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="NLog.config">
@@ -63,8 +94,18 @@
   <ItemGroup>
     <Resource Include="Resources\TrayIcons\FluentFlyoutWhite.png" />
   </ItemGroup>
-
   <!-- Localization files -->
-
   <!-- Style files -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Target Name="CleanupTemporaryTargetAssembly">
+    <Message Text="Remove the temporary project and target assembly" Condition="'$(MSBuildTargetsVerbose)' == 'true'" />
+    <!--
+      Visual Studio and the WPF designer can keep the temporary local-type
+      reference assembly loaded for a short time. When that happens, the
+      default WinFX cleanup target fails the whole build while deleting an
+      intermediate-only dll from obj. We keep the cleanup attempt, but downgrade
+      the lock to a warning so the modern music player can still build.
+    -->
+    <Delete Files="@(AssemblyForLocalTypeReference)" Condition="Exists('%(Fullpath)')" ContinueOnError="WarnAndContinue" />
+  </Target>
 </Project>

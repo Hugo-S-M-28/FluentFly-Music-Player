@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentFlyoutWPF.Classes.Messages;
+using FluentFlyoutWPF.ViewModels;
 using Windows.Media.Control;
 using static FluentFlyout.Classes.NativeMethods;
 
@@ -42,21 +43,43 @@ public partial class TaskbarWindow : Window
     private GlobalSystemMediaTransportControlsSessionPlaybackStatus? _lastPlaybackStatus;
     private DispatcherTimer? _autoHideTimer;
 
-    public TaskbarWindow()
+    public TaskbarWindow(SettingsShellViewModel settingsViewModel)
     {
         WindowHelper.SetNoActivate(this);
         InitializeComponent();
         WindowHelper.SetTopmost(this);
 
         // Set DataContext for bindings
-        DataContext = SettingsManager.Current;
+        DataContext = settingsViewModel;
 
         _timer = new DispatcherTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(1500); // slow auto-update for display changes
         _timer.Tick += async (s, e) => await UpdatePositionAsync();
         _timer.Start();
 
-        Show();
+        // Listen to theme changes
+        WeakReferenceMessenger.Default.Register<ApplyTaskbarWidgetThemeMessage>(this, (r, m) =>
+        {
+            Dispatcher.Invoke(ApplyTaskbarTheme);
+        });
+    }
+
+    private void ApplyTaskbarTheme()
+    {
+        var theme = Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme();
+        
+        foreach (var dict in this.Resources.MergedDictionaries)
+        {
+            if (dict.GetType().Name == "ThemesDictionary")
+            {
+                var themeProp = dict.GetType().GetProperty("Theme");
+                if (themeProp != null)
+                {
+                    themeProp.SetValue(dict, theme);
+                }
+                break;
+            }
+        }
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -101,6 +124,7 @@ public partial class TaskbarWindow : Window
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         SetupWindow();
+        ApplyTaskbarTheme();
     }
 
     private IntPtr GetSelectedTaskbarHandle(out bool isMainTaskbarSelected)
@@ -650,6 +674,9 @@ public partial class TaskbarWindow : Window
 
         // Delegate UI update to widget control
         Widget.UpdateUi(title, artist, icon, playbackStatus, playbackControls);
+
+        // Update taskbar visualizer background style as well
+        TaskbarVisualizer?.UpdateBackground(icon);
 
         // Update position after UI change
         Dispatcher.BeginInvoke(() => UpdatePosition(), DispatcherPriority.Background);

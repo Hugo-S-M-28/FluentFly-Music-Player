@@ -1,0 +1,205 @@
+<ui:FluentWindow
+    x:Class="FluentFlyoutWPF.Windows.ManageLibraryWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+    mc:Ignorable="d"
+    Title="Gestionar Biblioteca"
+    Icon="pack://application:,,,/Resources/FluentFlyout2.ico"
+    Height="550"
+    Width="650"
+    WindowStartupLocation="CenterOwner"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    ResizeMode="NoResize"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    d:DataContext="{d:DesignInstance viewModels:ManageLibraryViewModel}">
+
+    <ui:FluentWindow.Resources>
+        <Style x:Key="TransparentIconButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderBrush"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="4"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <ui:TitleBar Title="Gestionar Biblioteca"
+                     VerticalAlignment="Top"/>
+
+        <Grid Margin="24,40,24,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TabControl Grid.Row="0"
+                        Background="Transparent"
+                        BorderThickness="0">
+                <!-- Tab 1: Carpetas Monitorizadas -->
+                <TabItem Header="Carpetas Monitorizadas">
+                    <Grid Margin="0,12,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ListView x:Name="FoldersListView"
+                                  Grid.Row="0"
+                                  ItemsSource="{Binding MusicLibraryFolders}"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  Margin="0,0,0,12"
+                                  SelectionMode="Single"
+                                  ScrollViewer.CanContentScroll="True"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4"
+                                          HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="13"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource TransparentIconButtonStyle}"
+                                                Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Eliminar Carpeta">
+                                            <ui:SymbolIcon Symbol="Delete24"/>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <ui:Button Grid.Row="1"
+                                   Content="Añadir Carpeta"
+                                   Icon="{ui:SymbolIcon FolderAdd24}"
+                                   Command="{Binding AddFolderCommand}"
+                                   Appearance="Primary"
+                                   HorizontalAlignment="Right"/>
+                    </Grid>
+                </TabItem>
+
+                <!-- Tab 2: Carpetas y Archivos Excluidos -->
+                <TabItem Header="Exclusiones">
+                    <Grid Margin="0,12,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ListView x:Name="ExclusionsListView"
+                                  Grid.Row="0"
+                                  ItemsSource="{Binding ExcludedLibraryPaths}"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  Margin="0,0,0,12"
+                                  SelectionMode="Single"
+                                  ScrollViewer.CanContentScroll="True"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4"
+                                          HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="13"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource TransparentIconButtonStyle}"
+                                                Command="{Binding DataContext.RemoveExclusionCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Eliminar Exclusión">
+                                            <ui:SymbolIcon Symbol="Delete24"/>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <StackPanel Grid.Row="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <ui:Button Content="Excluir Carpeta"
+                                       Icon="{ui:SymbolIcon FolderProhibited24}"
+                                       Command="{Binding AddFolderExclusionCommand}"
+                                       Appearance="Secondary"
+                                       Margin="0,0,8,0"/>
+                            <ui:Button Content="Excluir Archivo"
+                                       Icon="{ui:SymbolIcon DocumentProhibited24}"
+                                       Command="{Binding AddFileExclusionCommand}"
+                                       Appearance="Secondary"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <!-- Bottom controls -->
+            <Border Grid.Row="1"
+                    BorderThickness="0,1,0,0"
+                    BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                    Padding="0,16,0,0"
+                    Margin="0,12,0,0">
+                <ui:Button Content="Cerrar"
+                           Appearance="Primary"
+                           Command="{Binding CloseWindowCommand}"
+                           CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                           HorizontalAlignment="Right"
+                           Padding="24,8"/>
+            </Border>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

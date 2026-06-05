@@ -110,43 +110,50 @@ public class SmtcService
         }
     }
 
-    public async void UpdateMetadata(TrackModel? track, TimeSpan currentPosition, TimeSpan totalDuration)
+    public async Task UpdateMetadataAsync(TrackModel? track, TimeSpan currentPosition, TimeSpan totalDuration)
     {
         if (_smtc == null) return;
 
-        var updater = _smtc.DisplayUpdater;
-
-        if (track == null)
+        try
         {
-            updater.MusicProperties.Title = string.Empty;
-            updater.MusicProperties.Artist = string.Empty;
-            updater.MusicProperties.AlbumTitle = string.Empty;
-            updater.Thumbnail = null;
-            updater.Update();
-            return;
-        }
+            var updater = _smtc.DisplayUpdater;
 
-        updater.Type = MediaPlaybackType.Music;
-        updater.MusicProperties.Title = track.Title;
-        updater.MusicProperties.Artist = track.Artist;
-        updater.MusicProperties.AlbumTitle = track.Album;
-
-        if (!string.IsNullOrEmpty(track.AlbumArtPath) && File.Exists(track.AlbumArtPath))
-        {
-            try
+            if (track == null)
             {
-                var file = await global::Windows.Storage.StorageFile.GetFileFromPathAsync(track.AlbumArtPath);
-                updater.Thumbnail = RandomAccessStreamReference.CreateFromFile(file);
+                updater.MusicProperties.Title = string.Empty;
+                updater.MusicProperties.Artist = string.Empty;
+                updater.MusicProperties.AlbumTitle = string.Empty;
+                updater.Thumbnail = null;
+                updater.Update();
+                return;
             }
-            catch { /* Ignore thumbnail errors */ }
-        }
-        else
-        {
-            updater.Thumbnail = null;
-        }
 
-        updater.Update();
-        UpdateTimeline(currentPosition, totalDuration);
+            updater.Type = MediaPlaybackType.Music;
+            updater.MusicProperties.Title = track.Title;
+            updater.MusicProperties.Artist = track.Artist;
+            updater.MusicProperties.AlbumTitle = track.Album;
+
+            if (!string.IsNullOrEmpty(track.AlbumArtPath) && File.Exists(track.AlbumArtPath))
+            {
+                try
+                {
+                    var file = await global::Windows.Storage.StorageFile.GetFileFromPathAsync(track.AlbumArtPath);
+                    updater.Thumbnail = RandomAccessStreamReference.CreateFromFile(file);
+                }
+                catch { /* Ignore thumbnail errors */ }
+            }
+            else
+            {
+                updater.Thumbnail = null;
+            }
+
+            updater.Update();
+            UpdateTimeline(currentPosition, totalDuration);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error updating SMTC metadata");
+        }
     }
 
     public void UpdateTimeline(TimeSpan currentPosition, TimeSpan totalDuration)

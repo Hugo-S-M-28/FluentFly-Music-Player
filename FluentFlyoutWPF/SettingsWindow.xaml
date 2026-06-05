@@ -17,11 +17,11 @@
     Icon="/Resources/FluentFlyout2.ico"
     TextOptions.TextRenderingMode="ClearType"
     TextOptions.TextFormattingMode="Ideal"
-    FontFamily="{Binding FontFamily}"
-    FlowDirection="{Binding FlowDirection}"
+    FontFamily="{Binding Settings.FontFamily}"
+    FlowDirection="{Binding Settings.FlowDirection}"
     Closing="SettingsWindow_Closing"
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
-    d:DataContext="{d:DesignInstance viewModels:UserSettings}"
+    d:DataContext="{d:DesignInstance viewModels:SettingsShellViewModel}"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ExtendsContentIntoTitleBar="True"
@@ -32,6 +32,7 @@
         <ui:NavigationView x:Name="RootNavigation"
                            PaneDisplayMode="Left"
                            TransitionDuration="300"
+                           Navigated="RootNavigation_OnNavigated"
                            IsPaneToggleVisible="true"
                            Margin="0, 40, 0, 0"
                            FrameMargin="0, 0, 0, 0"
@@ -42,11 +43,11 @@
                 <ui:NavigationViewItem Content="{DynamicResource Lib_Title}"
                                        Icon="{ui:SymbolIcon Library24}"
                                        TargetPageType="{x:Type pages:LibraryPage}"
-                                       Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                       Visibility="{Binding Settings.InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
                 <ui:NavigationViewItem Content="{DynamicResource HomeTitle}"
                                        Icon="{ui:SymbolIcon Home24}"
                                        TargetPageType="{x:Type pages:HomePage}"
-                                       Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                       Visibility="{Binding Settings.InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
                 <ui:NavigationViewItem Content="{DynamicResource MediaFlyoutTitle}"
                                        Icon="{ui:SymbolIcon VideoPlayPause24}"
                                        TargetPageType="{x:Type pages:MediaFlyoutPage}"/>

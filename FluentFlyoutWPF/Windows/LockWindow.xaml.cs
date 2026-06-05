@@ -4,6 +4,7 @@
 using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.ViewModels;
 using MicaWPF.Controls;
 using System.Windows;
 using System.Windows.Media.Animation;
@@ -17,13 +18,14 @@ namespace FluentFlyoutWPF.Windows;
 /// </summary>
 public partial class LockWindow : MicaWindow
 {
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     private CancellationTokenSource cts;
     private bool _isHiding = true;
     private MonitorInfo _openedMonitor;
 
-    public LockWindow()
+    public LockWindow(SettingsShellViewModel settingsViewModel)
     {
-        DataContext = SettingsManager.Current;
+        DataContext = settingsViewModel;
         WindowHelper.SetNoActivate(this);
         InitializeComponent();
         WindowHelper.SetTopmost(this);
@@ -115,58 +117,58 @@ public partial class LockWindow : MicaWindow
         });
     }
 
-    public async void ShowLockFlyout(string? key, bool isOn)
+    public async Task ShowLockFlyoutAsync(string? key, bool isOn)
     {
         if (string.IsNullOrEmpty(key)) return;
 
-        if (SettingsManager.Current.LockKeysAcrylicWindowEnabled)
-        {
-            WindowBlurHelper.EnableBlur(this);
-        }
-        else
-        {
-            WindowBlurHelper.DisableBlur(this);
-        }
-
-        // lengthen the window width to fit longer translated texts
-        if (LocalizationManager.LanguageCode != "en")
-        {
-            Width = LocalizationManager.maxLength + 56.0; //Max length of the text + extra space for the icon and padding
-        }
-        else
-        {
-            Width = 160; // default width
-        }
-
-        setStatus(key, isOn);
-
-        if (_isHiding)
-        {
-            _isHiding = false;
-            _openedMonitor = GetPreferredTargetDisplay();
-            FlyoutAnimationService.OpenAnimation(this, true, _openedMonitor);
-        }
-        cts.Cancel();
-        cts = new CancellationTokenSource();
-        var token = cts.Token;
-
         try
         {
-            while (!token.IsCancellationRequested)
-            {
-                await Task.Delay(SettingsManager.Current.LockKeysDuration, token);
-                FlyoutAnimationService.CloseAnimation(this, true, _openedMonitor);
-                _isHiding = true;
-                await Task.Delay(FlyoutAnimationService.GetDuration());
-                if (!_isHiding) return; // Flyout was re-opened during the close animation wait
+            WindowBlurHelper.ApplyWindowBackdrop(this);
 
-                WindowHelper.SetVisibility(this, false);
-                break;
+            // lengthen the window width to fit longer translated texts
+            if (LocalizationManager.LanguageCode != "en")
+            {
+                Width = LocalizationManager.maxLength + 56.0; //Max length of the text + extra space for the icon and padding
+            }
+            else
+            {
+                Width = 160; // default width
+            }
+
+            setStatus(key, isOn);
+
+            if (_isHiding)
+            {
+                _isHiding = false;
+                _openedMonitor = GetPreferredTargetDisplay();
+                FlyoutAnimationService.OpenAnimation(this, true, _openedMonitor);
+            }
+            cts.Cancel();
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(SettingsManager.Current.LockKeysDuration, token);
+                    FlyoutAnimationService.CloseAnimation(this, true, _openedMonitor);
+                    _isHiding = true;
+                    await Task.Delay(FlyoutAnimationService.GetDuration());
+                    if (!_isHiding) return; // Flyout was re-opened during the close animation wait
+
+                    WindowHelper.SetVisibility(this, false);
+                    break;
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // do nothing
             }
         }
-        catch (TaskCanceledException)
+        catch (Exception ex)
         {
-            // do nothing
+            Logger.Error(ex, "Error in ShowLockFlyoutAsync");
         }
     }
 

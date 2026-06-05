@@ -3,10 +3,17 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FluentFlyoutWPF.Models;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Classes.Services;
+using FluentFlyoutWPF.Classes.Utils;
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using Windows.Media.Control;
@@ -15,16 +22,41 @@ namespace FluentFlyoutWPF.ViewModels;
 
 public partial class NowPlayingViewModel : ObservableObject
 {
+    private bool _isUserSeeking;
+    public UserSettings Settings => SettingsManager.Current;
+
     [ObservableProperty]
     private string title;
 
     [ObservableProperty]
     private string artist;
 
-    public NowPlayingViewModel()
+    private readonly IDialogService _dialogService;
+
+    public NowPlayingViewModel(IDialogService dialogService)
     {
+        _dialogService = dialogService;
+        MusicPlayerService.Instance.PlaybackError += async (s, msg) =>
+        {
+            var titleStr = System.Windows.Application.Current.TryFindResource("Edit_ErrorTitle")?.ToString() ?? "Error";
+            await _dialogService.ShowErrorAsync(titleStr, msg);
+        };
         title = System.Windows.Application.Current.Resources["Player_NoTrack"] as string ?? "No track playing";
         artist = System.Windows.Application.Current.Resources["Player_SelectTrackMsg"] as string ?? "Select a track from the library";
+        volume = MusicPlayerService.Instance.Volume;
+        playPauseSymbol = Wpf.Ui.Controls.SymbolRegular.Play24;
+        playPauseCompactSymbol = Wpf.Ui.Controls.SymbolRegular.Play16;
+        shuffleSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowShuffleOff24;
+        repeatSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAllOff24;
+        playPauseOpacity = 1.0;
+        transportOpacity = 1.0;
+        shuffleIconOpacity = 0.5;
+        repeatIconOpacity = 0.5;
+        shuffleVisibility = Visibility.Visible;
+        repeatVisibility = Visibility.Visible;
+        backdropImage = MediaBackdropStyleService.GetFallbackImageSource();
+        shuffleForeground = GetDefaultForeground();
+        repeatForeground = GetDefaultForeground();
 
         // Auto-sync with MusicPlayerService
         MusicPlayerService.Instance.TrackChanged += (s, e) => SyncWithPlayer();
@@ -39,6 +71,15 @@ public partial class NowPlayingViewModel : ObservableObject
             {
                 UpdatePosition();
             }
+            else if (e.PropertyName == nameof(MusicPlayerService.CurrentLyricLine))
+            {
+                ActiveLyricLine = MusicPlayerService.Instance.CurrentLyricLine;
+                Lyrics = ActiveLyricLine?.Text ?? string.Empty;
+            }
+            else if (e.PropertyName == nameof(MusicPlayerService.Volume))
+            {
+                Volume = MusicPlayerService.Instance.Volume;
+            }
         };
 
         // Auto-sync with ExternalMediaService
@@ -46,6 +87,11 @@ public partial class NowPlayingViewModel : ObservableObject
         ExternalMediaService.Instance.PlaybackStateChanged += (session, info) => SyncWithPlayer();
         ExternalMediaService.Instance.TimelinePropertyChanged += (session, props) => UpdatePosition();
 
+        SyncWithPlayer();
+    }
+
+    public void RefreshFromServices()
+    {
         SyncWithPlayer();
     }
 
@@ -61,11 +107,22 @@ public partial class NowPlayingViewModel : ObservableObject
                 Artist = track.FullArtistDisplay;
                 HasTrack = true;
                 CurrentTrack = track;
-                CoverImage = LibraryManager.Instance.GetAlbumArt(track);
+                CoverImage = track.AlbumArt ?? LibraryManager.Instance.GetAlbumArt(track, 400);
+                CoverUrl = track.CoverUrl;
+                BackdropImage = CoverImage ?? MediaBackdropStyleService.GetFallbackImageSource();
                 IsPlaying = MusicPlayerService.Instance.IsPlaying;
                 TotalTime = track.Duration.ToString(@"mm\:ss");
                 SeekMaximum = track.Duration.TotalSeconds;
+                HasLyrics = SyncLyricsCollection(MusicPlayerService.Instance.CurrentLyrics);
+                ActiveLyricLine = MusicPlayerService.Instance.CurrentLyricLine;
+                Lyrics = ActiveLyricLine?.Text ?? string.Empty;
                 UpdatePosition();
+                UpdatePlaybackVisualState(IsPlaying);
+                UpdateShuffleRepeatState(
+                    SettingsManager.Current.ShuffleEnabled || IsShuffleEnabled,
+                    MusicPlayerService.Instance.IsShuffleEnabled,
+                    SettingsManager.Current.RepeatEnabled || RepeatMode != RepeatMode.None,
+                    MusicPlayerService.Instance.RepeatMode);
                 return;
             }
         }
@@ -83,12 +140,27 @@ public partial class NowPlayingViewModel : ObservableObject
                 Artist = mediaProps.Artist;
                 HasTrack = true;
                 CoverImage = BitmapHelper.GetThumbnail(mediaProps.Thumbnail);
+                CoverUrl = string.Empty;
+                BackdropImage = CoverImage ?? MediaBackdropStyleService.GetFallbackImageSource();
                 IsPlaying = props.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
                 
                 var timeline = session.ControlSession.GetTimelineProperties();
                 TotalTime = timeline.EndTime.ToString(@"mm\:ss");
                 SeekMaximum = timeline.EndTime.TotalSeconds;
+                HasLyrics = SyncLyricsCollection([]);
+                ActiveLyricLine = null;
+                Lyrics = string.Empty;
                 UpdatePosition();
+                UpdatePlaybackVisualState(IsPlaying);
+                UpdateShuffleRepeatState(
+                    SettingsManager.Current.ShuffleEnabled,
+                    props.IsShuffleActive ?? false,
+                    SettingsManager.Current.RepeatEnabled,
+                    props.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track
+                        ? RepeatMode.One
+                        : props.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List
+                            ? RepeatMode.All
+                            : RepeatMode.None);
                 return;
             }
         }
@@ -99,14 +171,27 @@ public partial class NowPlayingViewModel : ObservableObject
         HasTrack = false;
         CurrentTrack = null;
         CoverImage = null;
+        CoverUrl = string.Empty;
+        BackdropImage = MediaBackdropStyleService.GetFallbackImageSource();
         IsPlaying = false;
         CurrentTime = "0:00";
         TotalTime = "0:00";
         SeekValue = 0;
+        SeekMaximum = 100;
+        HasLyrics = SyncLyricsCollection([]);
+        ActiveLyricLine = null;
+        Lyrics = string.Empty;
+        UpdatePlaybackVisualState(false, false);
+        UpdateShuffleRepeatState(SettingsManager.Current.ShuffleEnabled, false, SettingsManager.Current.RepeatEnabled, RepeatMode.None);
     }
 
-    private void UpdatePosition()
+    public void UpdatePosition()
     {
+        if (_isUserSeeking)
+        {
+            return;
+        }
+
         if (MusicPlayerService.Instance.IsPlaying || (MusicPlayerService.Instance.CurrentTrack != null && SettingsManager.Current.InternalPlayerEnabled))
         {
             var pos = MusicPlayerService.Instance.CurrentPosition;
@@ -127,8 +212,145 @@ public partial class NowPlayingViewModel : ObservableObject
         }
     }
 
+    public void UpdateTimeline(TimeSpan position, TimeSpan maximum)
+    {
+        if (!_isUserSeeking)
+        {
+            SeekValue = position.TotalSeconds;
+            CurrentPositionTimeSpan = position;
+            CurrentTime = position.ToString(position.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
+        }
+
+        SeekMaximum = maximum.TotalSeconds;
+        TotalTime = maximum.ToString(maximum.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
+    }
+
+    public void BeginSeekInteraction()
+    {
+        _isUserSeeking = true;
+    }
+
+    public void UpdateSeekPreview(double seekValue)
+    {
+        SeekValue = seekValue;
+        CurrentPositionTimeSpan = TimeSpan.FromSeconds(seekValue);
+        CurrentTime = CurrentPositionTimeSpan.ToString(CurrentPositionTimeSpan.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
+    }
+
+    public void EndSeekInteraction()
+    {
+        _isUserSeeking = false;
+    }
+
+    public bool IsUserSeeking => _isUserSeeking;
+
+    public void CommitSeek()
+    {
+        if (MusicPlayerService.Instance.CurrentTrack != null)
+        {
+            MusicPlayerService.Instance.Seek(TimeSpan.FromSeconds(SeekValue));
+        }
+    }
+
+    public void SeekFromLyricsTarget(object? target)
+    {
+        switch (target)
+        {
+            case LyricLine line:
+                MusicPlayerService.Instance.Seek(line.Time);
+                break;
+            case LyricWord word:
+                MusicPlayerService.Instance.Seek(word.Time);
+                break;
+        }
+    }
+
+    [RelayCommand]
+    private void HidePlaylist()
+    {
+        IsPlaylistVisible = false;
+    }
+
+    [RelayCommand]
+    private void ResumeLyricsSync()
+    {
+        CanResumeLyricsSync = false;
+    }
+
+    public void SetCompactTransportState(bool canPlayPause, bool isPlaying, bool canSkip)
+    {
+        PlayPauseCompactSymbol = canPlayPause
+            ? (isPlaying ? Wpf.Ui.Controls.SymbolRegular.Pause16 : Wpf.Ui.Controls.SymbolRegular.Play16)
+            : Wpf.Ui.Controls.SymbolRegular.Stop16;
+        IsPlayPauseEnabled = canPlayPause;
+        PlayPauseOpacity = canPlayPause ? 1.0 : 0.35;
+        AreTransportControlsEnabled = canSkip;
+        TransportOpacity = canSkip ? 1.0 : 0.35;
+    }
+
+    public void UpdateShuffleRepeatState(bool showShuffle, bool isShuffle, bool showRepeat, RepeatMode repeatMode)
+    {
+        ShuffleVisibility = showShuffle ? Visibility.Visible : Visibility.Collapsed;
+        RepeatVisibility = showRepeat ? Visibility.Visible : Visibility.Collapsed;
+
+        IsShuffleEnabled = isShuffle;
+        RepeatMode = repeatMode;
+
+        ShuffleSymbol = isShuffle
+            ? Wpf.Ui.Controls.SymbolRegular.ArrowShuffle24
+            : Wpf.Ui.Controls.SymbolRegular.ArrowShuffleOff24;
+        ShuffleIconOpacity = isShuffle ? 1.0 : 0.4;
+
+        switch (repeatMode)
+        {
+            case RepeatMode.One:
+                RepeatSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeat124;
+                RepeatIconOpacity = 1.0;
+                break;
+            case RepeatMode.All:
+                RepeatSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAll24;
+                RepeatIconOpacity = 1.0;
+                break;
+            default:
+                RepeatSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAllOff24;
+                RepeatIconOpacity = 0.4;
+                break;
+        }
+    }
+
+    public void ApplyRepeatShuffleForegrounds(Brush activeBrush, Brush inactiveBrush)
+    {
+        ShuffleForeground = IsShuffleEnabled ? activeBrush : inactiveBrush;
+        RepeatForeground = RepeatMode == RepeatMode.None ? inactiveBrush : activeBrush;
+    }
+
+    private void UpdatePlaybackVisualState(bool isPlaying, bool canPlayPause = true)
+    {
+        PlayPauseSymbol = isPlaying
+            ? Wpf.Ui.Controls.SymbolRegular.Pause24
+            : Wpf.Ui.Controls.SymbolRegular.Play24;
+        SetCompactTransportState(canPlayPause, isPlaying, canPlayPause);
+    }
+
+    private bool SyncLyricsCollection(IReadOnlyList<LyricLine> source)
+    {
+        if (LyricLines.Count != source.Count || LyricLines.Where((line, index) => !EqualityComparer<LyricLine>.Default.Equals(line, source[index])).Any())
+        {
+            LyricLines.Clear();
+            foreach (var line in source)
+            {
+                LyricLines.Add(line);
+            }
+        }
+
+        return source.Count > 0;
+    }
+
     [ObservableProperty]
     private BitmapImage? coverImage;
+
+    [ObservableProperty]
+    private ImageSource? backdropImage;
 
     [ObservableProperty]
     private string lyrics = string.Empty;
@@ -137,7 +359,28 @@ public partial class NowPlayingViewModel : ObservableObject
     private bool hasTrack;
 
     [ObservableProperty]
+    private bool isPlaylistVisible;
+
+    [ObservableProperty]
     private bool isPlaying;
+
+    [ObservableProperty]
+    private Wpf.Ui.Controls.SymbolRegular playPauseSymbol;
+
+    [ObservableProperty]
+    private Wpf.Ui.Controls.SymbolRegular playPauseCompactSymbol;
+
+    [ObservableProperty]
+    private double playPauseOpacity;
+
+    [ObservableProperty]
+    private bool isPlayPauseEnabled = true;
+
+    [ObservableProperty]
+    private bool areTransportControlsEnabled = true;
+
+    [ObservableProperty]
+    private double transportOpacity = 1.0;
 
     [ObservableProperty]
     private string currentTime = "0:00";
@@ -161,10 +404,31 @@ public partial class NowPlayingViewModel : ObservableObject
     private bool isShuffleEnabled;
 
     [ObservableProperty]
-    private bool isRepeatEnabled;
+    private RepeatMode repeatMode = RepeatMode.None;
 
     [ObservableProperty]
-    private RepeatMode repeatMode = RepeatMode.None;
+    private Wpf.Ui.Controls.SymbolRegular shuffleSymbol;
+
+    [ObservableProperty]
+    private Wpf.Ui.Controls.SymbolRegular repeatSymbol;
+
+    [ObservableProperty]
+    private double shuffleIconOpacity;
+
+    [ObservableProperty]
+    private double repeatIconOpacity;
+
+    [ObservableProperty]
+    private Visibility shuffleVisibility = Visibility.Visible;
+
+    [ObservableProperty]
+    private Visibility repeatVisibility = Visibility.Visible;
+
+    [ObservableProperty]
+    private Brush shuffleForeground;
+
+    [ObservableProperty]
+    private Brush repeatForeground;
 
     [ObservableProperty]
     private TrackModel? currentTrack;
@@ -182,5 +446,78 @@ public partial class NowPlayingViewModel : ObservableObject
     private bool hasLyrics;
 
     [ObservableProperty]
+    private bool canResumeLyricsSync;
+
+    [ObservableProperty]
     private System.Windows.Media.Brush pressedForeground = System.Windows.Media.Brushes.White;
+
+    /// <summary>
+    /// Returns the correct primary-text brush for the current app theme.
+    /// Uses the dynamic WPF-UI resource so it is always right for both Light and Dark themes.
+    /// </summary>
+    private static Brush GetDefaultForeground()
+        => System.Windows.Application.Current?.TryFindResource("TextFillColorPrimaryBrush") as Brush
+           ?? SystemColors.ControlTextBrush;
+
+    partial void OnVolumeChanged(double value)
+    {
+        if (Math.Abs(MusicPlayerService.Instance.Volume - value) > 0.001)
+        {
+            MusicPlayerService.Instance.Volume = (float)value;
+        }
+    }
+
+    [RelayCommand]
+    private void PlayPause()
+    {
+        MusicPlayerService.Instance.TogglePlayPause();
+    }
+
+    [RelayCommand]
+    private void SkipNext()
+    {
+        MusicPlayerService.Instance.PlayNext();
+    }
+
+    [RelayCommand]
+    private void SkipPrevious()
+    {
+        MusicPlayerService.Instance.PlayPrevious();
+    }
+
+    [RelayCommand]
+    private void ToggleShuffle()
+    {
+        MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
+        IsShuffleEnabled = MusicPlayerService.Instance.IsShuffleEnabled;
+    }
+
+    [RelayCommand]
+    private void ToggleRepeat()
+    {
+        var mode = MusicPlayerService.Instance.RepeatMode;
+        MusicPlayerService.Instance.RepeatMode = mode switch
+        {
+            RepeatMode.None => RepeatMode.All,
+            RepeatMode.All => RepeatMode.One,
+            RepeatMode.One => RepeatMode.None,
+            _ => RepeatMode.None
+        };
+        RepeatMode = MusicPlayerService.Instance.RepeatMode;
+    }
+
+    [RelayCommand]
+    private void EditLyrics()
+    {
+        if (MusicPlayerService.Instance.CurrentTrack != null)
+        {
+            ServiceLocator.Windows.ShowEditTrack(MusicPlayerService.Instance.CurrentTrack, true);
+        }
+    }
+
+    [RelayCommand]
+    private void OpenEqualizer()
+    {
+        ServiceLocator.Windows.ShowEqualizer();
+    }
 }

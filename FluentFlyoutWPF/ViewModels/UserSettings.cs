@@ -8,6 +8,7 @@ using FluentFlyout.Classes.Utils;
 using FluentFlyout.Controls;
 using FluentFlyoutWPF.Classes;
 using FluentFlyoutWPF.Models;
+using FluentFlyoutWPF.Classes.Utils;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Xml.Serialization;
@@ -38,6 +39,11 @@ public partial class UserSettings : ObservableObject
     /// User selected music library folders
     /// </summary>
     public ObservableCollection<string> MusicLibraryFolders { get; set; } = new ObservableCollection<string>();
+
+    /// <summary>
+    /// File or folder paths excluded from the music library
+    /// </summary>
+    public ObservableCollection<string> ExcludedLibraryPaths { get; set; } = new ObservableCollection<string>();
 
     /// <summary>
     /// Player volume (0.0 to 1.0)
@@ -591,6 +597,24 @@ public partial class UserSettings : ObservableObject
     [ObservableProperty]
     public partial bool UseAlbumArtAsAccentColor { get; set; }
 
+    [ObservableProperty]
+    public partial bool UseCustomAccentColor { get; set; }
+
+    [ObservableProperty]
+    public partial string CustomAccentColorHex { get; set; } = "#808080";
+
+    [XmlIgnore]
+    public bool IsCustomAccentColorHexValid
+        => AccentColorResolver.TryParseCustomAccent(CustomAccentColorHex, out _);
+
+    [XmlIgnore]
+    public bool HasCustomAccentColorHexError
+        => UseCustomAccentColor && !IsCustomAccentColorHexValid;
+
+    [XmlIgnore]
+    public string CustomAccentColorHexValidationMessage
+        => HasCustomAccentColorHexError ? "Use #RRGGBB or #AARRGGBB." : string.Empty;
+
     /// <summary>
     /// Enable turntable mode in the home page
     /// </summary>
@@ -752,6 +776,8 @@ public partial class UserSettings : ObservableObject
         TaskbarVisualizerStereoMode = 0;
         AcrylicBlurOpacity = 175;
         UseAlbumArtAsAccentColor = false;
+        UseCustomAccentColor = false;
+        CustomAccentColorHex = "#808080";
         LastUpdateNotificationUnixSeconds = 0;
         ShowUpdateNotifications = true;
         LegacyTaskbarWidthEnabled = false;
@@ -807,6 +833,24 @@ public partial class UserSettings : ObservableObject
     {
         if (oldValue == newValue || _initializing) return;
         WindowBlurHelper.AdjustBlurOpacityForAllWindows(newValue);
+    }
+
+    partial void OnMediaFlyoutAcrylicWindowEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WindowBlurHelper.RefreshAllWindowBackdrops();
+    }
+
+    partial void OnNextUpAcrylicWindowEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WindowBlurHelper.RefreshAllWindowBackdrops();
+    }
+
+    partial void OnLockKeysAcrylicWindowEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WindowBlurHelper.RefreshAllWindowBackdrops();
     }
 
     partial void OnTaskbarWidgetEnabledChanged(bool oldValue, bool newValue)
@@ -936,8 +980,95 @@ public partial class UserSettings : ObservableObject
     partial void OnUseAlbumArtAsAccentColorChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
-        BitmapHelper.GetDominantColors(1);
-        WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+        var albumArtBrush = BitmapHelper.GetDominantColors(1).FirstOrDefault();
+        var oldSource = AccentColorResolver.ResolveAccentSource(
+            oldValue,
+            UseCustomAccentColor,
+            CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+        var newSource = AccentColorResolver.ResolveAccentSource(
+            newValue,
+            UseCustomAccentColor,
+            CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+
+        if (oldSource != newSource)
+        {
+            WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+        }
+    }
+
+    partial void OnUseCustomAccentColorChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        OnPropertyChanged(nameof(HasCustomAccentColorHexError));
+        OnPropertyChanged(nameof(CustomAccentColorHexValidationMessage));
+
+        var albumArtBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
+        var oldSource = AccentColorResolver.ResolveAccentSource(
+            UseAlbumArtAsAccentColor,
+            oldValue,
+            CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+        var newSource = AccentColorResolver.ResolveAccentSource(
+            UseAlbumArtAsAccentColor,
+            newValue,
+            CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+
+        if (oldSource != newSource)
+        {
+            WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+        }
+    }
+
+    partial void OnCustomAccentColorHexChanged(string oldValue, string newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        OnPropertyChanged(nameof(IsCustomAccentColorHexValid));
+        OnPropertyChanged(nameof(HasCustomAccentColorHexError));
+        OnPropertyChanged(nameof(CustomAccentColorHexValidationMessage));
+
+        var albumArtBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
+        var oldSource = AccentColorResolver.ResolveAccentSource(
+            UseAlbumArtAsAccentColor,
+            UseCustomAccentColor,
+            oldValue,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+        var newSource = AccentColorResolver.ResolveAccentSource(
+            UseAlbumArtAsAccentColor,
+            UseCustomAccentColor,
+            newValue,
+            BitmapHelper.HasAlbumArt,
+            albumArtBrush);
+
+        if (oldSource != newSource)
+        {
+            WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+            return;
+        }
+
+        if (newSource != AccentColorSource.Custom)
+            return;
+
+        bool hadOldBrush = AccentColorResolver.TryParseCustomAccent(oldValue, out var oldBrush);
+        bool hasNewBrush = AccentColorResolver.TryParseCustomAccent(newValue, out var newBrush);
+
+        if (hadOldBrush != hasNewBrush)
+        {
+            WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+            return;
+        }
+
+        if (hadOldBrush && hasNewBrush && oldBrush!.Color != newBrush!.Color)
+        {
+            WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
+        }
     }
 
     partial void OnInternalPlayerEnabledChanged(bool oldValue, bool newValue)

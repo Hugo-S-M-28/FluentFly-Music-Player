@@ -3,7 +3,10 @@
 
 using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
+using FluentFlyoutWPF.Classes.Messages;
+using FluentFlyoutWPF.Classes.Utils;
 using FluentFlyoutWPF.Pages;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -15,69 +18,29 @@ public partial class SettingsWindow : FluentWindow
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-    private static SettingsWindow? instance;
     private Type? _currentPageType;
     private ScrollViewer? _contentScrollViewer;
 
-    public SettingsWindow()
+    public ViewModels.SettingsShellViewModel ViewModel { get; }
+
+    public SettingsWindow(ViewModels.SettingsShellViewModel viewModel)
     {
-        if (instance != null)
-        {
-            if (instance.WindowState == WindowState.Minimized)
-            {
-                instance.WindowState = WindowState.Normal;
-            }
-
-            instance.Activate();
-            instance.Focus();
-            Close();
-            return;
-        }
-
         InitializeComponent();
-        instance = this;
-
-        Closed += (s, e) => instance = null;
-        DataContext = SettingsManager.Current;
+        ViewModel = viewModel;
+        DataContext = ViewModel;
 
         RootNavigation.SetCurrentValue(NavigationView.IsPaneOpenProperty, false);
     }
 
-    public static void ShowInstance(string? navigationPage = null)
+    public void NavigateToPage(Type pageType)
     {
-        if (instance == null)
-        {
-            new SettingsWindow().Show();
-            instance?.Activate();
-        }
-        else
-        {
-            if (instance.WindowState == WindowState.Minimized)
-            {
-                instance.WindowState = WindowState.Normal;
-            }
-
-            instance.Activate();
-            instance.Focus();
-        }
-
-        if (navigationPage != null)
-        {
-            var pageType = System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .GetType($"FluentFlyoutWPF.Pages.{navigationPage}");
-            if (pageType != null)
-                NavigateToPage(pageType);
-        }
-    }
-
-    public static void NavigateToPage(Type pageType)
-    {
-        instance?.RootNavigation.Navigate(pageType);
+        RootNavigation.Navigate(pageType);
     }
 
     private async void SettingsWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResolvedAccentToNavigation();
+
         RootNavigation.IsPaneOpen = false;
 
         _currentPageType = typeof(HomePage);
@@ -91,7 +54,7 @@ public partial class SettingsWindow : FluentWindow
         await Task.Delay(10);
         RootNavigation.IsPaneOpen = false;
 
-        LicenseManager.GetPremiumProductInfo();
+        await LicenseManager.GetPremiumProductInfoAsync();
 
         RootNavigation.Navigated += (s, args) =>
         {
@@ -99,33 +62,47 @@ public partial class SettingsWindow : FluentWindow
             ResetScrollPosition();
         };
 
-        SettingsManager.Current.PropertyChanged += OnSettingsPropertyChanged;
+        ViewModel.Settings.PropertyChanged += OnSettingsPropertyChanged;
+
+        WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, static (recipient, _) =>
+        {
+            if (recipient is SettingsWindow window)
+            {
+                window.Dispatcher.InvokeAsync(window.ApplyResolvedAccentToNavigation);
+            }
+        });
+
+        WeakReferenceMessenger.Default.Register<ThemeChangedMessage>(this, static (recipient, _) =>
+        {
+            if (recipient is SettingsWindow window)
+            {
+                window.Dispatcher.InvokeAsync(window.ApplyResolvedAccentToNavigation);
+            }
+        });
     }
 
     private async void OnSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
     {
-        if (args.PropertyName == nameof(SettingsManager.Current.AppTheme))
+        if (args.PropertyName == nameof(ViewModels.UserSettings.AppTheme))
         {
             // force fix pane state after theme change
             await Dispatcher.InvokeAsync(async () =>
             {
-                if (instance == null || RootNavigation == null) return;
-
                 var wasPaneOpen = RootNavigation.IsPaneOpen;
 
                 await Task.Delay(100);
-                if (instance == null || RootNavigation == null) return;
+                if (!IsLoaded) return;
 
                 try
                 {
                     RootNavigation.IsPaneOpen = !wasPaneOpen;
                     await Task.Delay(10);
-                    if (instance == null || RootNavigation == null) return;
+                    if (!IsLoaded) return;
                     RootNavigation.IsPaneOpen = wasPaneOpen;
 
                     await Task.Delay(300);
-                    if (instance == null || RootNavigation == null) return;
-                    RootNavigation.Navigate(typeof(HomePage));
+                    if (!IsLoaded) return;
+                    RootNavigation.Navigate(_currentPageType ?? typeof(HomePage));
                 }
                 catch (Exception ex)
                 {
@@ -137,7 +114,8 @@ public partial class SettingsWindow : FluentWindow
 
     private void SettingsWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        SettingsManager.Current.PropertyChanged -= OnSettingsPropertyChanged;
+        ViewModel.Settings.PropertyChanged -= OnSettingsPropertyChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
         SettingsManager.SaveSettings();
     }
 
@@ -229,5 +207,23 @@ public partial class SettingsWindow : FluentWindow
     private void NavigationViewItem_Click(object sender, RoutedEventArgs e)
     {
 
+    }
+
+    private void ApplyResolvedAccentToNavigation()
+    {
+        AccentResourceHelper.RefreshAccentResources();
+        AccentResourceHelper.ApplyResolvedAccentResources(Resources);
+        AccentResourceHelper.ApplyResolvedAccentResources(RootNavigation.Resources);
+
+        var frame = FindVisualChild<Frame>(RootNavigation);
+        if (frame?.Content is FrameworkElement page)
+        {
+            AccentResourceHelper.ApplyResolvedAccentResources(page.Resources);
+        }
+    }
+
+    private void RootNavigation_OnNavigated(object sender, NavigatedEventArgs e)
+    {
+        ApplyResolvedAccentToNavigation();
     }
 }

@@ -1,143 +1,45 @@
-<Page x:Class="FluentFlyoutWPF.Pages.HomePage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
-      xmlns:models="clr-namespace:FluentFlyoutWPF.Models"
-      xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
-      xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
-      xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
-      xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
-       xmlns:settings="clr-namespace:FluentFlyout.Classes.Settings"
-      mc:Ignorable="d"
-      d:DesignHeight="800"
-      d:DesignWidth="1200"
-      Title="HomePage"
-      Loaded="Page_Loaded"
-      Unloaded="Page_Unloaded"
-      d:DataContext="{d:DesignInstance viewModels:UserSettings}"
-      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-      d:Background="White"
-      x:Name="PageRoot"
-      ScrollViewer.VerticalScrollBarVisibility="Disabled">
-    
+<Page
+    x:Class="FluentFlyoutWPF.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
+    xmlns:models="clr-namespace:FluentFlyoutWPF.Models"
+    xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
+    xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
+    xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+    xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
+    xmlns:settings="clr-namespace:FluentFlyout.Classes.Settings"
+    xmlns:behaviors="clr-namespace:FluentFlyoutWPF.Classes.Behaviors"
+    mc:Ignorable="d"
+    d:DesignHeight="800"
+    d:DesignWidth="1200"
+    Title="HomePage"
+    Loaded="Page_Loaded"
+    Unloaded="Page_Unloaded"
+    SizeChanged="Page_SizeChanged"
+    d:DataContext="{d:DesignInstance viewModels:UserSettings}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    d:Background="White"
+    x:Name="PageRoot"
+    behaviors:DisableAncestorScrollBehavior.DisableVerticalAncestorScroll="True"
+    ScrollViewer.VerticalScrollBarVisibility="Disabled">
+
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Resources/Converters.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/FluentFlyout;component/Resources/Converters.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <classes:PathToImageConverter x:Key="PathToImageConverter"/>
             <utils:LyricWordHighlightConverter x:Key="LyricWordHighlightConverter"/>
-        <Style x:Key="IconButtonStyle"
-                TargetType="ui:Button"
-                BasedOn="{StaticResource {x:Type ui:Button}}">
-            <Setter Property="Padding"
-                    Value="0"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
-            <Setter Property="BorderThickness"
-                    Value="1"/>
-            <Setter Property="BorderBrush"
-                    Value="Transparent"/>
-            <Setter Property="Width"
-                    Value="42"/>
-            <Setter Property="Height"
-                    Value="42"/>
-            <Setter Property="CornerRadius"
-                    Value="8"/>
-            <Setter Property="Appearance"
-                    Value="Transparent"/>
-        </Style>
-
-        <!-- Estilo para el botón de Play/Pause principal -->
-        <Style x:Key="PlayButtonStyle"
-                TargetType="ui:Button"
-                BasedOn="{StaticResource {x:Type ui:Button}}">
-            <Setter Property="Width"
-                    Value="56"/>
-            <Setter Property="Height"
-                    Value="56"/>
-            <Setter Property="Padding"
-                    Value="0"/>
-            <Setter Property="Appearance"
-                    Value="Primary"/>
-            <Setter Property="BorderThickness"
-                    Value="0"/>
-            <Setter Property="CornerRadius"
-                    Value="28"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver"
-                        Value="True">
-                    <Setter Property="RenderTransform">
-                        <Setter.Value>
-                            <ScaleTransform ScaleX="1.05"
-                                     ScaleY="1.05"
-                                     CenterX="28"
-                                     CenterY="28"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Estilo para botones Toggle (Shuffle, Repeat, Playlist) -->
-        <Style x:Key="IconToggleButtonStyle"
-                TargetType="ToggleButton">
-            <Setter Property="Width"
-                    Value="42"/>
-            <Setter Property="Height"
-                    Value="42"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
-            <Setter Property="BorderThickness"
-                    Value="1"/>
-            <Setter Property="BorderBrush"
-                    Value="Transparent"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="RootBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver"
-                                    Value="True">
-                                <Setter TargetName="RootBorder"
-                                        Property="Background"
-                                        Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                                <Setter TargetName="RootBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsChecked"
-                                    Value="True">
-                                <Setter TargetName="RootBorder"
-                                        Property="Background"
-                                        Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
-                                <Setter TargetName="RootBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
-                                <Setter Property="Foreground"
-                                        Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         </ResourceDictionary>
     </Page.Resources>
-    <Grid Margin="24"
-            VerticalAlignment="Stretch">
+    <Grid x:Name="RootLayoutGrid"
+          Margin="24"
+          VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -147,145 +49,259 @@
         <!-- Background Blur Image -->
         <Image x:Name="BackgroundBlurImage"
                Grid.RowSpan="3"
+               Source="{Binding BackdropImage}"
                Stretch="UniformToFill"
                Opacity="0.4"
                IsHitTestVisible="False"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center">
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"
+               RenderTransformOrigin="0.5,0.5">
             <Image.Effect>
                 <BlurEffect Radius="100"/>
             </Image.Effect>
         </Image>
 
         <!-- Header: Title and Mode Buttons -->
-        <Grid Grid.Row="0" Margin="0,0,0,24">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <ui:TextBlock FontTypography="Title"
-                    Text="{DynamicResource Home_Title}"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    VerticalAlignment="Center"/>
+                          Text="{DynamicResource Home_Title}"
+                          Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                          VerticalAlignment="Center"/>
 
-            <StackPanel Grid.Column="1" 
-                    Orientation="Horizontal"
-                    VerticalAlignment="Center">
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
                 <ui:Button x:Name="ShuffleButton"
-                        Style="{StaticResource IconButtonStyle}"
-                        Click="ShuffleButton_Click"
-                        ToolTip="{DynamicResource Home_Shuffle}">
-                    <ui:SymbolIcon Symbol="ArrowShuffle24"/>
+                           Style="{StaticResource IconButtonStyle}"
+                           Opacity="{Binding ShuffleIconOpacity}"
+                           Command="{Binding ToggleShuffleCommand}"
+                           ToolTip="{DynamicResource Home_Shuffle}">
+                    <ui:SymbolIcon x:Name="ShuffleIcon"
+                                   Symbol="{Binding ShuffleSymbol}"
+                                   Foreground="{Binding ShuffleForeground}"/>
                 </ui:Button>
                 <ui:Button x:Name="RepeatButton"
-                        Style="{StaticResource IconButtonStyle}"
-                        Click="RepeatButton_Click"
-                        ToolTip="{DynamicResource Home_Repeat}"
-                        Margin="8,0,0,0">
-                    <ui:SymbolIcon Symbol="ArrowRepeatAll24"/>
+                           Style="{StaticResource IconButtonStyle}"
+                           Command="{Binding ToggleRepeatCommand}"
+                           Opacity="{Binding RepeatIconOpacity}"
+                           ToolTip="{DynamicResource Home_Repeat}"
+                           Margin="8,0,0,0">
+                    <ui:SymbolIcon x:Name="RepeatIcon"
+                                   Symbol="{Binding RepeatSymbol}"
+                                   Foreground="{Binding RepeatForeground}"/>
                 </ui:Button>
             </StackPanel>
         </Grid>
 
         <!-- Área principal -->
-        <Grid Grid.Row="1"
-                VerticalAlignment="Stretch"
-                MinHeight="0">
+        <Grid x:Name="PlaybackLayoutGrid"
+              Grid.Row="1"
+              VerticalAlignment="Stretch"
+              MinHeight="0">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="MainPlaybackRow"
+                               Height="*"/>
+                <RowDefinition x:Name="StackedPlaylistRow"
+                               Height="0"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="HomeCoverHostColumn"
+                                  Width="*"/>
+                <ColumnDefinition x:Name="HomeLyricsHostColumn"
+                                  Width="2*"/>
+                <ColumnDefinition x:Name="HomePlaylistHostColumn"
+                                  Width="0"/>
             </Grid.ColumnDefinitions>
 
             <!-- ContentControl: cambia entre vista "Now Playing" y "Lyrics Full" -->
             <ContentControl x:Name="MainContentControl"
-                    Grid.Column="0"
-                    Margin="0,0,20,0"
-                    VerticalAlignment="Stretch">
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            VerticalAlignment="Stretch">
                 <ContentControl.Resources>
                     <!-- DataTemplate para estado NowPlaying -->
                     <DataTemplate x:Key="NowPlayingTemplate">
-                        <Grid VerticalAlignment="Stretch">
+                        <Grid x:Name="NowPlayingLayoutGrid"
+                              VerticalAlignment="Stretch"
+                              MinHeight="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition x:Name="NowPlayingPrimaryRow"
+                                               Height="*"/>
+                                <RowDefinition x:Name="NowPlayingSecondaryRow"
+                                               Height="0"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="400"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition x:Name="CoverColumn"
+                                                  Width="*"/>
+                                <ColumnDefinition x:Name="LyricsColumn"
+                                                  Width="2*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Lado Izquierdo: Arte del Álbum e Info -->
-                            <StackPanel Grid.Column="0" 
-                                        VerticalAlignment="Center" 
+                            <StackPanel x:Name="NowPlayingCoverSection"
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
-                                        MaxWidth="300"
-                                        Margin="32">
-                                <Border CornerRadius="12" Width="300" Height="300" Margin="0,0,0,32">
+                                        Margin="16,16,24,16">
+                                <Border CornerRadius="12"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,28">
+                                    <Border.Width>
+                                        <MultiBinding Converter="{StaticResource ResponsiveCoverSizeConverter}">
+                                            <Binding ElementName="PlaybackLayoutGrid"
+                                                     Path="ActualWidth"/>
+                                            <Binding ElementName="PlaybackLayoutGrid"
+                                                     Path="ActualHeight"/>
+                                        </MultiBinding>
+                                    </Border.Width>
+                                    <Border.Height>
+                                        <MultiBinding Converter="{StaticResource ResponsiveCoverSizeConverter}">
+                                            <Binding ElementName="PlaybackLayoutGrid"
+                                                     Path="ActualWidth"/>
+                                            <Binding ElementName="PlaybackLayoutGrid"
+                                                     Path="ActualHeight"/>
+                                        </MultiBinding>
+                                    </Border.Height>
                                     <Border.Effect>
-                                        <DropShadowEffect x:Name="AlbumArtShadow" BlurRadius="40" ShadowDepth="12" Opacity="0.4" Direction="270" Color="Black"/>
+                                        <DropShadowEffect x:Name="AlbumArtShadow"
+                                                          BlurRadius="40"
+                                                          ShadowDepth="12"
+                                                          Opacity="0.4"
+                                                          Direction="270"
+                                                          Color="Black"/>
                                     </Border.Effect>
                                     <Grid>
                                         <!-- Normal View -->
-                                        <Grid x:Name="NormalCoverView" 
-                                              Visibility="{Binding Source={x:Static settings:SettingsManager.Current}, Path=TurntableModeEnabled, Converter={StaticResource BoolToCollapsedVisibleConverter}}">
-                                            <Border CornerRadius="12" Background="{DynamicResource ControlFillColorDefaultBrush}"/>
+                                        <Grid x:Name="NormalCoverView"
+                                              Visibility="{Binding Settings.TurntableModeEnabled, Converter={StaticResource BoolToCollapsedVisibleConverter}}">
+                                            <Border CornerRadius="12"
+                                                    Background="{DynamicResource ControlFillColorDefaultBrush}"/>
                                             <!-- Fallback Icon if no art -->
-                                            <ui:SymbolIcon Symbol="MusicNote124" Opacity="0.1" FontSize="100" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            <ui:SymbolIcon Symbol="MusicNote124"
+                                                           Opacity="0.1"
+                                                           FontSize="100"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"/>
                                             <Image Source="{Binding CoverImage}"
                                                    Stretch="UniformToFill">
                                                 <Image.Clip>
-                                                    <RectangleGeometry RadiusX="12" RadiusY="12" Rect="0,0,300,300"/>
+                                                    <RectangleGeometry RadiusX="12"
+                                                                       RadiusY="12"
+                                                                       Rect="0,0,300,300"/>
                                                 </Image.Clip>
                                             </Image>
                                         </Grid>
 
                                         <!-- Turntable View -->
-                                        <Grid x:Name="TurntableModeView" 
-                                              Visibility="{Binding Source={x:Static settings:SettingsManager.Current}, Path=TurntableModeEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
-                                            <Viewbox Width="300" Height="300">
-                                                <Grid Width="400" Height="400">
+                                        <Grid x:Name="TurntableModeView"
+                                              Visibility="{Binding Settings.TurntableModeEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
+                                            <Viewbox>
+                                                <Grid Width="400"
+                                                      Height="400">
                                                     <!-- Vinyl Record -->
-                                                    <Ellipse Width="400" Height="400" Fill="#0A0A0A">
+                                                    <Ellipse Width="400"
+                                                             Height="400"
+                                                             Fill="{DynamicResource PlayerTurntableBaseBrush}">
                                                         <Ellipse.Effect>
-                                                            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                                                            <DropShadowEffect BlurRadius="20"
+                                                                              ShadowDepth="0"
+                                                                              Opacity="0.5"/>
                                                         </Ellipse.Effect>
                                                     </Ellipse>
-                                                    
+
                                                     <!-- Vinyl Grooves (Subtle concentric circles) -->
-                                                    <Ellipse Width="380" Height="380" Stroke="#151515" StrokeThickness="1" Opacity="0.5"/>
-                                                    <Ellipse Width="360" Height="360" Stroke="#151515" StrokeThickness="1" Opacity="0.4"/>
-                                                    <Ellipse Width="340" Height="340" Stroke="#151515" StrokeThickness="1" Opacity="0.3"/>
-                                                    <Ellipse Width="320" Height="320" Stroke="#151515" StrokeThickness="1" Opacity="0.2"/>
-                                                    <Ellipse Width="300" Height="300" Stroke="#151515" StrokeThickness="1" Opacity="0.1"/>
+                                                    <Ellipse Width="380"
+                                                             Height="380"
+                                                             Stroke="{DynamicResource PlayerTurntableGrooveBrush}"
+                                                             StrokeThickness="1"
+                                                             Opacity="0.5"/>
+                                                    <Ellipse Width="360"
+                                                             Height="360"
+                                                             Stroke="{DynamicResource PlayerTurntableGrooveBrush}"
+                                                             StrokeThickness="1"
+                                                             Opacity="0.4"/>
+                                                    <Ellipse Width="340"
+                                                             Height="340"
+                                                             Stroke="{DynamicResource PlayerTurntableGrooveBrush}"
+                                                             StrokeThickness="1"
+                                                             Opacity="0.3"/>
+                                                    <Ellipse Width="320"
+                                                             Height="320"
+                                                             Stroke="{DynamicResource PlayerTurntableGrooveBrush}"
+                                                             StrokeThickness="1"
+                                                             Opacity="0.2"/>
+                                                    <Ellipse Width="300"
+                                                             Height="300"
+                                                             Stroke="{DynamicResource PlayerTurntableGrooveBrush}"
+                                                             StrokeThickness="1"
+                                                             Opacity="0.1"/>
 
                                                     <!-- Rotating Part -->
-                                                    <Grid x:Name="RotatingDisc" RenderTransformOrigin="0.5,0.5">
+                                                    <Grid x:Name="RotatingDisc"
+                                                          RenderTransformOrigin="0.5,0.5">
                                                         <Grid.RenderTransform>
-                                                            <RotateTransform x:Name="DiscRotation" Angle="0"/>
+                                                            <RotateTransform x:Name="DiscRotation"
+                                                                             Angle="0"/>
                                                         </Grid.RenderTransform>
 
                                                         <!-- Record Label / Cover Art -->
-                                                        <Grid Width="180" Height="180">
-                                                            <Image Source="{Binding CoverImage}" Stretch="UniformToFill">
+                                                        <Grid Width="180"
+                                                              Height="180">
+                                                            <Image Source="{Binding CoverImage}"
+                                                                   Stretch="UniformToFill">
                                                                 <Image.Clip>
-                                                                    <EllipseGeometry Center="90,90" RadiusX="90" RadiusY="90"/>
+                                                                    <EllipseGeometry Center="90,90"
+                                                                                     RadiusX="90"
+                                                                                     RadiusY="90"/>
                                                                 </Image.Clip>
                                                             </Image>
                                                         </Grid>
-                                                        
+
                                                         <!-- Center Hole -->
-                                                        <Ellipse Width="12" Height="12" Fill="#202020"/>
-                                                        <Ellipse Width="6" Height="6" Fill="#101010"/>
+                                                        <Ellipse Width="12"
+                                                                 Height="12"
+                                                                 Fill="{DynamicResource PlayerTurntableHubBrush}"/>
+                                                        <Ellipse Width="6"
+                                                                 Height="6"
+                                                                 Fill="{DynamicResource PlayerTurntableCoreBrush}"/>
                                                     </Grid>
 
                                                     <!-- Tonearm (Static for now, but looks cool) -->
-                                                    <Canvas Width="400" Height="400">
-                                                        <Path Data="M 320,50 L 325,45 L 340,150 L 220,300 L 200,280" 
-                                                              Stroke="#E0E0E0" StrokeThickness="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                                    <Canvas Width="400"
+                                                            Height="400">
+                                                        <Path Data="M 320,50 L 325,45 L 340,150 L 220,300 L 200,280"
+                                                              Stroke="{DynamicResource PlayerTurntableTonearmBrush}"
+                                                              StrokeThickness="8"
+                                                              StrokeStartLineCap="Round"
+                                                              StrokeEndLineCap="Round"
                                                               Opacity="0.9">
                                                             <Path.Effect>
-                                                                <DropShadowEffect BlurRadius="10" ShadowDepth="4" Opacity="0.3"/>
+                                                                <DropShadowEffect BlurRadius="10"
+                                                                                  ShadowDepth="4"
+                                                                                  Opacity="0.3"/>
                                                             </Path.Effect>
                                                         </Path>
-                                                        <Ellipse Canvas.Left="310" Canvas.Top="40" Width="30" Height="30" Fill="#A0A0A0"/>
-                                                        <Rectangle Canvas.Left="190" Canvas.Top="275" Width="30" Height="15" Fill="#333333" RadiusX="2" RadiusY="2" RenderTransformOrigin="0.5,0.5">
+                                                        <Ellipse Canvas.Left="310"
+                                                                 Canvas.Top="40"
+                                                                 Width="30"
+                                                                 Height="30"
+                                                                 Fill="{DynamicResource PlayerTurntableHubBrush}"/>
+                                                        <Rectangle Canvas.Left="190"
+                                                                   Canvas.Top="275"
+                                                                   Width="30"
+                                                                   Height="15"
+                                                                   Fill="{DynamicResource PlayerTurntableNeedleBrush}"
+                                                                   RadiusX="2"
+                                                                   RadiusY="2"
+                                                                   RenderTransformOrigin="0.5,0.5">
                                                             <Rectangle.RenderTransform>
                                                                 <RotateTransform Angle="45"/>
                                                             </Rectangle.RenderTransform>
@@ -309,15 +325,20 @@
                                               Text="{Binding Artist}"
                                               Opacity="0.7"
                                               TextAlignment="Center"
+                                              TextWrapping="Wrap"
                                               TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
 
                             <!-- Lado Derecho: Sección de Letras -->
-                            <Border Grid.Column="1" 
+                            <Border x:Name="NowPlayingLyricsPanel"
+                                    Grid.Row="0"
+                                    Grid.Column="1"
                                     Margin="0,0,0,0"
                                     Background="{DynamicResource ControlFillColorDefaultBrush}"
                                     CornerRadius="16"
-                                    Padding="48"
+                                    Padding="28"
+                                    MinWidth="0"
+                                    MinHeight="420"
                                     BorderThickness="1"
                                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
                                 <Grid>
@@ -326,198 +347,255 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
                                     <Grid Margin="0,0,0,24">
-                                        <StackPanel Orientation="Horizontal" Opacity="0.5">
-                                            <ui:SymbolIcon Symbol="TextQuote24" FontSize="20" Margin="0,0,12,0"/>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Opacity="0.5">
+                                            <ui:SymbolIcon Symbol="TextQuote24"
+                                                           FontSize="20"
+                                                           Margin="0,0,12,0"/>
                                         </StackPanel>
-                                        <ui:Button HorizontalAlignment="Right" 
-                                                   Appearance="Transparent" 
-                                                   Click="EditLyrics_Click" 
+                                        <ui:Button HorizontalAlignment="Right"
+                                                   Style="{StaticResource LyricsIconButtonStyle}"
+                                                   Command="{Binding EditLyricsCommand}"
                                                    ToolTip="{DynamicResource Edit_WindowTitle}">
                                             <ui:SymbolIcon Symbol="Edit24"/>
                                         </ui:Button>
                                     </Grid>
-                                    <ListBox x:Name="LyricsList" ScrollViewer.CanContentScroll="False" VirtualizingStackPanel.IsVirtualizing="False"
+                                    <ListBox x:Name="LyricsList"
+                                             ScrollViewer.CanContentScroll="True"
+                                             VirtualizingStackPanel.IsVirtualizing="True"
+                                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                             VirtualizingPanel.ScrollUnit="Pixel"
                                              Grid.Row="1"
                                              ItemsSource="{Binding LyricLines}"
                                              SelectedItem="{Binding ActiveLyricLine}"
                                              Background="Transparent"
                                              BorderThickness="0"
-                                             HorizontalContentAlignment="Center"
+                                             HorizontalContentAlignment="Stretch"
                                              ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              SelectionMode="Single"
-                                             PreviewMouseLeftButtonDown="LyricsList_PreviewMouseLeftButtonDown"
-                                             PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
-                                             PreviewMouseWheel="LyricsList_PreviewMouseWheel"
-                                             PreviewTouchDown="LyricsList_PreviewTouchDown"
+                                             behaviors:LyricsInteractionBehavior.IsEnabled="True"
                                              Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
-                                            <ListBox.ItemContainerStyle>
-                                                <Style TargetType="ListBoxItem">
-                                                    <Setter Property="Background" Value="Transparent"/>
-                                                    <Setter Property="BorderThickness" Value="0"/>
-                                                    <Setter Property="Padding" Value="0,12"/>
-                                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                                                    <Setter Property="Opacity" Value="0.4"/>
-                                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-                                                    <Setter Property="RenderTransform">
-                                                        <Setter.Value>
-                                                            <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="ListBoxItem">
-                                                                <ContentPresenter />
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <EventTrigger RoutedEvent="ListBoxItem.Selected">
-                                                            <BeginStoryboard>
-                                                                <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.05" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.05" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                </Storyboard>
-                                                            </BeginStoryboard>
-                                                        </EventTrigger>
-                                                        <EventTrigger RoutedEvent="ListBoxItem.Unselected">
-                                                            <BeginStoryboard>
-                                                                <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.8">
-                                                                        <DoubleAnimation.EasingFunction>
-                                                                            <CubicEase EasingMode="EaseOut"/>
-                                                                        </DoubleAnimation.EasingFunction>
-                                                                    </DoubleAnimation>
-                                                                </Storyboard>
-                                                            </BeginStoryboard>
-                                                        </EventTrigger>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                        </Trigger>
-                                                        <Trigger Property="IsSelected" Value="False">
-                                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </ListBox.ItemContainerStyle>
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid>
-                                                        <!-- Simple Line (Fallback) -->
-                                                        <TextBlock Text="{Binding Text}"
-                                                                   TextWrapping="Wrap"
-                                                                   TextAlignment="Center"
-                                                                   FontSize="32"
-                                                                   FontWeight="Bold"
-                                                                   LineHeight="40"
-                                                                   Visibility="{Binding Words, Converter={StaticResource NullToVisibleConverter}}"/>
-                                                        
-                                                        <!-- Enhanced Line (Word by Word) -->
-                                                        <ItemsControl ItemsSource="{Binding Words}"
-                                                                      Visibility="{Binding Words, Converter={StaticResource NullToCollapsedConverter}}">
-                                                            <ItemsControl.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <WrapPanel HorizontalAlignment="Center"/>
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsControl.ItemsPanel>
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <TextBlock Text="{Binding Text}"
-                                                                               FontSize="32"
-                                                                               FontWeight="Bold"
-                                                                               Margin="4,0"
-                                                                               RenderTransformOrigin="0.5,0.5">
-                                                                         <TextBlock.Style>
-                                                                            <Style TargetType="TextBlock">
-                                                                                <Setter Property="Opacity" Value="0.4"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Value="True">
-                                                                                        <DataTrigger.Binding>
-                                                                                            <MultiBinding Converter="{StaticResource LyricWordHighlightConverter}">
-                                                                                                <Binding Path="DataContext.CurrentPositionTimeSpan" RelativeSource="{RelativeSource AncestorType=Page}"/>
-                                                                                                <Binding Path="Time"/>
-                                                                                                <Binding Path="IsSelected" RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
-                                                                                            </MultiBinding>
-                                                                                        </DataTrigger.Binding>
-                                                                                        <DataTrigger.EnterActions>
-                                                                                            <BeginStoryboard>
-                                                                                                <Storyboard>
-                                                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.2"/>
-                                                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
-                                                                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
-                                                                                                </Storyboard>
-                                                                                            </BeginStoryboard>
-                                                                                        </DataTrigger.EnterActions>
-                                                                                        <DataTrigger.ExitActions>
-                                                                                            <BeginStoryboard>
-                                                                                                <Storyboard>
-                                                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.3"/>
-                                                                                                </Storyboard>
-                                                                                            </BeginStoryboard>
-                                                                                        </DataTrigger.ExitActions>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </TextBlock.Style>
-                                                                        <TextBlock.RenderTransform>
-                                                                            <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
-                                                                        </TextBlock.RenderTransform>
-                                                                    </TextBlock>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Background"
+                                                        Value="Transparent"/>
+                                                <Setter Property="BorderThickness"
+                                                        Value="0"/>
+                                                <Setter Property="Padding"
+                                                        Value="0,16"/>
+                                                <Setter Property="HorizontalContentAlignment"
+                                                        Value="Stretch"/>
+                                                <Setter Property="Opacity"
+                                                        Value="0.4"/>
+                                                <Setter Property="RenderTransformOrigin"
+                                                        Value="0.5,0.5"/>
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <ScaleTransform ScaleX="1.0"
+                                                                        ScaleY="1.0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                            <ContentPresenter/>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <EventTrigger RoutedEvent="ListBoxItem.Selected">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 To="1.0"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.05"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.05"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <EventTrigger RoutedEvent="ListBoxItem.Unselected">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 To="0.4"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.0"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.0"
+                                                                                 Duration="0:0:0.8">
+                                                                    <DoubleAnimation.EasingFunction>
+                                                                        <CubicEase EasingMode="EaseOut"/>
+                                                                    </DoubleAnimation.EasingFunction>
+                                                                </DoubleAnimation>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <Trigger Property="IsSelected"
+                                                             Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected"
+                                                             Value="False">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid HorizontalAlignment="Stretch"
+                                                      MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLyricsContentWidthConverter}}">
+                                                    <!-- Simple Line (Fallback) -->
+                                                    <TextBlock Text="{Binding Text}"
+                                                               TextWrapping="Wrap"
+                                                               TextAlignment="Center"
+                                                               FontSize="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveFontSizeConverter}}"
+                                                               FontWeight="Bold"
+                                                               LineHeight="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLineHeightConverter}}"
+                                                               HorizontalAlignment="Stretch"
+                                                               Margin="24,0"
+                                                               Visibility="{Binding Words, Converter={StaticResource NullToVisibleConverter}}"/>
 
-                                    <!-- Placeholder when no lyrics -->
-                                    <StackPanel Grid.Row="1" 
-                                                VerticalAlignment="Center" 
+                                                    <!-- Enhanced Line (Word by Word) -->
+                                                    <ItemsControl ItemsSource="{Binding Words}"
+                                                                  HorizontalAlignment="Stretch"
+                                                                  Width="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth}"
+                                                                  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLyricsContentWidthConverter}}"
+                                                                  Visibility="{Binding Words, Converter={StaticResource NullToCollapsedConverter}}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel HorizontalAlignment="Center"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Text}"
+                                                                           FontSize="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveFontSizeConverter}}"
+                                                                           FontWeight="Bold"
+                                                                           Margin="4,0"
+                                                                           RenderTransformOrigin="0.5,0.5">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Opacity"
+                                                                                    Value="0.4"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Value="True">
+                                                                                    <DataTrigger.Binding>
+                                                                                        <MultiBinding Converter="{StaticResource LyricWordHighlightConverter}">
+                                                                                            <Binding Path="DataContext.CurrentPositionTimeSpan"
+                                                                                                     RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                                                            <Binding Path="Time"/>
+                                                                                            <Binding Path="IsSelected"
+                                                                                                     RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
+                                                                                        </MultiBinding>
+                                                                                    </DataTrigger.Binding>
+                                                                                    <DataTrigger.EnterActions>
+                                                                                        <BeginStoryboard>
+                                                                                            <Storyboard>
+                                                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                                 To="1.0"
+                                                                                                                 Duration="0:0:0.2"/>
+                                                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                                                 To="1.1"
+                                                                                                                 Duration="0:0:0.1"
+                                                                                                                 AutoReverse="True"/>
+                                                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                                                 To="1.1"
+                                                                                                                 Duration="0:0:0.1"
+                                                                                                                 AutoReverse="True"/>
+                                                                                            </Storyboard>
+                                                                                        </BeginStoryboard>
+                                                                                    </DataTrigger.EnterActions>
+                                                                                    <DataTrigger.ExitActions>
+                                                                                        <BeginStoryboard>
+                                                                                            <Storyboard>
+                                                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                                 To="0.4"
+                                                                                                                 Duration="0:0:0.3"/>
+                                                                                            </Storyboard>
+                                                                                        </BeginStoryboard>
+                                                                                    </DataTrigger.ExitActions>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                    <TextBlock.RenderTransform>
+                                                                        <ScaleTransform ScaleX="1.0"
+                                                                                        ScaleY="1.0"/>
+                                                                    </TextBlock.RenderTransform>
+                                                                </TextBlock>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <!-- Placeholder when no lyrics (Full View) -->
+                                    <StackPanel Grid.Row="1"
+                                                VerticalAlignment="Center"
                                                 HorizontalAlignment="Center"
                                                 Visibility="{Binding HasLyrics, Converter={StaticResource BoolToCollapsedVisibleConverter}}">
-                                        <ui:SymbolIcon Symbol="TextQuote24" FontSize="48" Opacity="0.1" Margin="0,0,0,16"/>
+                                        <ui:SymbolIcon Symbol="TextQuote24"
+                                                       FontSize="64"
+                                                       Opacity="0.1"
+                                                       Margin="0,0,0,24"/>
                                         <ui:TextBlock Text="{DynamicResource Home_LyricsNotAvailable}"
-                                                      FontTypography="Subtitle"
+                                                      FontSize="24"
+                                                      FontWeight="SemiBold"
                                                       Opacity="0.5"
+                                                      TextAlignment="Center"/>
+                                        <ui:TextBlock Text="{DynamicResource Home_SelectSongToSeeLyrics}"
+                                                      FontSize="16"
+                                                      Opacity="0.3"
+                                                      Margin="0,8,0,0"
                                                       TextAlignment="Center"/>
                                     </StackPanel>
 
-                                    <!-- Overlay: Back to Sync Button -->
-                                    <ui:Button x:Name="ResumeSyncButton"
+                                    <!-- Overlay: Back to Sync Button (Full View) -->
+                                    <ui:Button x:Name="ResumeSyncButtonFull"
                                                Grid.Row="1"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Bottom"
-                                               Margin="0,0,0,20"
+                                               Margin="0,0,0,40"
                                                Appearance="Secondary"
-                                               Visibility="Collapsed"
-                                               Click="ResumeSyncButton_Click"
+                                               Visibility="{Binding CanResumeLyricsSync, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
+                                               Command="{Binding ResumeLyricsSyncCommand}"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                         <StackPanel Orientation="Horizontal">
-                                            <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
+                                            <ui:SymbolIcon Symbol="ArrowSync24"
+                                                           Margin="0,0,8,0"/>
                                             <TextBlock Text="{DynamicResource Home_SyncButton}"/>
                                         </StackPanel>
                                     </ui:Button>
@@ -525,22 +603,26 @@
                             </Border>
                         </Grid>
                         <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding Source={x:Static classes:MusicPlayerService.Instance}, Path=IsPlaying}" Value="True">
-                                        <DataTrigger.EnterActions>
-                                            <BeginStoryboard Name="TurntableAnim">
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetName="DiscRotation"
-                                                                   Storyboard.TargetProperty="Angle"
-                                                                   From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </DataTrigger.EnterActions>
-                                        <DataTrigger.ExitActions>
-                                            <StopStoryboard BeginStoryboardName="TurntableAnim"/>
-                                        </DataTrigger.ExitActions>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
-                            </DataTemplate>
+                            <DataTrigger Binding="{Binding Source={x:Static classes:MusicPlayerService.Instance}, Path=IsPlaying}"
+                                         Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Name="TurntableAnim">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="DiscRotation"
+                                                             Storyboard.TargetProperty="Angle"
+                                                             From="0"
+                                                             To="360"
+                                                             Duration="0:0:2"
+                                                             RepeatBehavior="Forever"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <StopStoryboard BeginStoryboardName="TurntableAnim"/>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
 
 
                     <!-- DataTemplate para estado LyricsFull (solo letra ampliada) -->
@@ -555,43 +637,52 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Grid Margin="0,0,0,16">
-                                    <StackPanel Orientation="Horizontal" Opacity="0.5">
-                                        <ui:SymbolIcon Symbol="TextQuote24" FontSize="20" Margin="0,0,12,0"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                Opacity="0.5">
+                                        <ui:SymbolIcon Symbol="TextQuote24"
+                                                       FontSize="20"
+                                                       Margin="0,0,12,0"/>
                                     </StackPanel>
-                                    <ui:Button HorizontalAlignment="Right" 
-                                               Appearance="Transparent" 
-                                               Click="EditLyrics_Click" 
+                                    <ui:Button HorizontalAlignment="Right"
+                                               Style="{StaticResource LyricsIconButtonStyle}"
+                                               Command="{Binding EditLyricsCommand}"
                                                ToolTip="{DynamicResource Edit_WindowTitle}">
                                         <ui:SymbolIcon Symbol="Edit24"/>
                                     </ui:Button>
                                 </Grid>
-                                <ListBox x:Name="FullLyricsList" ScrollViewer.CanContentScroll="False" VirtualizingStackPanel.IsVirtualizing="False"
-                                          Grid.Row="1"
-                                          ItemsSource="{Binding LyricLines}"
-                                          SelectedItem="{Binding ActiveLyricLine}"
-                                          Background="Transparent"
-                                          BorderThickness="0"
-                                          HorizontalContentAlignment="Center"
-                                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                          SelectionMode="Single"
-                                          PreviewMouseLeftButtonDown="LyricsList_PreviewMouseLeftButtonDown"
-                                          PreviewMouseLeftButtonUp="LyricsList_PreviewMouseLeftButtonUp"
-                                          PreviewMouseWheel="LyricsList_PreviewMouseWheel"
-                                          PreviewTouchDown="LyricsList_PreviewTouchDown"
-                                          Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
+                                <ListBox x:Name="FullLyricsList"
+                                         ScrollViewer.CanContentScroll="True"
+                                         VirtualizingStackPanel.IsVirtualizing="True"
+                                         VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                         VirtualizingPanel.ScrollUnit="Pixel"
+                                         Grid.Row="1"
+                                         ItemsSource="{Binding LyricLines}"
+                                         SelectedItem="{Binding ActiveLyricLine}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         HorizontalContentAlignment="Stretch"
+                                         ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                         SelectionMode="Single"
+                                         behaviors:LyricsInteractionBehavior.IsEnabled="True"
+                                         Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
-                                            <Setter Property="Opacity" Value="0.4"/>
-                                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                            <Setter Property="Opacity"
+                                                    Value="0.4"/>
+                                            <Setter Property="HorizontalContentAlignment"
+                                                    Value="Stretch"/>
+                                            <Setter Property="RenderTransformOrigin"
+                                                    Value="0.5,0.5"/>
                                             <Setter Property="RenderTransform">
                                                 <Setter.Value>
-                                                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                                    <ScaleTransform ScaleX="1.0"
+                                                                    ScaleY="1.0"/>
                                                 </Setter.Value>
                                             </Setter>
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListBoxItem">
-                                                        <ContentPresenter />
+                                                        <ContentPresenter/>
                                                     </ControlTemplate>
                                                 </Setter.Value>
                                             </Setter>
@@ -599,17 +690,23 @@
                                                 <EventTrigger RoutedEvent="ListBoxItem.Selected">
                                                     <BeginStoryboard>
                                                         <Storyboard>
-                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="1.0"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
                                                             </DoubleAnimation>
-                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.05" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             To="1.05"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
                                                             </DoubleAnimation>
-                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.05" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             To="1.05"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
@@ -620,17 +717,23 @@
                                                 <EventTrigger RoutedEvent="ListBoxItem.Unselected">
                                                     <BeginStoryboard>
                                                         <Storyboard>
-                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="0.4"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
                                                             </DoubleAnimation>
-                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             To="1.0"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
                                                             </DoubleAnimation>
-                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.8">
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             To="1.0"
+                                                                             Duration="0:0:0.8">
                                                                 <DoubleAnimation.EasingFunction>
                                                                     <CubicEase EasingMode="EaseOut"/>
                                                                 </DoubleAnimation.EasingFunction>
@@ -638,29 +741,39 @@
                                                         </Storyboard>
                                                     </BeginStoryboard>
                                                 </EventTrigger>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <Trigger Property="IsSelected"
+                                                         Value="True">
+                                                    <Setter Property="Foreground"
+                                                            Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </Trigger>
-                                                <Trigger Property="IsSelected" Value="False">
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                <Trigger Property="IsSelected"
+                                                         Value="False">
+                                                    <Setter Property="Foreground"
+                                                            Value="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid>
+                                            <Grid HorizontalAlignment="Stretch"
+                                                  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLyricsContentWidthConverter}, ConverterParameter=88}">
                                                 <!-- Simple Line (Fallback) -->
                                                 <TextBlock Text="{Binding Text}"
                                                            TextWrapping="Wrap"
                                                            TextAlignment="Center"
-                                                           FontSize="42"
+                                                           FontSize="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveFontSizeConverter}, ConverterParameter=full}"
                                                            FontWeight="Bold"
-                                                           Margin="0,20"
+                                                           LineHeight="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLineHeightConverter}, ConverterParameter=full}"
+                                                           HorizontalAlignment="Stretch"
+                                                           Margin="24,20"
                                                            Visibility="{Binding Words, Converter={StaticResource NullToVisibleConverter}}"/>
 
                                                 <!-- Enhanced Line (Word by Word) -->
                                                 <ItemsControl ItemsSource="{Binding Words}"
+                                                              HorizontalAlignment="Stretch"
+                                                              Width="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth}"
+                                                              MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveLyricsContentWidthConverter}, ConverterParameter=88}"
                                                               Visibility="{Binding Words, Converter={StaticResource NullToCollapsedConverter}}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
@@ -670,35 +783,48 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding Text}"
-                                                                       FontSize="42"
+                                                                       FontSize="{Binding RelativeSource={RelativeSource AncestorType=ListBox}, Path=ActualWidth, Converter={StaticResource ResponsiveFontSizeConverter}, ConverterParameter=full}"
                                                                        FontWeight="Bold"
                                                                        Margin="6,20"
                                                                        RenderTransformOrigin="0.5,0.5">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
-                                                                        <Setter Property="Opacity" Value="0.4"/>
+                                                                        <Setter Property="Opacity"
+                                                                                Value="0.4"/>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Value="True">
                                                                                 <DataTrigger.Binding>
                                                                                     <MultiBinding Converter="{StaticResource LyricWordHighlightConverter}">
-                                                                                        <Binding Path="DataContext.CurrentPositionTimeSpan" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                                                        <Binding Path="DataContext.CurrentPositionTimeSpan"
+                                                                                                 RelativeSource="{RelativeSource AncestorType=Page}"/>
                                                                                         <Binding Path="Time"/>
-                                                                                        <Binding Path="IsSelected" RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
+                                                                                        <Binding Path="IsSelected"
+                                                                                                 RelativeSource="{RelativeSource AncestorType=ListBoxItem}"/>
                                                                                     </MultiBinding>
                                                                                 </DataTrigger.Binding>
                                                                                 <DataTrigger.EnterActions>
                                                                                     <BeginStoryboard>
                                                                                         <Storyboard>
-                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.2"/>
-                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
-                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.1" AutoReverse="True"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                             To="1.0"
+                                                                                                             Duration="0:0:0.2"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                                             To="1.1"
+                                                                                                             Duration="0:0:0.1"
+                                                                                                             AutoReverse="True"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                                             To="1.1"
+                                                                                                             Duration="0:0:0.1"
+                                                                                                             AutoReverse="True"/>
                                                                                         </Storyboard>
                                                                                     </BeginStoryboard>
                                                                                 </DataTrigger.EnterActions>
                                                                                 <DataTrigger.ExitActions>
                                                                                     <BeginStoryboard>
                                                                                         <Storyboard>
-                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.3"/>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                             To="0.4"
+                                                                                                             Duration="0:0:0.3"/>
                                                                                         </Storyboard>
                                                                                     </BeginStoryboard>
                                                                                 </DataTrigger.ExitActions>
@@ -707,7 +833,8 @@
                                                                     </Style>
                                                                 </TextBlock.Style>
                                                                 <TextBlock.RenderTransform>
-                                                                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                                                    <ScaleTransform ScaleX="1.0"
+                                                                                    ScaleY="1.0"/>
                                                                 </TextBlock.RenderTransform>
                                                             </TextBlock>
                                                         </DataTemplate>
@@ -718,36 +845,35 @@
                                     </ListBox.ItemTemplate>
                                 </ListBox>
 
-                                <!-- Placeholder when no lyrics (Full View) -->
-                                <StackPanel Grid.Row="1" 
-                                            VerticalAlignment="Center" 
+                                <!-- Placeholder when no lyrics -->
+                                <StackPanel Grid.Row="1"
+                                            VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
+                                            Margin="16"
                                             Visibility="{Binding HasLyrics, Converter={StaticResource BoolToCollapsedVisibleConverter}}">
-                                    <ui:SymbolIcon Symbol="TextQuote24" FontSize="64" Opacity="0.1" Margin="0,0,0,24"/>
+                                    <ui:SymbolIcon Symbol="TextQuote24"
+                                                   FontSize="52"
+                                                   Opacity="0.1"
+                                                   Margin="0,0,0,16"/>
                                     <ui:TextBlock Text="{DynamicResource Home_LyricsNotAvailable}"
-                                                  FontSize="24"
-                                                  FontWeight="SemiBold"
+                                                  FontTypography="Subtitle"
                                                   Opacity="0.5"
-                                                  TextAlignment="Center"/>
-                                    <ui:TextBlock Text="{DynamicResource Home_SelectSongToSeeLyrics}"
-                                                  FontSize="16"
-                                                  Opacity="0.3"
-                                                  Margin="0,8,0,0"
                                                   TextAlignment="Center"/>
                                 </StackPanel>
 
-                                <!-- Overlay: Back to Sync Button (Full View) -->
-                                <ui:Button x:Name="ResumeSyncButtonFull"
+                                <!-- Overlay: Back to Sync Button -->
+                                <ui:Button x:Name="ResumeSyncButton"
                                            Grid.Row="1"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Bottom"
-                                           Margin="0,0,0,40"
+                                           Margin="0,0,0,20"
                                            Appearance="Secondary"
-                                           Visibility="Collapsed"
-                                           Click="ResumeSyncButton_Click"
+                                           Visibility="{Binding CanResumeLyricsSync, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
+                                           Command="{Binding ResumeLyricsSyncCommand}"
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowSync24"
+                                                       Margin="0,0,8,0"/>
                                         <TextBlock Text="{DynamicResource Home_SyncButton}"/>
                                     </StackPanel>
                                 </ui:Button>
@@ -758,17 +884,19 @@
             </ContentControl>
 
             <controls:PlaylistControl x:Name="PlaylistControl"
-                    Grid.Column="1"
-                    Width="340"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Stretch"
-                    Visibility="{Binding ElementName=TogglePlaylistBtn, Path=IsChecked, Converter={StaticResource BoolToVisibleCollapsedConverter}}" />
+                                      Grid.Row="0"
+                                      Grid.Column="2"
+                                      Margin="0,0,0,0"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Visibility="{Binding IsPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
+                                      CloseCommand="{Binding HidePlaylistCommand}"/>
         </Grid>
 
         <!-- Barra de controles inferior -->
         <ui:Card Grid.Row="2"
-                Padding="16,12"
-                Margin="0,16,0,0">
+                 Padding="16,12"
+                 Margin="0,16,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -779,84 +907,87 @@
                 <!-- Botones de transporte -->
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Style="{StaticResource IconButtonStyle}"
-                            Click="PreviousButton_Click">
-                        <ui:SymbolIcon x:Name="PreviousIcon" Symbol="Previous24"/>
+                               Command="{Binding SkipPreviousCommand}">
+                        <ui:SymbolIcon x:Name="PreviousIcon"
+                                       Symbol="Previous24"/>
                     </ui:Button>
                     <ui:Button x:Name="PlayPauseButton"
-                            Style="{StaticResource PlayButtonStyle}"
-                            Click="PlayPauseButton_Click"
-                            Margin="12,0">
+                               Style="{StaticResource PlayButtonStyle}"
+                               Command="{Binding PlayPauseCommand}"
+                               Margin="12,0">
                         <ui:SymbolIcon x:Name="PlayPauseIcon"
-                                Symbol="Play24"/>
+                                       Symbol="{Binding PlayPauseSymbol}"/>
                     </ui:Button>
                     <ui:Button Style="{StaticResource IconButtonStyle}"
-                            Click="NextButton_Click">
-                        <ui:SymbolIcon x:Name="NextIcon" Symbol="Next24"/>
+                               Command="{Binding SkipNextCommand}">
+                        <ui:SymbolIcon x:Name="NextIcon"
+                                       Symbol="Next24"/>
                     </ui:Button>
                     <ToggleButton x:Name="TogglePlaylistBtn"
-                            Style="{StaticResource IconToggleButtonStyle}"
-                            Margin="16,0,0,0"
-                            ToolTip="{DynamicResource Lib_ToggleList}">
+                                  Style="{StaticResource AccentIconToggleStyle}"
+                                  Width="42"
+                                  Height="42"
+                                  Margin="16,0,0,0"
+                                  IsChecked="{Binding IsPlaylistVisible, Mode=TwoWay}"
+                                  ToolTip="{DynamicResource Lib_ToggleList}">
                         <ui:SymbolIcon Symbol="Collections24"/>
                     </ToggleButton>
                 </StackPanel>
 
                 <!-- Barra de progreso -->
                 <Grid Grid.Column="1"
-                        Margin="32,0">
+                      Margin="32,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Slider x:Name="SeekSlider"
                             VerticalAlignment="Center"
-                            ValueChanged="SeekSlider_ValueChanged"
-                            PreviewMouseLeftButtonDown="SeekSlider_PreviewMouseLeftButtonDown"
-                            PreviewMouseLeftButtonUp="SeekSlider_PreviewMouseLeftButtonUp"
+                            behaviors:SeekSliderBehavior.IsEnabled="True"
+                            behaviors:SeekSliderBehavior.ViewModel="{Binding}"
                             Value="{Binding SeekValue, Mode=TwoWay}"
                             Maximum="{Binding SeekMaximum}"/>
                     <Grid Grid.Row="1"
-                            Margin="0,4,0,0">
+                          Margin="0,4,0,0">
                         <TextBlock x:Name="CurrentTimeText"
-                                Text="{Binding CurrentTime}"
-                                Opacity="0.7"
-                                HorizontalAlignment="Left"
-                                FontSize="12"/>
+                                   Text="{Binding CurrentTime}"
+                                   Opacity="0.7"
+                                   HorizontalAlignment="Left"
+                                   FontSize="12"/>
                         <TextBlock x:Name="TotalTimeText"
-                                Text="{Binding TotalTime}"
-                                Opacity="0.7"
-                                HorizontalAlignment="Right"
-                                FontSize="12"/>
+                                   Text="{Binding TotalTime}"
+                                   Opacity="0.7"
+                                   HorizontalAlignment="Right"
+                                   FontSize="12"/>
                     </Grid>
                 </Grid>
 
                 <!-- Volumen y visualizador de ondas (simulado) -->
                 <StackPanel Grid.Column="2"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="Speaker224"
-                            Margin="0,0,8,0"
-                            Opacity="0.7"/>
+                                   Margin="0,0,8,0"
+                                   Opacity="0.7"/>
                     <Slider x:Name="VolumeSlider"
                             Width="100"
                             Minimum="0"
                             Maximum="1"
-                            ValueChanged="VolumeSlider_ValueChanged"
                             Value="{Binding Volume, Mode=TwoWay}"/>
-                    
+
                     <ui:Button x:Name="EqualizerButton"
-                                 Style="{StaticResource IconButtonStyle}"
-                                 Click="EqualizerButton_Click"
-                                 Margin="16,0,0,0"
-                                 ToolTip="{DynamicResource Eq_Title}">
+                               Style="{StaticResource IconButtonStyle}"
+                               Command="{Binding OpenEqualizerCommand}"
+                               Margin="16,0,0,0"
+                               ToolTip="{DynamicResource Eq_Title}">
                         <ui:SymbolIcon Symbol="Settings24"/>
                     </ui:Button>
 
                     <Image x:Name="VisualizerContainer"
-                            Width="120"
-                            Height="30"
-                            Margin="16,0,0,0"
-                            Stretch="Fill"/>
+                           Width="120"
+                           Height="30"
+                           Margin="16,0,0,0"
+                           Stretch="Fill"/>
                 </StackPanel>
             </Grid>
         </ui:Card>

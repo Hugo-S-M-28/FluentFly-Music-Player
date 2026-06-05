@@ -9,6 +9,36 @@ namespace FluentFlyout.Classes;
 
 public static class WindowBlurHelper
 {
+    public static void ApplyWindowBackdrop(Window window)
+    {
+        if (window == null)
+        {
+            return;
+        }
+
+        if (ShouldHaveAcrylicBlur(window))
+        {
+            EnableBlur(window, ResolveBlurOpacity(), ResolveBlurBackgroundColor());
+        }
+        else
+        {
+            DisableBlur(window);
+        }
+    }
+
+    public static void RefreshAllWindowBackdrops()
+    {
+        foreach (Window window in Application.Current.Windows)
+        {
+            if (window == null || !IsManagedBackdropWindow(window))
+            {
+                continue;
+            }
+
+            ApplyWindowBackdrop(window);
+        }
+    }
+
     /// <summary>
     /// Enables acrylic blur effect on the specified window
     /// </summary>
@@ -17,17 +47,7 @@ public static class WindowBlurHelper
     /// <param name="blurBackgroundColor">Background color in BGR format (default: 0x000000)</param>
     public static void EnableBlur(Window window, uint blurOpacity = 175, uint blurBackgroundColor = 0x000000)
     {
-        // override opacity if premium is unlocked
-        if (SettingsManager.Current.IsPremiumUnlocked) blurOpacity = SettingsManager.Current.AcrylicBlurOpacity;
-        blurOpacity = Math.Clamp(blurOpacity, 0, 255);
-
         var windowHelper = new WindowInteropHelper(window);
-
-        var currentTheme = ApplicationThemeManager.GetAppTheme();
-        if (currentTheme == ApplicationTheme.Light)
-        {
-            blurBackgroundColor = 0xFFFFFF; // use light background for light theme
-        }
 
         var accent = new AccentPolicy
         {
@@ -87,43 +107,7 @@ public static class WindowBlurHelper
     public static void AdjustBlurOpacityForAllWindows(uint newBlurOpacity)
     {
         if (!SettingsManager.Current.IsPremiumUnlocked) return;
-        newBlurOpacity = Math.Clamp(newBlurOpacity, 0, 255);
-
-        foreach (Window window in Application.Current.Windows)
-        {
-            if (window == null) continue;
-
-            var windowHelper = new WindowInteropHelper(window);
-            if (windowHelper.Handle == IntPtr.Zero) continue;
-
-            // check if window should have acrylic blur based on settings
-            if (ShouldHaveAcrylicBlur(window))
-            {
-                var currentTheme = ApplicationThemeManager.GetAppTheme();
-                uint blurBackgroundColor = currentTheme == ApplicationTheme.Light ? 0xFFFFFFu : 0x000000u;
-
-                var accent = new AccentPolicy
-                {
-                    AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND,
-                    GradientColor = (newBlurOpacity << 24) | (blurBackgroundColor & 0xFFFFFF)
-                };
-
-                var accentStructSize = Marshal.SizeOf(accent);
-                var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-                Marshal.StructureToPtr(accent, accentPtr, false);
-
-                var data = new WindowCompositionAttributeData
-                {
-                    Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY,
-                    SizeOfData = accentStructSize,
-                    Data = accentPtr
-                };
-
-                SetWindowCompositionAttribute(windowHelper.Handle, ref data);
-
-                Marshal.FreeHGlobal(accentPtr);
-            }
-        }
+        RefreshAllWindowBackdrops();
     }
 
     /// <summary>
@@ -140,5 +124,32 @@ public static class WindowBlurHelper
             "LockWindow" => SettingsManager.Current.LockKeysAcrylicWindowEnabled,
             _ => false
         };
+    }
+
+    private static bool IsManagedBackdropWindow(Window window)
+    {
+        return window.GetType().Name switch
+        {
+            "MainWindow" or "NextUpWindow" or "LockWindow" => true,
+            _ => false
+        };
+    }
+
+    private static uint ResolveBlurOpacity()
+    {
+        uint blurOpacity = 175;
+
+        if (SettingsManager.Current.IsPremiumUnlocked)
+        {
+            blurOpacity = SettingsManager.Current.AcrylicBlurOpacity;
+        }
+
+        return Math.Clamp(blurOpacity, 0, 255);
+    }
+
+    private static uint ResolveBlurBackgroundColor()
+    {
+        var currentTheme = ApplicationThemeManager.GetAppTheme();
+        return currentTheme == ApplicationTheme.Light ? 0xFFFFFFu : 0x000000u;
     }
 }

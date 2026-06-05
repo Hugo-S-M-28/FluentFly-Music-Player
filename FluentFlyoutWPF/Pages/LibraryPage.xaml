@@ -7,6 +7,7 @@
       xmlns:models="clr-namespace:FluentFlyoutWPF.Models"
       xmlns:classes="clr-namespace:FluentFlyoutWPF.Classes"
       xmlns:controls="clr-namespace:FluentFlyoutWPF.Controls"
+      xmlns:behaviors="clr-namespace:FluentFlyoutWPF.Classes.Behaviors"
       xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils"
       xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
       xmlns:settings="clr-namespace:FluentFlyout.Classes.Settings"
@@ -14,48 +15,70 @@
       d:DesignHeight="800"
       d:DesignWidth="1200"
       Title="LibraryPage"
-      Loaded="Page_Loaded"
-      Unloaded="Page_Unloaded"
       d:DataContext="{d:DesignInstance viewModels:UserSettings}"
-      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       d:Background="White"
       x:Name="PageRoot"
+      behaviors:DisableAncestorScrollBehavior.DisableVerticalAncestorScroll="True"
+      behaviors:FrameworkElementCommandBehavior.LoadedCommand="{Binding InitializeViewCommand}"
       ScrollViewer.VerticalScrollBarVisibility="Disabled">
 
     <Page.Background>
-        <SolidColorBrush Color="Transparent" />
+        <SolidColorBrush Color="Transparent"/>
     </Page.Background>
 
     <Page.Resources>
-        <classes:PathToImageConverter x:Key="PathToImageConverter"/>
-        <utils:HalfValueConverter x:Key="HalfValueConverter"/>
-            
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Converters.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <classes:PathToImageConverter x:Key="PathToImageConverter"/>
+            <utils:HalfValueConverter x:Key="HalfValueConverter"/>
+
             <!-- Global Styles -->
-            <Style TargetType="ContextMenu" BasedOn="{StaticResource {x:Type ContextMenu}}">
-                <Setter Property="Padding" Value="4" />
-                <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
-                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorDefaultBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+            <Style TargetType="ContextMenu"
+                   BasedOn="{StaticResource {x:Type ContextMenu}}">
+                <Setter Property="Padding"
+                        Value="4"/>
+                <Setter Property="Background"
+                        Value="{DynamicResource MenuFlyoutPresenterBackground}"/>
+                <Setter Property="Foreground"
+                        Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource SurfaceStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderThickness"
+                        Value="1"/>
             </Style>
 
-            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-                <Setter Property="Padding" Value="8,4" />
+            <Style TargetType="MenuItem"
+                   BasedOn="{StaticResource {x:Type MenuItem}}">
+                <Setter Property="Padding"
+                        Value="8,4"/>
             </Style>
 
-            <Style x:Key="AnimatedListViewStyle" TargetType="ListView" BasedOn="{StaticResource {x:Type ListView}}">
+            <Style x:Key="AnimatedListViewStyle"
+                   TargetType="ListView"
+                   BasedOn="{StaticResource {x:Type ListView}}">
                 <Setter Property="RenderTransform">
                     <Setter.Value>
-                        <TranslateTransform X="0" Y="0"/>
+                        <TranslateTransform X="0"
+                                            Y="0"/>
                     </Setter.Value>
                 </Setter>
                 <Style.Triggers>
-                    <Trigger Property="IsVisible" Value="True">
+                    <Trigger Property="IsVisible"
+                             Value="True">
                         <Trigger.EnterActions>
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25"/>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="-30" To="0" Duration="0:0:0.4">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0"
+                                                     To="1"
+                                                     Duration="0:0:0.25"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                     From="-30"
+                                                     To="0"
+                                                     Duration="0:0:0.4">
                                         <DoubleAnimation.EasingFunction>
                                             <CubicEase EasingMode="EaseOut"/>
                                         </DoubleAnimation.EasingFunction>
@@ -67,38 +90,43 @@
                 </Style.Triggers>
             </Style>
 
-        <ContextMenu x:Key="TrackItemContextMenu">
-            <MenuItem Header="{DynamicResource Lib_ContextMenu_Play}"
-                      Click="OnPlayTrackCommand">
-                <MenuItem.Icon>
-                    <ui:SymbolIcon Symbol="Play24"/>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="{DynamicResource Lib_ContextMenu_AddToQueue}"
-                      Click="OnAddToQueueCommand">
-                <MenuItem.Icon>
-                    <ui:SymbolIcon Symbol="AddSquare24"/>
-                </MenuItem.Icon>
-            </MenuItem>
-            <Separator/>
-            <MenuItem Header="{DynamicResource Lib_ContextMenu_Edit}"
-                      Click="OnEditTrackCommand">
-                <MenuItem.Icon>
-                    <ui:SymbolIcon Symbol="Edit24"/>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="{DynamicResource Lib_ContextMenu_OpenFileLocation}"
-                      Click="OnOpenFileLocationCommand">
-                <MenuItem.Icon>
-                    <ui:SymbolIcon Symbol="FolderOpen24"/>
-                </MenuItem.Icon>
-            </MenuItem>
-        </ContextMenu>
+            <ContextMenu x:Key="TrackItemContextMenu">
+                <MenuItem Header="{DynamicResource Lib_ContextMenu_Play}"
+                          Command="{Binding PlacementTarget.Tag.PlayTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                    <MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Play24"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{DynamicResource Lib_ContextMenu_AddToQueue}"
+                          Command="{Binding PlacementTarget.Tag.AddToQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                    <MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="AddSquare24"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="{DynamicResource Lib_ContextMenu_Edit}"
+                          Command="{Binding PlacementTarget.Tag.EditTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                    <MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Edit24"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{DynamicResource Lib_ContextMenu_OpenFileLocation}"
+                          Command="{Binding PlacementTarget.Tag.OpenTrackLocationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                    <MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="FolderOpen24"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
 
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid HorizontalAlignment="Stretch"
-          Margin="16">
+          Margin="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageMarginConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -128,8 +156,8 @@
                             x:Name="SearchBox"
                             PlaceholderText="{DynamicResource Lib_SearchPlaceholder}"
                             Icon="{ui:SymbolIcon Search24}"
-                            TextChanged="SearchBox_TextChanged"
-                            MaxWidth="360"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            MaxWidth="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveSearchWidthConverter}}"
                             HorizontalAlignment="Left"
                             Margin="24,0,0,0"/>
 
@@ -148,48 +176,55 @@
                             <ContextMenu>
                                 <MenuItem Header="{DynamicResource Lib_Sort_Title}"
                                           Tag="Title"
-                                          Click="SortMenuItem_Click"/>
+                                          Command="{Binding ApplySortPropertyFromMenuCommand}"
+                                          CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"/>
                                 <MenuItem Header="{DynamicResource Lib_Sort_Artist}"
                                           Tag="Artist"
-                                          Click="SortMenuItem_Click"/>
+                                          Command="{Binding ApplySortPropertyFromMenuCommand}"
+                                          CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"/>
                                 <MenuItem Header="{DynamicResource Lib_Sort_Album}"
                                           Tag="Album"
-                                          Click="SortMenuItem_Click"/>
+                                          Command="{Binding ApplySortPropertyFromMenuCommand}"
+                                          CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"/>
                                 <MenuItem Header="{DynamicResource Lib_Sort_Duration}"
                                           Tag="Duration"
-                                          Click="SortMenuItem_Click"/>
+                                          Command="{Binding ApplySortPropertyFromMenuCommand}"
+                                          CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"/>
                                 <MenuItem Header="{DynamicResource Lib_Sort_PlayCount}"
                                           Tag="PlayCount"
-                                          Click="SortMenuItem_Click"/>
+                                          Command="{Binding ApplySortPropertyFromMenuCommand}"
+                                          CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"/>
                             </ContextMenu>
                         </ui:DropDownButton.Flyout>
                     </ui:DropDownButton>
 
                     <ui:Button x:Name="SortDirectionBtn"
-                               Click="SortDirectionBtn_Click"
+                               Command="{Binding ToggleSortDirectionCommand}"
                                Padding="0"
                                Width="32"
                                Height="32"
                                Appearance="Transparent"
                                ToolTip="{DynamicResource Lib_SortDirection}">
                         <ui:SymbolIcon x:Name="SortDirectionIcon"
-                                Symbol="ArrowSortUp24"/>
+                                       Symbol="{Binding SortDirectionSymbol}"/>
                     </ui:Button>
 
-                    <Separator Margin="8,0" Visibility="Visible"/>
+                    <Separator Margin="8,0"
+                               Visibility="Visible"/>
 
                     <!-- Lyrics Filter -->
                     <ToggleButton x:Name="LyricsFilterBtn"
-                                  IsChecked="{Binding LibraryLyricsFilterEnabled, Mode=TwoWay}"
-                                  Click="LyricsFilterBtn_Click"
+                                  IsChecked="{Binding Settings.LibraryLyricsFilterEnabled, Mode=TwoWay}"
+                                  Command="{Binding ToggleLyricsFilterCommand}"
+                                  Style="{StaticResource AccentIconToggleStyle}"
                                   Width="32"
                                   Height="32"
                                   Padding="0"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   ToolTip="{DynamicResource Lib_LyricsFilterTooltip}">
-                        <ui:SymbolIcon Symbol="TextBulletListLtr24" 
-                                       Opacity="{Binding LibraryLyricsFilterEnabled, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
+                        <ui:SymbolIcon Symbol="TextBulletListLtr24"
+                                       Opacity="{Binding Settings.LibraryLyricsFilterEnabled, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
                     </ToggleButton>
                 </StackPanel>
 
@@ -200,26 +235,41 @@
                                    Appearance="Transparent"
                                    Margin="0,0,8,0">
                     <ui:DropDownButton.Flyout>
-                        <ContextMenu x:Name="ViewSettingsContextMenu" Padding="12,8">
-                            <MenuItem Header="{DynamicResource Lib_AppearanceTitle}" IsEnabled="False" FontWeight="Bold"/>
+                        <ContextMenu x:Name="ViewSettingsContextMenu"
+                                     Padding="12,8">
+                            <MenuItem Header="{DynamicResource Lib_AppearanceTitle}"
+                                      IsEnabled="False"
+                                      FontWeight="Bold"/>
                             <Separator/>
                             <MenuItem Header="{DynamicResource Lib_GridSizeTitle}">
                                 <MenuItem.Template>
                                     <ControlTemplate TargetType="MenuItem">
                                         <Border Background="Transparent">
                                             <StackPanel Margin="12,8">
-                                            <TextBlock Text="{DynamicResource Lib_GridSizeDescription}" FontSize="11" Opacity="0.6" Margin="0,0,0,4"/>
-                                            <Grid Width="180">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Slider Minimum="120" Maximum="280" Value="{Binding LibraryGridItemSize, Mode=TwoWay}" 
-                                                        TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
-                                                <TextBlock Grid.Column="1" Text="{Binding LibraryGridItemSize}" Margin="8,0,0,0" Width="24" FontSize="11" VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </StackPanel>
-                                    </Border>
+                                                <TextBlock Text="{DynamicResource Lib_GridSizeDescription}"
+                                                           FontSize="11"
+                                                           Opacity="0.6"
+                                                           Margin="0,0,0,4"/>
+                                                <Grid Width="180">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Slider Minimum="120"
+                                                            Maximum="280"
+                                                            Value="{Binding Settings.LibraryGridItemSize, Mode=TwoWay}"
+                                                            TickFrequency="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Settings.LibraryGridItemSize}"
+                                                               Margin="8,0,0,0"
+                                                               Width="24"
+                                                               FontSize="11"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </ControlTemplate>
                                 </MenuItem.Template>
                             </MenuItem>
@@ -228,23 +278,36 @@
                                     <ControlTemplate TargetType="MenuItem">
                                         <Border Background="Transparent">
                                             <StackPanel Margin="12,8">
-                                            <TextBlock Text="{DynamicResource Lib_IconSizeDescription}" FontSize="11" Opacity="0.6" Margin="0,0,0,4"/>
-                                            <Grid Width="180">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Slider Minimum="32" Maximum="72" Value="{Binding LibraryTrackIconSize, Mode=TwoWay}" 
-                                                        TickFrequency="4" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
-                                                <TextBlock Grid.Column="1" Text="{Binding LibraryTrackIconSize}" Margin="8,0,0,0" Width="24" FontSize="11" VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </StackPanel>
-                                    </Border>
+                                                <TextBlock Text="{DynamicResource Lib_IconSizeDescription}"
+                                                           FontSize="11"
+                                                           Opacity="0.6"
+                                                           Margin="0,0,0,4"/>
+                                                <Grid Width="180">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Slider Minimum="32"
+                                                            Maximum="72"
+                                                            Value="{Binding Settings.LibraryTrackIconSize, Mode=TwoWay}"
+                                                            TickFrequency="4"
+                                                            IsSnapToTickEnabled="True"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Settings.LibraryTrackIconSize}"
+                                                               Margin="8,0,0,0"
+                                                               Width="24"
+                                                               FontSize="11"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </ControlTemplate>
                                 </MenuItem.Template>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{DynamicResource Lib_ResetAppearance}" Click="ResetLibraryAppearance_Click">
+                            <MenuItem Header="{DynamicResource Lib_ResetAppearance}"
+                                      Command="{Binding ResetAppearanceCommand}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="ArrowSync24"/>
                                 </MenuItem.Icon>
@@ -256,13 +319,13 @@
                 <ui:Button Grid.Column="4"
                            Content="{DynamicResource Lib_Folders}"
                            Icon="{ui:SymbolIcon FolderAdd24}"
-                           Click="UpdateFolders_Click"
+                           Command="{Binding OpenLibraryFoldersCommand}"
                            Appearance="Secondary"/>
             </Grid>
 
             <!-- Navigation Card: Tabs and Playback Controls -->
             <ui:Card Padding="4"
-                    Margin="0,0,0,8">
+                     Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -272,22 +335,21 @@
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="SongsTab"
                                      Content="{DynamicResource Lib_Songs}"
-                                     IsChecked="True"
-                                     Style="{StaticResource {x:Type ToggleButton}}"
+                                     IsChecked="{Binding Settings.LibrarySelectedTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=0, Mode=TwoWay}"
+                                     Style="{StaticResource AccentSegmentedTabStyle}"
                                      Padding="16,6"
-                                     Margin="0,0,4,0"
-                                     Click="OnTabChanged"/>
+                                     Margin="0,0,4,0"/>
                         <RadioButton x:Name="AlbumsTab"
                                      Content="{DynamicResource Lib_Albums}"
-                                     Style="{StaticResource {x:Type ToggleButton}}"
+                                     IsChecked="{Binding Settings.LibrarySelectedTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=1, Mode=TwoWay}"
+                                     Style="{StaticResource AccentSegmentedTabStyle}"
                                      Padding="16,6"
-                                     Margin="0,0,4,0"
-                                     Click="OnTabChanged"/>
+                                     Margin="0,0,4,0"/>
                         <RadioButton x:Name="ArtistsTab"
                                      Content="{DynamicResource Lib_Artists}"
-                                     Style="{StaticResource {x:Type ToggleButton}}"
-                                     Padding="16,6"
-                                     Click="OnTabChanged"/>
+                                     IsChecked="{Binding Settings.LibrarySelectedTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=2, Mode=TwoWay}"
+                                     Style="{StaticResource AccentSegmentedTabStyle}"
+                                     Padding="16,6"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1"
@@ -295,26 +357,41 @@
                         <!-- Botón de Reproducir Todo -->
                         <ui:Button Content="{DynamicResource Lib_PlayAll}"
                                    Icon="{ui:SymbolIcon Play24}"
-                                   Click="PlayAll_Click"
+                                   Command="{Binding PlayVisibleTracksCommand}"
                                    Appearance="Primary"
+                                   Margin="0,0,8,0"/>
+
+                        <!-- Botón de Cargar Lista -->
+                        <ui:Button Content="{DynamicResource Playlist_LoadQueue}"
+                                   Icon="{ui:SymbolIcon FolderOpen24}"
+                                   Command="{Binding LoadPlaylistCommand}"
+                                   Appearance="Secondary"
+                                   Margin="0,0,8,0"/>
+
+                        <!-- Botón de Guardar Lista -->
+                        <ui:Button Content="{DynamicResource Playlist_SaveQueue}"
+                                   Icon="{ui:SymbolIcon Save24}"
+                                   Command="{Binding SavePlaylistCommand}"
+                                   Appearance="Secondary"
                                    Margin="0,0,8,0"/>
 
                         <!-- Botón de Aleatorio (Toggle de estado) -->
                         <ui:Button x:Name="ShuffleBtn"
-                                   Click="ShuffleBtn_Click"
+                                   Command="{Binding ToggleShuffleCommand}"
                                    ToolTip="{DynamicResource Lib_Shuffle}"
                                    Width="36"
-                                Height="36"
-                                Padding="0"
+                                   Height="36"
+                                   Padding="0"
                                    Appearance="Transparent"
                                    Margin="0,0,4,0">
                             <ui:SymbolIcon x:Name="ShuffleIcon"
-                                    Symbol="ArrowShuffle24"/>
+                                           Symbol="{Binding ShuffleSymbol}"/>
                         </ui:Button>
 
                         <!-- Toggle Playlist Button -->
                         <ToggleButton x:Name="TogglePlaylistBtn"
-                                      IsChecked="{Binding LibraryPlaylistVisible, Mode=TwoWay}"
+                                      IsChecked="{Binding Settings.LibraryPlaylistVisible, Mode=TwoWay}"
+                                      Style="{StaticResource AccentIconToggleStyle}"
                                       Width="36"
                                       Height="36"
                                       Padding="0"
@@ -322,7 +399,7 @@
                                       BorderThickness="0"
                                       ToolTip="{DynamicResource Lib_ToggleList}">
                             <ui:SymbolIcon Symbol="Collections24"
-                                           Opacity="{Binding LibraryPlaylistVisible, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
+                                           Opacity="{Binding Settings.LibraryPlaylistVisible, Converter={StaticResource BoolToFullHalfOpacityConverter}}"/>
                         </ToggleButton>
                     </StackPanel>
                 </Grid>
@@ -338,13 +415,14 @@
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0"
-                    Margin="0,0,8,0">
+                  Margin="0,0,8,0">
                 <!-- SONGS VIEW -->
                 <ListView x:Name="TracksListView"
                           Style="{StaticResource AnimatedListViewStyle}"
+                          ItemsSource="{Binding TracksView}"
+                          behaviors:ListViewScrollIntoViewBehavior.ScrollTarget="{Binding RequestedScrollItem}"
                           Visibility="{Binding IsChecked, ElementName=SongsTab, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                           SelectionMode="Single"
-                          MouseDoubleClick="TracksListView_MouseDoubleClick"
                           Background="Transparent"
                           BorderThickness="0"
                           HorizontalContentAlignment="Stretch"
@@ -355,12 +433,18 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.ScrollUnit="Pixel"
                           VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.CacheLength="20"
+                          VirtualizingPanel.CacheLength="6"
                           VirtualizingPanel.CacheLengthUnit="Item">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
+                            <!-- Double-click plays the track (DataContext is the TrackModel) -->
+                            <EventSetter Event="MouseDoubleClick"
+                                    Handler="TrackItem_MouseDoubleClick"/>
                             <Setter Property="ContextMenu"
                                     Value="{StaticResource TrackItemContextMenu}"/>
+                            <!-- Bind Tag to PageRoot's DataContext (the ViewModel) -->
+                            <Setter Property="Tag"
+                                    Value="{Binding DataContext, ElementName=PageRoot}"/>
                             <Setter Property="HorizontalContentAlignment"
                                     Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment"
@@ -369,11 +453,13 @@
                                     Value="12,8"/>
                             <Setter Property="Margin"
                                     Value="0,0,0,4"/>
+                            <Setter Property="Cursor"
+                                    Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
                                         <Border x:Name="ItemBorder"
-                                                CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
+                                                CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                                 Background="Transparent"
                                                 Padding="{TemplateBinding Padding}">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -390,7 +476,7 @@
                                                      Value="True">
                                                 <Setter TargetName="ItemBorder"
                                                         Property="Background"
-                                                        Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                                                        Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -407,22 +493,28 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Column="0"
-                                        Width="{Binding LibraryTrackIconSize, Source={x:Static settings:SettingsManager.Current}}"
-                                        Height="{Binding LibraryTrackIconSize, Source={x:Static settings:SettingsManager.Current}}"
+                                        Width="{Binding DataContext.Settings.LibraryTrackIconSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        Height="{Binding DataContext.Settings.LibraryTrackIconSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                         Margin="0,0,12,0"
-                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
+                                        <DropShadowEffect BlurRadius="8"
+                                                          Opacity="0.15"
+                                                          ShadowDepth="2"
+                                                          Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="MusicNote124"
                                                            Opacity="0.3"
                                                            FontSize="20"/>
-                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality">
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                    RenderOptions.BitmapScalingMode="HighQuality">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=120, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                    <ImageBrush ImageSource="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=120, Mode=OneWay}"
+                                                                Stretch="UniformToFill"/>
                                                 </Border.Background>
                                             </Border>
                                         </Grid>
@@ -435,7 +527,8 @@
                                                FontSize="14"
                                                FontWeight="SemiBold"
                                                TextTrimming="CharacterEllipsis"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,2,0,0">
                                         <Border Visibility="{Binding HasLyrics, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                                                 BorderThickness="1"
                                                 BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
@@ -459,7 +552,7 @@
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" 
+                                <StackPanel Grid.Column="2"
                                             Orientation="Horizontal"
                                             VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Duration, StringFormat={}{0:mm\\:ss}}"
@@ -474,6 +567,8 @@
                 <!-- ALBUMS VIEW -->
                 <ListView x:Name="AlbumsListView"
                           Style="{StaticResource AnimatedListViewStyle}"
+                          ItemsSource="{Binding AlbumsView}"
+                          behaviors:ListViewScrollIntoViewBehavior.ScrollTarget="{Binding RequestedScrollItem}"
                           Visibility="{Binding IsChecked, ElementName=AlbumsTab, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                           Background="Transparent"
                           BorderThickness="0"
@@ -494,18 +589,25 @@
                                     Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment"
                                     Value="Stretch"/>
-                            <Setter Property="Padding" Value="4"/>
-                            <Setter Property="Margin" Value="4"/>
+                            <Setter Property="Padding"
+                                    Value="4"/>
+                            <Setter Property="Margin"
+                                    Value="4"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" Background="Transparent" x:Name="ContainerBorder">
+                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                Background="Transparent"
+                                                x:Name="ContainerBorder">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ContainerBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            <Trigger Property="IsMouseOver"
+                                                     Value="True">
+                                                <Setter TargetName="ContainerBorder"
+                                                        Property="Background"
+                                                        Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -515,15 +617,20 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ui:VirtualizingWrapPanel Orientation="Horizontal" IsItemsHost="True"/>
+                            <ui:VirtualizingWrapPanel Orientation="Horizontal"
+                                                      IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Width="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                            <Grid Width="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                   Margin="8"
-                                  Cursor="Hand"
-                                  MouseLeftButtonDown="Album_Click">
+                                  Cursor="Hand">
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.SelectAlbumCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                  CommandParameter="{Binding}"/>
+                                </Grid.InputBindings>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
@@ -531,21 +638,28 @@
 
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
-                                        Height="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
-                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
+                                        Height="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                         ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
+                                        <DropShadowEffect BlurRadius="8"
+                                                          Opacity="0.15"
+                                                          ShadowDepth="2"
+                                                          Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="Album24"
                                                            Opacity="0.1"
                                                            FontSize="48"/>
-                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.CachingHint="Cache">
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                                    RenderOptions.CachingHint="Cache">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay}"
+                                                                Stretch="UniformToFill"/>
                                                 </Border.Background>
                                             </Border>
 
@@ -560,7 +674,9 @@
                                     </Border>
                                 </Border>
 
-                                <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,12,0,0">
+                                <StackPanel Grid.Row="1"
+                                            VerticalAlignment="Top"
+                                            Margin="0,12,0,0">
                                     <TextBlock Text="{Binding Title}"
                                                FontWeight="SemiBold"
                                                FontSize="14"
@@ -587,6 +703,8 @@
                 <!-- ARTISTS VIEW -->
                 <ListView x:Name="ArtistsListView"
                           Style="{StaticResource AnimatedListViewStyle}"
+                          ItemsSource="{Binding ArtistsView}"
+                          behaviors:ListViewScrollIntoViewBehavior.ScrollTarget="{Binding RequestedScrollItem}"
                           Visibility="{Binding IsChecked, ElementName=ArtistsTab, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                           Background="Transparent"
                           BorderThickness="0"
@@ -607,18 +725,25 @@
                                     Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment"
                                     Value="Stretch"/>
-                            <Setter Property="Padding" Value="4"/>
-                            <Setter Property="Margin" Value="4"/>
+                            <Setter Property="Padding"
+                                    Value="4"/>
+                            <Setter Property="Margin"
+                                    Value="4"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" Background="Transparent" x:Name="ContainerBorder">
+                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                Background="Transparent"
+                                                x:Name="ContainerBorder">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ContainerBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            <Trigger Property="IsMouseOver"
+                                                     Value="True">
+                                                <Setter TargetName="ContainerBorder"
+                                                        Property="Background"
+                                                        Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -628,15 +753,20 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ui:VirtualizingWrapPanel Orientation="Horizontal" IsItemsHost="True"/>
+                            <ui:VirtualizingWrapPanel Orientation="Horizontal"
+                                                      IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Width="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
+                            <Grid Width="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                   Margin="8"
-                                  Cursor="Hand"
-                                  MouseLeftButtonDown="Artist_Click">
+                                  Cursor="Hand">
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.SelectArtistCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                  CommandParameter="{Binding}"/>
+                                </Grid.InputBindings>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
@@ -644,28 +774,37 @@
 
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
-                                        Height="{Binding LibraryGridItemSize, Source={x:Static settings:SettingsManager.Current}}"
-                                        CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}"
-                                                                                ClipToBounds="True"
+                                        Height="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8" Opacity="0.15" ShadowDepth="2" Direction="270" />
+                                        <DropShadowEffect BlurRadius="8"
+                                                          Opacity="0.15"
+                                                          ShadowDepth="2"
+                                                          Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" ClipToBounds="True">
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="Person24"
                                                            Opacity="0.1"
                                                            FontSize="48"/>
-                                            <Border CornerRadius="{Binding LibraryItemCornerRadius, Source={x:Static settings:SettingsManager.Current}}" RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.CachingHint="Cache">
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                                    RenderOptions.CachingHint="Cache">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill"/>
+                                                    <ImageBrush ImageSource="{Binding ArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=250, Mode=OneWay}"
+                                                                Stretch="UniformToFill"/>
                                                 </Border.Background>
                                             </Border>
                                         </Grid>
                                     </Border>
                                 </Border>
 
-                                <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,12,0,0">
+                                <StackPanel Grid.Row="1"
+                                            VerticalAlignment="Top"
+                                            Margin="0,12,0,0">
                                     <TextBlock Text="{Binding Name}"
                                                FontWeight="SemiBold"
                                                FontSize="14"
@@ -696,6 +835,7 @@
             <!-- Alphabetical Index Sidebar -->
             <ItemsControl x:Name="AlphabetIndex"
                           Grid.Column="1"
+                          ItemsSource="{Binding AlphabetIndex}"
                           VerticalAlignment="Center"
                           Margin="0,0,8,0">
                 <ItemsControl.ItemTemplate>
@@ -710,7 +850,8 @@
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    Cursor="Hand"
-                                   Click="AlphabetButton_Click"/>
+                                   Command="{Binding DataContext.ScrollToLetterCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                   CommandParameter="{Binding}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -718,9 +859,30 @@
             <!-- Playlist -->
             <controls:PlaylistControl x:Name="PlaylistControl"
                                       Grid.Column="2"
-                                      Width="340"
+                                      Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveSidePanelWidthConverter}}"
                                       VerticalAlignment="Stretch"
-                                      Visibility="{Binding LibraryPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                      Visibility="{Binding Settings.LibraryPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
+                                      CloseCommand="{Binding HidePlaylistCommand}"/>
+
+            <Border Grid.ColumnSpan="3"
+                    Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                    Opacity="0.85"
+                    Visibility="{Binding IsLibraryLoading, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
+                    Panel.ZIndex="50">
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="42"
+                                     Height="42"
+                                     Margin="0,0,0,12"/>
+                    <TextBlock Text="{DynamicResource Lib_Title}"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Cargando biblioteca..."
+                               Opacity="0.7"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </Page>

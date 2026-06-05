@@ -8,10 +8,10 @@
     <System:String x:Key="AboutOpenSourceLicensesTitle">Licencias de Código Abierto</System:String>
     <System:String x:Key="AboutPremiumTitle">Acerca de Premium</System:String>
     <System:String x:Key="AboutTitle">Acerca de</System:String>
-    <System:String x:Key="AcrylicBlurOpacityDescription">Ajuste el efecto de transparencia en flyouts acrílicos (predeterminado: 175)</System:String>
+    <System:String x:Key="AcrylicBlurOpacityDescription">Ajuste la intensidad de transparencia del contenedor acrílico del flyout y ventanas relacionadas (predeterminado: 175)</System:String>
     <System:String x:Key="AcrylicBlurOpacityPerk">Opacidad de desenfoque acrílico</System:String>
     <System:String x:Key="AcrylicBlurOpacityTitle">Opacidad de Desenfoque Acrílico</System:String>
-    <System:String x:Key="AcrylicWindowDescription">Aplicar efecto de desenfoque acrílico transparente al flyout (desactivado vuelve a Mica)</System:String>
+    <System:String x:Key="AcrylicWindowDescription">Aplica transparencia acrílica nativa al contenedor del flyout. Si se desactiva, la ventana vuelve a usar Mica. No cambia el estilo visual del fondo.</System:String>
     <System:String x:Key="AcrylicWindowTitle">Ventana Acrílica</System:String>
     <System:String x:Key="AdvancedSettingsTitle">Ajustes Avanzados</System:String>
     <System:String x:Key="AllFuturePremiumFeatures">Todas las futuras funciones Premium</System:String>
@@ -37,9 +37,9 @@ Puede ayudar con las traducciones en</System:String>
     <System:String x:Key="AppThemeTitle">Tema de la Aplicación</System:String>
     <System:String x:Key="AppearanceBehaviorSectionTitle">Apariencia y comportamiento</System:String>
     <System:String x:Key="BackgroundBlurOption1">Ninguno</System:String>
-    <System:String x:Key="BackgroundBlurOption2">Estilo 1 (Resplandor de portada)</System:String>
-    <System:String x:Key="BackgroundBlurOption3">Estilo 2 (Resplandor ascendente)</System:String>
-    <System:String x:Key="BackgroundBlurOption4">Estilo 3 (Desenfoque)</System:String>
+    <System:String x:Key="BackgroundBlurOption2">Resplandor de portada</System:String>
+    <System:String x:Key="BackgroundBlurOption3">Resplandor ascendente</System:String>
+    <System:String x:Key="BackgroundBlurOption4">Desenfoque suave</System:String>
     <System:String x:Key="BackgroundBlurTitle">Desenfoque de Fondo</System:String>
     <System:String x:Key="BackupRestoreCardTitle">Haga una copia de seguridad y restaure sus ajustes</System:String>
     <System:String x:Key="BackupRestoreSectionTitle">Copia de seguridad y restauración</System:String>
@@ -255,6 +255,11 @@ o deja una reseña en la Microsoft Store!</System:String>
     <System:String x:Key="Playlist_SearchPlaceholder">Buscar en la cola...</System:String>
     <System:String x:Key="Playlist_Title">Lista de Reproducción</System:String>
     <System:String x:Key="Playlist_ViewInfo">Ver información</System:String>
+    <System:String x:Key="Playlist_SaveQueue">Guardar lista</System:String>
+    <System:String x:Key="Playlist_LoadQueue">Cargar lista</System:String>
+    <System:String x:Key="Playlist_Undo">Deshacer</System:String>
+    <System:String x:Key="Playlist_Close">Ocultar</System:String>
+
     <System:String x:Key="PositionBottomCenter">Abajo al centro</System:String>
     <System:String x:Key="PositionBottomLeft">Abajo a la izquierda</System:String>
     <System:String x:Key="PositionBottomRight">Abajo a la derecha</System:String>
@@ -378,6 +383,9 @@ Nota: Como proyecto de código abierto, estas funciones también están disponib
     <System:String x:Key="UpdatesSectionTitle">Actualizaciones</System:String>
     <System:String x:Key="UseAlbumArtAccentColorDescription">Algunos elementos de la IU usarán el color de la portada en lugar del tema del sistema</System:String>
     <System:String x:Key="UseAlbumArtAccentColorTitle">Usar Portada como Color de Énfasis</System:String>
+    <System:String x:Key="UseCustomAccentColorDescription">Usa un color de énfasis estático si no se reproduce música o está desactivado</System:String>
+    <System:String x:Key="UseCustomAccentColorTitle">Usar Color de Énfasis Personalizado</System:String>
+    <System:String x:Key="CustomAccentColorHexTitle">Color de Énfasis Estático (HEX)</System:String>
     <System:String x:Key="ViewLogsDescription">Abrir la carpeta que contiene los archivos de registro de la aplicación</System:String>
     <System:String x:Key="Win11TrayIconDescription">Usar un icono de bandeja que coincida con Windows 11 (cambiar para refrescar tema)</System:String>
     <System:String x:Key="Win11TrayIconTitle">Icono de Bandeja estilo Windows 11</System:String>

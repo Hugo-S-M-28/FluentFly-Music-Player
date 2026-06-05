@@ -194,7 +194,7 @@ public class LicenseManager
     /// Prompts the user to purchase the premium add-on
     /// </summary>
     /// <returns>True if purchase was successful, false otherwise</returns>
-    private async Task<(bool, string)> PurchasePremiumAsync()
+    public async Task<(bool, string)> PurchasePremiumAsync()
     {
         try
         {
@@ -281,7 +281,7 @@ public class LicenseManager
     /// <summary>
     /// Gets premium product information for display
     /// </summary>
-    private async Task<string?> GetPremiumProductInfoAsync()
+    private async Task<string?> GetPremiumProductInfoInternalAsync()
     {
         try
         {
@@ -325,11 +325,11 @@ public class LicenseManager
         }
     }
 
-    public static async void GetPremiumProductInfo()
+    public static async Task GetPremiumProductInfoAsync()
     {
         try
         {
-            await Instance.GetPremiumProductInfoAsync();
+            await Instance.GetPremiumProductInfoInternalAsync();
         }
         catch (Exception ex)
         {
@@ -337,7 +337,7 @@ public class LicenseManager
         }
     }
 
-    public static async void UnlockPremium(object sender)
+    public static async Task UnlockPremiumAsync(object sender)
     {
         try
         {

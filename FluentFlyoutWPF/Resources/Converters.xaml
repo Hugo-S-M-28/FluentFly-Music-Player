@@ -15,5 +15,21 @@
     <utils:PeakLevelToGridLengthConverter x:Key="PeakLevelToGridLengthConverter"/>
     <utils:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullValue="Visible" NotNullValue="Collapsed"/>
     <utils:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullValue="Collapsed" NotNullValue="Visible"/>
+    <utils:ResponsiveCoverSizeConverter x:Key="ResponsiveCoverSizeConverter"/>
+    <utils:ResponsiveCoverColumnWidthConverter x:Key="ResponsiveCoverColumnWidthConverter"/>
+    <utils:ResponsiveLyricsColumnWidthConverter x:Key="ResponsiveLyricsColumnWidthConverter"/>
+    <utils:ResponsiveCoverVisibilityConverter x:Key="ResponsiveCoverVisibilityConverter"/>
+    <utils:ResponsiveFontSizeConverter x:Key="ResponsiveFontSizeConverter"/>
+    <utils:ResponsiveLineHeightConverter x:Key="ResponsiveLineHeightConverter"/>
+    <utils:ResponsiveLyricsContentWidthConverter x:Key="ResponsiveLyricsContentWidthConverter"/>
+    <utils:ResponsivePageContentMaxWidthConverter x:Key="ResponsivePageContentMaxWidthConverter"/>
+    <utils:ResponsivePageMarginConverter x:Key="ResponsivePageMarginConverter"/>
+    <utils:ResponsiveBannerTextWidthConverter x:Key="ResponsiveBannerTextWidthConverter"/>
+    <utils:ResponsiveSearchWidthConverter x:Key="ResponsiveSearchWidthConverter"/>
+    <utils:ResponsiveSidePanelWidthConverter x:Key="ResponsiveSidePanelWidthConverter"/>
+    <utils:ResponsiveInlineControlWidthConverter x:Key="ResponsiveInlineControlWidthConverter"/>
+    <utils:ResponsiveCompactVisibilityConverter x:Key="ResponsiveCompactVisibilityConverter"/>
+    <utils:ResponsiveColumnsConverter x:Key="ResponsiveColumnsConverter"/>
+    <utils:EqualityToBoolConverter x:Key="EqualityToBoolConverter"/>
 
 </ResourceDictionary>

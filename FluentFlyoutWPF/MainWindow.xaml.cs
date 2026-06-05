@@ -31,6 +31,7 @@ using static WindowsMediaController.MediaManager;
 using FluentFlyoutWPF.Models;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentFlyoutWPF.Classes.Messages;
+using FluentFlyoutWPF.Classes.Services;
 
 
 namespace FluentFlyoutWPF;
@@ -42,8 +43,8 @@ public partial class MainWindow : MicaWindow
     private readonly SystemHookService _systemHookService = new();
     private readonly ExternalMediaService _externalMediaService = ExternalMediaService.Instance;
 
-    private CancellationTokenSource cts; // to close the flyout after a certain time
-    private long _lastFlyoutTime = 0;
+    internal CancellationTokenSource cts; // to close the flyout after a certain time
+    internal long _lastFlyoutTime = 0;
 
     // Fix: Add cancellation token for the settings event listener thread to prevent memory leak
     private readonly CancellationTokenSource _settingsListenerCts = new();
@@ -71,7 +72,7 @@ public partial class MainWindow : MicaWindow
     private readonly Timer _positionTimer;
     private bool _isActive;
     private bool _isDragging;
-    private bool _isHiding = true;
+    internal bool _isHiding = true;
 
     private LockWindow? lockWindow;
     private DateTime _lastSelfUpdateTimestamp = DateTime.MinValue;
@@ -83,11 +84,12 @@ public partial class MainWindow : MicaWindow
 
     internal static volatile bool ExplorerRestarting = false;
     
-    public NowPlayingViewModel NowPlaying { get; } = new();
+    public MainWindowViewModel ViewModel { get; }
 
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
-        DataContext = SettingsManager.Current;
+        ViewModel = viewModel;
+        DataContext = ViewModel;
         WindowHelper.SetNoActivate(this); // prevents some fullscreen apps from minimizing
         InitializeComponent();
         WindowHelper.SetTopmost(this); // more prevention of fullscreen apps minimizing
@@ -129,7 +131,7 @@ public partial class MainWindow : MicaWindow
                         int index = WaitHandle.WaitAny(waitHandles, 100);
                         if (index == 0) // settingsEvent
                         {
-                            Application.Current.Dispatcher.Invoke(() => { SettingsWindow.ShowInstance(); });
+                            Application.Current.Dispatcher.Invoke(() => { App.GetRequiredService<IWindowManager>().ShowSettings(); });
                         }
                         // If index == 1, it's the cancellation token, loop will exit
                         // If index == WaitHandle.WaitTimeout, loop continues
@@ -208,7 +210,7 @@ public partial class MainWindow : MicaWindow
             // show settings to new users
             string previousVersion = SettingsManager.Current.LastKnownVersion;
             if (previousVersion == string.Empty)
-                SettingsWindow.ShowInstance();
+                 App.GetRequiredService<IWindowManager>().ShowSettings();
 
             try // update last known version. gets the version of the app, works only in release mode
             {
@@ -239,13 +241,15 @@ public partial class MainWindow : MicaWindow
         });
 
         RegisterMessages();
+        ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
+        SettingsManager.Current.PropertyChanged += Settings_PropertyChanged;
     }
 
     private void RegisterMessages()
     {
         WeakReferenceMessenger.Default.Register<ShowMediaFlyoutMessage>(this, (r, m) =>
         {
-            Dispatcher.Invoke(() => ShowMediaFlyout(m.ToggleMode, m.ForceShow));
+            _ = Dispatcher.InvokeAsync(() => ShowMediaFlyoutAsync(m.ToggleMode, m.ForceShow));
         });
 
         WeakReferenceMessenger.Default.Register<RecreateTaskbarWindowMessage>(this, (r, m) =>
@@ -258,10 +262,7 @@ public partial class MainWindow : MicaWindow
             Dispatcher.Invoke(RecreateTrayIconSafely);
         });
 
-        WeakReferenceMessenger.Default.Register<ToggleBlurMessage>(this, (r, m) =>
-        {
-            Dispatcher.Invoke(ToggleBlur);
-        });
+
 
         WeakReferenceMessenger.Default.Register<UpdateTaskbarMessage>(this, (r, m) =>
         {
@@ -289,7 +290,7 @@ public partial class MainWindow : MicaWindow
 
         WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
         {
-            Dispatcher.Invoke(() => ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault()));
+            Dispatcher.InvokeAsync(() => ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault()));
         });
     }
 
@@ -332,7 +333,7 @@ public partial class MainWindow : MicaWindow
                 {
                     if (nextUpWindow == null)
                     {
-                        nextUpWindow = new NextUpWindow(track.Title, track.Artist, thumbnail!);
+                         nextUpWindow = new NextUpWindow(App.GetRequiredService<SettingsShellViewModel>(), track.Title, track.Artist, thumbnail!);
                         currentTitle = track.Title;
                         nextUpWindow.Closed += (s, e) => nextUpWindow = null;
                     }
@@ -583,7 +584,7 @@ public partial class MainWindow : MicaWindow
                 {
                     if (nextUpWindow == null && playbackInfo.Controls.IsPauseEnabled)
                     {
-                        nextUpWindow = new NextUpWindow(songInfo.Title, songInfo.Artist, thumbnail!);
+                         nextUpWindow = new NextUpWindow(App.GetRequiredService<SettingsShellViewModel>(), songInfo.Title, songInfo.Artist, thumbnail!);
                         currentTitle = songInfo.Title;
                         nextUpWindow.Closed += (s, e) => nextUpWindow = null; // set nextUpWindow to null when closed
                     }
@@ -688,7 +689,7 @@ public partial class MainWindow : MicaWindow
         }
     }
 
-    private void OnHotKeyPressed(object? sender, HotKeyEventArgs e)
+    private async void OnHotKeyPressed(object? sender, HotKeyEventArgs e)
     {
         int vkCode = e.VkCode;
         bool isKeyDown = e.IsKeyDown;
@@ -707,23 +708,23 @@ public partial class MainWindow : MicaWindow
         {
             if (vkCode == 0x14) // Caps Lock
             {
-                lockWindow ??= new LockWindow();
-                lockWindow.ShowLockFlyout(FindResource("LockWindow_CapsLock").ToString(), Keyboard.IsKeyToggled(Key.CapsLock));
+                lockWindow ??= App.GetRequiredService<LockWindow>();
+                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_CapsLock").ToString(), Keyboard.IsKeyToggled(Key.CapsLock));
             }
             else if (vkCode == 0x90) // Num Lock
             {
-                lockWindow ??= new LockWindow();
-                lockWindow.ShowLockFlyout(FindResource("LockWindow_NumLock").ToString(), Keyboard.IsKeyToggled(Key.NumLock));
+                lockWindow ??= App.GetRequiredService<LockWindow>();
+                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_NumLock").ToString(), Keyboard.IsKeyToggled(Key.NumLock));
             }
             else if (vkCode == 0x91) // Scroll Lock
             {
-                lockWindow ??= new LockWindow();
-                lockWindow.ShowLockFlyout(FindResource("LockWindow_ScrollLock").ToString(), Keyboard.IsKeyToggled(Key.Scroll));
+                lockWindow ??= App.GetRequiredService<LockWindow>();
+                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_ScrollLock").ToString(), Keyboard.IsKeyToggled(Key.Scroll));
             }
             else if (vkCode == 0x2D && SettingsManager.Current.LockKeysInsertEnabled) // Insert
             {
-                lockWindow ??= new LockWindow();
-                lockWindow.ShowLockFlyout(FindResource("LockWindow_Insert").ToString(), Keyboard.IsKeyToggled(Key.Insert));
+                lockWindow ??= App.GetRequiredService<LockWindow>();
+                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_Insert").ToString(), Keyboard.IsKeyToggled(Key.Insert));
             }
         }
     }
@@ -738,11 +739,11 @@ public partial class MainWindow : MicaWindow
             return false;
         }
         _lastFlyoutTime = currentTime;
-        ShowMediaFlyout();
+        _ = ShowMediaFlyoutAsync();
         return true;
     }
 
-    public async void ShowMediaFlyout(bool toggleMode = false, bool forceShow = false)
+    public async Task ShowMediaFlyoutAsync(bool toggleMode = false, bool forceShow = false)
     {
         // If in toggle mode and flyout is visible, close it
         if (toggleMode && Visibility == Visibility.Visible && !_isHiding)
@@ -856,7 +857,21 @@ public partial class MainWindow : MicaWindow
         ControlClose.Visibility = SettingsManager.Current.MediaFlyoutAlwaysDisplay && SettingsManager.Current.CompactLayout ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void UpdateUI()
+    internal void UpdatePlaybackStateTimer(GlobalSystemMediaTransportControlsSessionPlaybackStatus? status)
+    {
+        HandlePlayBackState(status);
+    }
+
+    internal void CloseNextUpWindowIfOpen()
+    {
+        if (nextUpWindow != null)
+        {
+            nextUpWindow.Close();
+            nextUpWindow = null;
+        }
+    }
+
+    internal void UpdateUI()
     {
         if (_layout != SettingsManager.Current.CompactLayout ||
             _shuffleEnabled != SettingsManager.Current.ShuffleEnabled ||
@@ -894,7 +909,7 @@ public partial class MainWindow : MicaWindow
                         ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
 
                         var croppedImage = BitmapHelper.CropToSquare(image);
-                        BackgroundImageStyle1.Source = BackgroundImageStyle2.Source = BackgroundImageStyle3.Source = croppedImage;
+                        BackgroundImageBackground.Source = croppedImage ?? MediaBackdropStyleService.GetFallbackImageSource();
                         
                         _lastTrackId = trackId;
                         _lastAlbumArt = image;
@@ -922,9 +937,7 @@ public partial class MainWindow : MicaWindow
                         }
                     }
 
-                    BackgroundImageStyle1.Visibility = SettingsManager.Current.MediaFlyoutBackgroundBlur == 1 ? Visibility.Visible : Visibility.Collapsed;
-                    BackgroundImageStyle2.Visibility = SettingsManager.Current.MediaFlyoutBackgroundBlur == 2 ? Visibility.Visible : Visibility.Collapsed;
-                    BackgroundImageStyle3.Visibility = SettingsManager.Current.MediaFlyoutBackgroundBlur == 3 ? Visibility.Visible : Visibility.Collapsed;
+
                     
                     SongImagePlaceholder.Visibility = SongImage.ImageSource == null ? Visibility.Visible : Visibility.Collapsed;
                     MediaIdStackPanel.Visibility = Visibility.Collapsed;
@@ -951,6 +964,8 @@ public partial class MainWindow : MicaWindow
                 _lastTrackId = string.Empty;
                 _lastAlbumArt = null;
                 _lastIsPlaying = null;
+                BackgroundImageBackground.Source = MediaBackdropStyleService.GetFallbackImageSource();
+                UpdateBackgroundBlur();
                 return;
             }
 
@@ -968,7 +983,7 @@ public partial class MainWindow : MicaWindow
                 var image = BitmapHelper.GetThumbnail(songInfo.Thumbnail);
 
                 var croppedImage = BitmapHelper.CropToSquare(image);
-                BackgroundImageStyle1.Source = BackgroundImageStyle2.Source = BackgroundImageStyle3.Source = croppedImage;
+                BackgroundImageBackground.Source = croppedImage ?? MediaBackdropStyleService.GetFallbackImageSource();
                 
                 _lastTrackId = extTrackId;
                 _lastAlbumArt = image;
@@ -1002,7 +1017,7 @@ public partial class MainWindow : MicaWindow
                     _mediaSessionSupportsSeekbar = sessionSupportsSeekbar;
                     UpdateUILayout();
                     _isHiding = true;
-                    ShowMediaFlyout(forceShow: true);
+                    _ = ShowMediaFlyoutAsync(forceShow: true);
                 }
 
                 if (sessionSupportsSeekbar)
@@ -1037,9 +1052,7 @@ public partial class MainWindow : MicaWindow
     private void UpdateShuffleRepeatVisuals(bool isShuffle, bool isRepeatAll, bool isRepeatOne, bool forceVisible = false)
     {
         var dominantBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && dominantBrush != null;
-        
-        var accentBrush = useAccent ? dominantBrush! : (Brush)Application.Current.TryFindResource("AccentFillColorDefaultBrush");
+        var accentBrush = AccentColorResolver.ResolveAccentBrush(dominantBrush);
         var defaultBrush = Brushes.White;
 
         // Shuffle
@@ -1171,104 +1184,7 @@ public partial class MainWindow : MicaWindow
         _alwaysDisplay = SettingsManager.Current.MediaFlyoutAlwaysDisplay;
     }
 
-    private async void Back_Click(object sender, RoutedEventArgs e)
-    {
-        var session = _externalMediaService.GetPreferredSession();
-        if (session != null && !_externalMediaService.IsInternalSession(session))
-        {
-            await session.ControlSession.TrySkipPreviousAsync();
-        }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
-        {
-            MusicPlayerService.Instance.PlayPrevious();
-        }
-    }
 
-    private void PlayPause_Click(object sender, RoutedEventArgs e)
-    {
-        var session = _externalMediaService.GetPreferredSession();
-        if (session != null && !_externalMediaService.IsInternalSession(session))
-        {
-            keybd_event(0xB3, 0, 0, IntPtr.Zero); // Media Play/Pause key
-        }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
-        {
-            MusicPlayerService.Instance.TogglePlayPause();
-        }
-
-        // The UI will be updated via events (GSMTC or Internal)
-    }
-
-    private async void Forward_Click(object sender, RoutedEventArgs e)
-    {
-        var session = _externalMediaService.GetPreferredSession();
-        if (session != null && !_externalMediaService.IsInternalSession(session))
-        {
-            await session.ControlSession.TrySkipNextAsync();
-        }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
-        {
-            MusicPlayerService.Instance.PlayNext();
-        }
-    }
-
-    private async void Repeat_Click(object sender, RoutedEventArgs e)
-    {
-        var session = _externalMediaService.GetPreferredSession();
-        if (session != null)
-        {
-            var playbackInfo = session.ControlSession.GetPlaybackInfo();
-            if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.None)
-            {
-                SymbolRepeat.Dispatcher.Invoke(() => SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAll24);
-                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.List);
-            }
-            else if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List)
-            {
-                SymbolRepeat.Dispatcher.Invoke(() => SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeat124);
-                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.Track);
-            }
-            else if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track)
-            {
-                SymbolRepeat.Dispatcher.Invoke(() => SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAllOff24);
-                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.None);
-            }
-        }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
-        {
-            // Toggle internal repeat mode
-            var current = MusicPlayerService.Instance.RepeatMode;
-            MusicPlayerService.Instance.RepeatMode = current switch
-            {
-                FluentFlyoutWPF.Classes.RepeatMode.None => FluentFlyoutWPF.Classes.RepeatMode.All,
-                FluentFlyoutWPF.Classes.RepeatMode.All => FluentFlyoutWPF.Classes.RepeatMode.One,
-                FluentFlyoutWPF.Classes.RepeatMode.One => FluentFlyoutWPF.Classes.RepeatMode.None,
-                _ => FluentFlyoutWPF.Classes.RepeatMode.None
-            };
-        }
-    }
-
-    private async void Shuffle_Click(object sender, RoutedEventArgs e)
-    {
-        var session = _externalMediaService.GetPreferredSession();
-        if (session != null)
-        {
-            if (session.ControlSession.GetPlaybackInfo().IsShuffleActive == true)
-            {
-                SymbolShuffle.Dispatcher.Invoke(() => SymbolShuffle.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowShuffleOff24);
-                await session.ControlSession.TryChangeShuffleActiveAsync(false);
-            }
-            else
-            {
-                SymbolShuffle.Dispatcher.Invoke(() => SymbolShuffle.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowShuffle24);
-                await session.ControlSession.TryChangeShuffleActiveAsync(true);
-            }
-        }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
-        {
-            MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
-        }
-    }
 
     private void Seekbar_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -1485,6 +1401,8 @@ public partial class MainWindow : MicaWindow
             _systemHookService.Dispose();
             _externalMediaService.Stop();
 
+            SettingsManager.Current.PropertyChanged -= Settings_PropertyChanged;
+
             WeakReferenceMessenger.Default.UnregisterAll(this);
 
             // clean up other resources
@@ -1523,7 +1441,7 @@ public partial class MainWindow : MicaWindow
 
     private void MicaWindow_MouseEnter(object sender, MouseEventArgs e) // keep the flyout open when mouse is over
     {
-        ShowMediaFlyout();
+        _ = ShowMediaFlyoutAsync();
     }
 
     private void NotifyIconQuit_Click(object sender, RoutedEventArgs e)
@@ -1562,7 +1480,7 @@ public partial class MainWindow : MicaWindow
         }
 
         ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
-        taskbarWindow = new TaskbarWindow();
+        taskbarWindow = App.GetRequiredService<TaskbarWindow>();
         UpdateTaskbar();
     }
 
@@ -1583,7 +1501,7 @@ public partial class MainWindow : MicaWindow
                 taskbarWindow = null;
             }
 
-            taskbarWindow = new();
+            taskbarWindow = App.GetRequiredService<TaskbarWindow>();
             UpdateTaskbar();
 
             Logger.Info("Taskbar Widget window recreated successfully");
@@ -1603,7 +1521,7 @@ public partial class MainWindow : MicaWindow
             //ThemeService themeService = new ThemeService();
             //themeService.ChangeTheme(MicaWPF.Core.Enums.WindowsTheme.Light);
         }
-        else if (SettingsManager.Current.NIconLeftClick == 1) ShowMediaFlyout();
+        else if (SettingsManager.Current.NIconLeftClick == 1) _ = ShowMediaFlyoutAsync();
     }
 
     private Task PauseOtherSessions(MediaSession currentMediaSession)
@@ -1622,48 +1540,48 @@ public partial class MainWindow : MicaWindow
             WindowBlurHelper.DisableBlur(this);
         }
     }
-
-    private void MediaFlyoutCloseButton_Click(object sender, RoutedEventArgs e)
+    private void MediaFlyoutCloseButton_Click(object sender, RoutedEventArgs e)
     {
         // Use the updated ShowMediaFlyout method with toggle mode to close the flyout
-        ShowMediaFlyout(toggleMode: true);
+        _ = ShowMediaFlyoutAsync(toggleMode: true);
     }
 
-    private void ApplyAccentColor(SolidColorBrush? brush, bool notifyOthers = false)
+    internal void ApplyAccentColor(SolidColorBrush? brush, bool notifyOthers = false)
     {
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
+        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
+        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
 
-        Dispatcher.Invoke(() =>
+        Action action = () =>
         {
-            if (useAccent && brush != null)
+            if (useAccent && activeBrush != null)
             {
                 // Apply to Play/Pause button background
-                ControlPlayPause.Background = brush;
+                ControlPlayPause.Background = activeBrush;
                 
                 // Apply to control icons for consistent theme
-                SymbolBack.Foreground = brush;
-                SymbolForward.Foreground = brush;
+                SymbolBack.Foreground = activeBrush;
+                SymbolForward.Foreground = activeBrush;
 
                 // Subtle background for other controls
-                var subtleBrush = brush.Clone();
+                var subtleBrush = activeBrush.Clone();
                 subtleBrush.Opacity = 0.15;
                 subtleBrush.Freeze();
                 ControlBack.Background = ControlForward.Background = ControlRepeat.Background = ControlShuffle.Background = subtleBrush;
                 
                 // Apply to Seekbar
-                Seekbar.Foreground = brush;
+                Seekbar.Foreground = activeBrush;
 
                 // Apply to Glow effect
                 if (SongImageGlow != null)
                 {
-                    SongImageGlow.Color = brush.Color;
+                    SongImageGlow.Color = activeBrush.Color;
                     SongImageGlow.Opacity = 0.6;
                     SongImageGlow.BlurRadius = 25;
                     SongImageGlow.ShadowDepth = 0;
                 }
                 
                 // Apply to placeholder
-                SongImagePlaceholder.Foreground = brush;
+                SongImagePlaceholder.Foreground = activeBrush;
 
                 // For Repeat and Shuffle, we re-run the visuals
                 UpdateShuffleRepeatVisuals(
@@ -1675,18 +1593,18 @@ public partial class MainWindow : MicaWindow
             }
             else
             {
-                // Reset to defaults
-                ControlPlayPause.ClearValue(BackgroundProperty);
+                // Reset to neutral theme brush
+                var neutralBrush = ThemeResourceHelper.GetSecondaryTextSolidBrush();
+                ControlPlayPause.Background = neutralBrush;
                 ControlBack.ClearValue(BackgroundProperty);
                 ControlForward.ClearValue(BackgroundProperty);
                 ControlRepeat.ClearValue(BackgroundProperty);
                 ControlShuffle.ClearValue(BackgroundProperty);
                 
-                var defaultForeground = Brushes.White;
-                SymbolBack.Foreground = defaultForeground;
-                SymbolForward.Foreground = defaultForeground;
+                SymbolBack.Foreground = neutralBrush;
+                SymbolForward.Foreground = neutralBrush;
                 
-                Seekbar.ClearValue(ForegroundProperty);
+                Seekbar.Foreground = neutralBrush;
                 
                 if (SongImageGlow != null)
                 {
@@ -1694,14 +1612,47 @@ public partial class MainWindow : MicaWindow
                     SongImageGlow.ShadowDepth = 0;
                 }
 
-                var accentBrush = (SolidColorBrush)Application.Current.TryFindResource("AccentFillColorDefaultBrush");
-                SongImagePlaceholder.Foreground = accentBrush;
+                SongImagePlaceholder.Foreground = neutralBrush;
             }
 
             if (notifyOthers)
             {
                 WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
             }
-        });
+        };
+
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            _ = Dispatcher.InvokeAsync(action);
+        }
+    }
+
+    private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(UserSettings.MediaFlyoutBackgroundBlur))
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                UpdateBackgroundBlur();
+            }
+            else
+            {
+                _ = Dispatcher.InvokeAsync(UpdateBackgroundBlur);
+            }
+        }
+    }
+
+    private void UpdateBackgroundBlur()
+    {
+        var blurOption = SettingsManager.Current.MediaFlyoutBackgroundBlur;
+        MediaBackdropStyleService.ApplyPresetToImage(
+            BackgroundImageBackground,
+            blurOption,
+            MediaBackdropSurface.Flyout,
+            BackgroundImageBackground.Source);
     }
 }

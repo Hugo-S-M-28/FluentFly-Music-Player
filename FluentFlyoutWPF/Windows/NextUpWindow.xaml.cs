@@ -5,6 +5,8 @@ using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Classes.Utils;
+using FluentFlyoutWPF.ViewModels;
 using MicaWPF.Controls;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -16,9 +18,9 @@ namespace FluentFlyoutWPF.Windows;
 /// </summary>
 public partial class NextUpWindow : MicaWindow
 {
-    public NextUpWindow(string title, string artist, BitmapImage thumbnail)
+    public NextUpWindow(SettingsShellViewModel settingsViewModel, string title, string artist, BitmapImage thumbnail)
     {
-        DataContext = SettingsManager.Current;
+        DataContext = settingsViewModel;
         WindowStartupLocation = WindowStartupLocation.Manual;
         Left = SystemParameters.VirtualScreenLeft - Width - 100; // move window safely off-screen (multi-monitor safe)
         Top = SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight + 100;
@@ -27,14 +29,7 @@ public partial class NextUpWindow : MicaWindow
         WindowHelper.SetTopmost(this);
         CustomWindowChrome.CaptionHeight = 0;
 
-        if (SettingsManager.Current.NextUpAcrylicWindowEnabled)
-        {
-            WindowBlurHelper.EnableBlur(this);
-        }
-        else
-        {
-            WindowBlurHelper.DisableBlur(this);
-        }
+        WindowBlurHelper.ApplyWindowBackdrop(this);
 
         var upNextWidth = StringWidth.GetStringWidth(UpNextTextBlock.Text);
         var titleWidth = StringWidth.GetStringWidth(title);
@@ -51,15 +46,22 @@ public partial class NextUpWindow : MicaWindow
 
         FlyoutAnimationService.OpenAnimation(this);
 
-        async void wait()
+        async Task WaitAsync()
         {
-            await Task.Delay(SettingsManager.Current.NextUpDuration);
-            FlyoutAnimationService.CloseAnimation(this);
-            await Task.Delay(FlyoutAnimationService.GetDuration());
-            Close();
+            try
+            {
+                await Task.Delay(SettingsManager.Current.NextUpDuration);
+                FlyoutAnimationService.CloseAnimation(this);
+                await Task.Delay(FlyoutAnimationService.GetDuration());
+                Close();
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Error in NextUpWindow close delay");
+            }
         }
 
-        wait();
+        _ = WaitAsync();
     }
 
     public void UpdateThumbnail(BitmapImage thumbnail)
@@ -70,13 +72,21 @@ public partial class NextUpWindow : MicaWindow
     }
     private void ApplyAccentColor(System.Windows.Media.SolidColorBrush? brush)
     {
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
+        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
+        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
 
-        if (useAccent && brush != null)
+        if (useAccent && activeBrush != null)
         {
-            NextUpIcon.Foreground = brush;
-            UpNextTextBlock.Foreground = brush;
-            SongImagePlaceholder.Foreground = brush;
+            NextUpIcon.Foreground = activeBrush;
+            UpNextTextBlock.Foreground = activeBrush;
+            SongImagePlaceholder.Foreground = activeBrush;
+        }
+        else
+        {
+            var secondaryBrush = ThemeResourceHelper.GetSecondaryTextSolidBrush();
+            NextUpIcon.Foreground = secondaryBrush;
+            UpNextTextBlock.Foreground = secondaryBrush;
+            SongImagePlaceholder.Foreground = secondaryBrush;
         }
     }
 }

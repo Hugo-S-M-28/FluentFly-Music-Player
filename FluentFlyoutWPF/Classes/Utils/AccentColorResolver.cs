@@ -1,0 +1,115 @@
+using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media;
+using FluentFlyout.Classes.Settings;
+using FluentFlyout.Classes.Utils;
+
+namespace FluentFlyoutWPF.Classes.Utils;
+
+public enum AccentColorSource
+{
+    AlbumArt,
+    Custom,
+    Neutral
+}
+
+public static class AccentColorResolver
+{
+    public static AccentColorSource ResolveAccentSource(SolidColorBrush? albumArtBrush = null)
+    {
+        var settings = SettingsManager.Current;
+        var resolvedAlbumArtBrush = albumArtBrush ?? BitmapHelper.SavedDominantColors.FirstOrDefault();
+
+        return ResolveAccentSource(
+            settings.UseAlbumArtAsAccentColor,
+            settings.UseCustomAccentColor,
+            settings.CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            resolvedAlbumArtBrush);
+    }
+
+    public static AccentColorSource ResolveAccentSource(
+        bool useAlbumArtAsAccentColor,
+        bool useCustomAccentColor,
+        string? customAccentColorHex,
+        bool hasAlbumArt,
+        SolidColorBrush? albumArtBrush = null)
+    {
+        if (useAlbumArtAsAccentColor && hasAlbumArt && albumArtBrush != null)
+        {
+            return AccentColorSource.AlbumArt;
+        }
+
+        if (useCustomAccentColor && TryParseCustomAccent(customAccentColorHex, out _))
+        {
+            return AccentColorSource.Custom;
+        }
+
+        return AccentColorSource.Neutral;
+    }
+
+    public static SolidColorBrush ResolveAccentBrush(SolidColorBrush? albumArtBrush = null)
+    {
+        var settings = SettingsManager.Current;
+        var resolvedAlbumArtBrush = albumArtBrush ?? BitmapHelper.SavedDominantColors.FirstOrDefault();
+        var source = ResolveAccentSource(
+            settings.UseAlbumArtAsAccentColor,
+            settings.UseCustomAccentColor,
+            settings.CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            resolvedAlbumArtBrush);
+
+        return source switch
+        {
+            AccentColorSource.AlbumArt => resolvedAlbumArtBrush!,
+            AccentColorSource.Custom when TryParseCustomAccent(settings.CustomAccentColorHex, out var customBrush) => customBrush!,
+            _ => ThemeResourceHelper.GetSecondaryTextSolidBrush()
+        };
+    }
+
+    public static bool ShouldUseAccent(SolidColorBrush? albumArtBrush = null)
+    {
+        return ResolveAccentSource(albumArtBrush) != AccentColorSource.Neutral;
+    }
+
+    public static bool TryParseCustomAccent(string? hex, out SolidColorBrush? brush)
+    {
+        brush = null;
+        if (string.IsNullOrWhiteSpace(hex))
+        {
+            return false;
+        }
+
+        string cleaned = hex.Trim();
+        if (cleaned.StartsWith("#"))
+        {
+            cleaned = cleaned.Substring(1);
+        }
+
+        if (cleaned.Length != 6 && cleaned.Length != 8)
+        {
+            return false;
+        }
+
+        foreach (char c in cleaned)
+        {
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+            {
+                return false;
+            }
+        }
+
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(hex.StartsWith("#") ? hex : "#" + hex);
+            brush = new SolidColorBrush(color);
+            brush.Freeze();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}

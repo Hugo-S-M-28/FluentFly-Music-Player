@@ -359,3 +359,5 @@ FodyWeavers.xsd
 .vscode/
 
 Website/tailwindcss.exe
+
+redist/

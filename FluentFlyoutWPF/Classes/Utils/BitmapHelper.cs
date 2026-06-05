@@ -105,6 +105,9 @@ internal static class BitmapHelper
         get => _currentDominantColors ??= [];
     }
 
+    public static bool HasAlbumArt
+        => (_currentHashCodeContext.Value != 0 ? _currentHashCodeContext.Value : _currentHashCode) != 0;
+
     public static int GetStableThumbnailHash(IRandomAccessStreamReference thumbnail)
     {
         if (thumbnail == null)
@@ -206,38 +209,9 @@ internal static class BitmapHelper
     {
         int hashCode = _currentHashCodeContext.Value != 0 ? _currentHashCodeContext.Value : _currentHashCode;
 
-        if (!SettingsManager.Current.UseAlbumArtAsAccentColor || hashCode == 0)
+        if (hashCode == 0)
         {
-            // control color (buttons, etc.)
-            var accent = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorSecondary") as SolidColorBrush;
-            if (accent != null)
-            {
-                if (!accent.IsFrozen)
-                    accent = accent.Clone();
-                accent.Freeze();
-            }
-            else
-            {
-                accent = new SolidColorBrush(Colors.RoyalBlue); // Fallback
-                accent.Freeze();
-            }
-
-            // accent color (for non-control elements)
-            var accent2 = Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary") as SolidColorBrush;
-            if (accent2 != null)
-            {
-                if (!accent2.IsFrozen)
-                    accent2 = accent2.Clone();
-                accent2.Freeze();
-            }
-            else
-            {
-                accent2 = new SolidColorBrush(Colors.DeepSkyBlue); // Fallback
-                accent2.Freeze();
-            }
-
-            _currentDominantColors = [accent!, accent2!];
-            return _currentDominantColors;
+            return [];
         }
 
         // start timing

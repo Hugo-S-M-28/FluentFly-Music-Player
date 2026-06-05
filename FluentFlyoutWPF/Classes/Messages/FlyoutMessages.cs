@@ -18,8 +18,6 @@ public class RecreateTaskbarWindowMessage { }
 
 public class RecreateTrayIconMessage { }
 
-public class ToggleBlurMessage { }
-
 public class UpdateTaskbarMessage { }
 
 public class UpdateUILayoutMessage { }
@@ -35,3 +33,15 @@ public class TrayIconStateMessage
 public class ApplyTaskbarWidgetThemeMessage { }
 
 public class UpdateAccentColorMessage { }
+
+public class RequestApplicationShutdownMessage { }
+
+/// <summary>
+/// Sent by <see cref="FluentFlyout.Classes.ThemeManager"/> whenever the application theme changes
+/// (Light, Dark or System-Default). Subscribers should refresh any theme-sensitive brushes.
+/// </summary>
+public class ThemeChangedMessage
+{
+    public Wpf.Ui.Appearance.ApplicationTheme NewTheme { get; }
+    public ThemeChangedMessage(Wpf.Ui.Appearance.ApplicationTheme newTheme) => NewTheme = newTheme;
+}

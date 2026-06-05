@@ -9,11 +9,15 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Windows.Media.Control;
 using Wpf.Ui.Controls;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Classes.Utils;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentFlyoutWPF.Classes.Messages;
+using FluentFlyoutWPF.ViewModels;
+using System.ComponentModel;
 
 namespace FluentFlyout.Controls;
 
@@ -32,6 +36,9 @@ public partial class TaskbarWidgetControl : UserControl
     private string _cachedArtistText = string.Empty;
     private double _cachedTitleWidth = 0;
     private double _cachedArtistWidth = 0;
+    private double _lastProgressCurrentSeconds;
+    private double _lastProgressTotalSeconds;
+    private readonly DispatcherTimer _progressTimer;
 
     private bool _isPaused;
 
@@ -39,8 +46,11 @@ public partial class TaskbarWidgetControl : UserControl
     {
         InitializeComponent();
 
-        // Set DataContext for bindings
-        DataContext = SettingsManager.Current;
+        if (!DesignerProperties.GetIsInDesignMode(this))
+        {
+            // Keep runtime bindings aligned with the shared settings view model.
+            DataContext = App.GetRequiredService<SettingsShellViewModel>();
+        }
 
         WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
         {
@@ -51,7 +61,16 @@ public partial class TaskbarWidgetControl : UserControl
         {
             var rect = new RectangleGeometry(new Rect(0, 0, MainBorder.ActualWidth, MainBorder.ActualHeight), 6, 6);
             MainBorder.Clip = rect;
+            UpdateProgressVisual();
         };
+
+        _progressTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _progressTimer.Tick += ProgressTimer_Tick;
+        _progressTimer.Start();
+        Unloaded += TaskbarWidgetControl_Unloaded;
 
         // for hover animation
         if (MainBorder.Background is not SolidColorBrush)
@@ -64,6 +83,18 @@ public partial class TaskbarWidgetControl : UserControl
         
         // Initialize control order
         ReorderControls();
+    }
+
+    private void ProgressTimer_Tick(object? sender, EventArgs e)
+    {
+        RefreshProgressFromPlaybackSource();
+    }
+
+    private void TaskbarWidgetControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _progressTimer.Stop();
+        _progressTimer.Tick -= ProgressTimer_Tick;
+        Unloaded -= TaskbarWidgetControl_Unloaded;
     }
 
     public void ReorderControls()
@@ -217,6 +248,10 @@ public partial class TaskbarWidgetControl : UserControl
                 MainBorder.Background = new SolidColorBrush(Colors.Transparent);
                 MainBorder.Background.Opacity = 0;
                 TopBorder.BorderBrush = Brushes.Transparent;
+                _lastProgressCurrentSeconds = 0;
+                _lastProgressTotalSeconds = 0;
+                ProgressLine.Width = 0;
+                ProgressLine.Visibility = Visibility.Collapsed;
 
                 Visibility = Visibility.Visible;
             });
@@ -331,11 +366,12 @@ public partial class TaskbarWidgetControl : UserControl
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            RefreshProgressFromPlaybackSource();
             Visibility = Visibility.Visible;
         });
     }
 
-    private async void AnimateEntrance()
+    private void AnimateEntrance()
     {
         try
         {
@@ -425,51 +461,112 @@ public partial class TaskbarWidgetControl : UserControl
 
     private void ApplyAccentColor(SolidColorBrush? brush)
     {
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
+        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
+        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
+        var neutralBrush = ThemeResourceHelper.GetSecondaryTextSolidBrush();
+        var displayBrush = useAccent ? activeBrush : neutralBrush;
 
-        Dispatcher.Invoke(() =>
+        Action action = () =>
         {
-            if (useAccent && brush != null)
-            {
-                // Apply to icons
-                PreviousIcon.Foreground = brush;
-                PlayPauseIcon.Foreground = brush;
-                NextIcon.Foreground = brush;
-                SongImagePlaceholder.Foreground = brush;
-                
-                // Apply to progress line
-                ProgressLine.Fill = brush;
-            }
-            else
-            {
-                // Reset to defaults
-                var accentBrush = (SolidColorBrush)Application.Current.TryFindResource("AccentFillColorDefaultBrush");
+            PreviousIcon.Foreground = displayBrush;
+            PlayPauseIcon.Foreground = displayBrush;
+            NextIcon.Foreground = displayBrush;
+            SongImagePlaceholder.Foreground = displayBrush;
+            ProgressLine.Fill = displayBrush;
+        };
 
-                PreviousIcon.ClearValue(ForegroundProperty);
-                PlayPauseIcon.ClearValue(ForegroundProperty);
-                NextIcon.ClearValue(ForegroundProperty);
-                SongImagePlaceholder.Foreground = accentBrush;
-                
-                ProgressLine.Fill = accentBrush;
-            }
-        });
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            _ = Dispatcher.InvokeAsync(action);
+        }
     }
 
     public void UpdateProgress(double currentSeconds, double totalSeconds)
     {
-        if (totalSeconds <= 0)
+        _lastProgressCurrentSeconds = Math.Max(0, currentSeconds);
+        _lastProgressTotalSeconds = Math.Max(0, totalSeconds);
+
+        if (_lastProgressTotalSeconds <= 0)
         {
-            Dispatcher.Invoke(() => ProgressLine.Visibility = Visibility.Collapsed);
+            Dispatcher.Invoke(() =>
+            {
+                ProgressLine.Width = 0;
+                ProgressLine.Visibility = Visibility.Collapsed;
+            });
             return;
         }
 
-        Dispatcher.Invoke(() =>
-        {
-            if (ProgressLine.Visibility != Visibility.Visible)
-                ProgressLine.Visibility = Visibility.Visible;
+        Dispatcher.Invoke(UpdateProgressVisual);
+    }
 
-            double ratio = Math.Clamp(currentSeconds / totalSeconds, 0, 1);
-            ProgressLine.Width = MainBorder.ActualWidth * ratio;
-        });
+    private void RefreshProgressFromPlaybackSource()
+    {
+        if (!IsVisible || string.IsNullOrEmpty(SongTitle.Text))
+            return;
+
+        var preferredSession = ExternalMediaService.Instance.GetPreferredSession();
+        if (preferredSession != null && !ExternalMediaService.Instance.IsInternalSession(preferredSession))
+        {
+            var timeline = preferredSession.ControlSession.GetTimelineProperties();
+            var playbackInfo = preferredSession.ControlSession.GetPlaybackInfo();
+            var currentPosition = timeline.Position;
+
+            if (playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            {
+                currentPosition += DateTime.Now - timeline.LastUpdatedTime.DateTime;
+            }
+
+            var totalDuration = timeline.MaxSeekTime.TotalSeconds > 0
+                ? timeline.MaxSeekTime
+                : timeline.EndTime;
+
+            if (totalDuration <= TimeSpan.Zero)
+            {
+                UpdateProgress(0, 0);
+                return;
+            }
+
+            if (currentPosition > totalDuration)
+            {
+                currentPosition = totalDuration;
+            }
+
+            UpdateProgress(currentPosition.TotalSeconds, totalDuration.TotalSeconds);
+            return;
+        }
+
+        if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        {
+            UpdateProgress(
+                MusicPlayerService.Instance.CurrentPosition.TotalSeconds,
+                MusicPlayerService.Instance.TotalDuration.TotalSeconds);
+            return;
+        }
+
+        UpdateProgress(0, 0);
+    }
+
+    private void UpdateProgressVisual()
+    {
+        double availableWidth = RootGrid.ActualWidth > 0
+            ? RootGrid.ActualWidth
+            : (ActualWidth > 0 ? ActualWidth : MainBorder.ActualWidth);
+
+        if (_lastProgressTotalSeconds <= 0 || availableWidth <= 0)
+        {
+            ProgressLine.Width = 0;
+            ProgressLine.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        if (ProgressLine.Visibility != Visibility.Visible)
+            ProgressLine.Visibility = Visibility.Visible;
+
+        double ratio = Math.Clamp(_lastProgressCurrentSeconds / _lastProgressTotalSeconds, 0, 1);
+        ProgressLine.Width = availableWidth * ratio;
     }
 }

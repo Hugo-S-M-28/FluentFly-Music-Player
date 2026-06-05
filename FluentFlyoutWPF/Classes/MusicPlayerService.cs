@@ -46,6 +46,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     private WaveStream? _audioStream;
     private SampleAggregator? _sampleAggregator;
     private DispatcherTimer? _positionTimer;
+    private readonly object _seekLock = new();
 
     private readonly Random _random = new();
     private volatile bool _manualStop = false;
@@ -63,6 +64,17 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     private RepeatMode _repeatMode = RepeatMode.None;
     private List<TrackModel> _history = new();
     private const int MAX_HISTORY = 50;
+
+    // Undo state backup
+    private List<TrackModel>? _undoOriginalQueue;
+    private List<TrackModel>? _undoShuffledQueue;
+    private int _undoCurrentQueueIndex = -1;
+    private bool _undoIsShuffleEnabled;
+    private bool _canUndo;
+    private string _undoActionName = "";
+
+    public bool CanUndo => _canUndo;
+    public string UndoActionName => _undoActionName;
 
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler? TrackEnded;
@@ -98,10 +110,10 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
                 _currentTrack = value;
                 if (value != null && value.AlbumArt == null)
                 {
-                    value.AlbumArt = LibraryManager.Instance.GetAlbumArt(value);
+                    value.AlbumArt = LibraryManager.Instance.GetAlbumArt(value, 400);
                 }
                 OnPropertyChanged(nameof(CurrentTrack));
-                SmtcService.Instance.UpdateMetadata(value, CurrentPosition, TotalDuration);
+                _ = SmtcService.Instance.UpdateMetadataAsync(value, CurrentPosition, TotalDuration);
                 LoadLyrics(value);
                 OnPropertyChanged(nameof(CurrentLyricLine)); // Notify lyrics cleared/changed
                 TrackChanged?.Invoke(this, EventArgs.Empty);
@@ -135,9 +147,9 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         get => _audioStream?.CurrentTime ?? TimeSpan.Zero;
         set
         {
-            if (_audioStream != null && value >= TimeSpan.Zero && value <= TotalDuration)
+            if (_audioStream != null)
             {
-                _audioStream.CurrentTime = value;
+                _audioStream.CurrentTime = NormalizeSeekPosition(value);
                 OnPropertyChanged(nameof(CurrentPosition));
             }
         }
@@ -211,6 +223,265 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<TrackModel> CurrentQueue => _isShuffleEnabled ? _shuffledQueue : _originalQueue;
     public int CurrentQueueIndex => _currentQueueIndex;
 
+    // ═══════════════════════════════════════════
+    // Undo Support
+    // ═══════════════════════════════════════════
+
+    public void SaveUndoState(string actionName)
+    {
+        _undoOriginalQueue = new List<TrackModel>(_originalQueue);
+        _undoShuffledQueue = new List<TrackModel>(_shuffledQueue);
+        _undoCurrentQueueIndex = _currentQueueIndex;
+        _undoIsShuffleEnabled = _isShuffleEnabled;
+        _undoActionName = actionName;
+        _canUndo = true;
+        
+        OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(UndoActionName));
+    }
+
+    public void Undo()
+    {
+        if (!_canUndo || _undoOriginalQueue == null || _undoShuffledQueue == null) return;
+
+        _originalQueue = new List<TrackModel>(_undoOriginalQueue);
+        _shuffledQueue = new List<TrackModel>(_undoShuffledQueue);
+        _currentQueueIndex = _undoCurrentQueueIndex;
+        _isShuffleEnabled = _undoIsShuffleEnabled;
+        _canUndo = false;
+
+        var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+        if (CurrentTrack == null && _currentQueueIndex >= 0 && _currentQueueIndex < queue.Count)
+        {
+            PlayTrackDirectly(queue[_currentQueueIndex]);
+        }
+        else
+        {
+            OnPropertyChanged(nameof(CurrentQueue));
+            QueueChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
+    // ═══════════════════════════════════════════
+    // Bulk Operations
+    // ═══════════════════════════════════════════
+
+    public void RemoveTracksFromQueue(IEnumerable<TrackModel> tracks)
+    {
+        var tracksList = tracks.ToList();
+        if (tracksList.Count == 0) return;
+
+        SaveUndoState(tracksList.Count == 1 ? "Canción eliminada de la cola" : "Canciones eliminadas de la cola");
+
+        var currentTrackRef = CurrentTrack;
+        bool isCurrentTrackRemoved = false;
+        if (currentTrackRef != null)
+        {
+            isCurrentTrackRemoved = tracksList.Any(t => ReferenceEquals(t, currentTrackRef) || t.FilePath == currentTrackRef.FilePath);
+        }
+
+        foreach (var track in tracksList)
+        {
+            _originalQueue.RemoveAll(t => ReferenceEquals(t, track) || t.FilePath == track.FilePath);
+            _shuffledQueue.RemoveAll(t => ReferenceEquals(t, track) || t.FilePath == track.FilePath);
+        }
+
+        var activeQueue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+
+        if (isCurrentTrackRemoved)
+        {
+            if (_currentQueueIndex >= activeQueue.Count)
+                _currentQueueIndex = activeQueue.Count - 1;
+
+            if (_currentQueueIndex >= 0 && activeQueue.Count > 0)
+            {
+                QueueChanged?.Invoke(this, EventArgs.Empty);
+                PlayTrackDirectly(activeQueue[_currentQueueIndex]);
+            }
+            else
+            {
+                Stop();
+                CurrentTrack = null;
+                QueueChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        else
+        {
+            if (currentTrackRef != null)
+            {
+                int newIndex = activeQueue.FindIndex(t => ReferenceEquals(t, currentTrackRef));
+                if (newIndex >= 0)
+                {
+                    _currentQueueIndex = newIndex;
+                }
+                else
+                {
+                    _currentQueueIndex = activeQueue.FindIndex(t => t.FilePath == currentTrackRef.FilePath);
+                }
+            }
+            QueueChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public void MoveTracks(List<int> oldIndices, int newIndex)
+    {
+        if (oldIndices == null || oldIndices.Count == 0) return;
+        
+        var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+        
+        var sortedOldIndices = oldIndices.Distinct().Where(idx => idx >= 0 && idx < queue.Count).OrderBy(idx => idx).ToList();
+        if (sortedOldIndices.Count == 0) return;
+
+        var currentTrackRef = CurrentTrack;
+        var tracksToMove = sortedOldIndices.Select(idx => queue[idx]).ToList();
+
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex > queue.Count) newIndex = queue.Count;
+
+        int itemsBeforeTarget = sortedOldIndices.Count(idx => idx < newIndex);
+        int insertIndex = newIndex - itemsBeforeTarget;
+        if (insertIndex < 0) insertIndex = 0;
+
+        for (int i = sortedOldIndices.Count - 1; i >= 0; i--)
+        {
+            queue.RemoveAt(sortedOldIndices[i]);
+        }
+
+        for (int i = 0; i < tracksToMove.Count; i++)
+        {
+            queue.Insert(insertIndex + i, tracksToMove[i]);
+        }
+
+        if (currentTrackRef != null)
+        {
+            int foundIndex = queue.FindIndex(t => ReferenceEquals(t, currentTrackRef));
+            if (foundIndex >= 0)
+            {
+                _currentQueueIndex = foundIndex;
+            }
+            else
+            {
+                _currentQueueIndex = queue.FindIndex(t => t.FilePath == currentTrackRef.FilePath);
+            }
+        }
+
+        QueueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    // ═══════════════════════════════════════════
+    // Export & Import Queue
+    // ═══════════════════════════════════════════
+
+    public void ExportQueue(string filePath)
+    {
+        try
+        {
+            var queue = CurrentQueue.ToList();
+            string ext = Path.GetExtension(filePath).ToLowerInvariant();
+            if (ext == ".json")
+            {
+                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(queue, options);
+                File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
+            }
+            else
+            {
+                using var writer = new StreamWriter(filePath, false, System.Text.Encoding.UTF8);
+                writer.WriteLine("#EXTM3U");
+                foreach (var track in queue)
+                {
+                    writer.WriteLine($"#EXTINF:{(int)track.Duration.TotalSeconds},{track.Artist} - {track.Title}");
+                    writer.WriteLine(track.FilePath);
+                }
+            }
+            Logger.Info($"Exported playlist queue to {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, $"Failed to export playlist to {filePath}");
+            throw;
+        }
+    }
+
+    public async Task ImportQueueAsync(string filePath)
+    {
+        try
+        {
+            var importedTracks = new List<TrackModel>();
+            string ext = Path.GetExtension(filePath).ToLowerInvariant();
+            if (ext == ".json")
+            {
+                var json = await File.ReadAllTextAsync(filePath);
+                var tracks = System.Text.Json.JsonSerializer.Deserialize<List<TrackModel>>(json);
+                if (tracks != null)
+                {
+                    importedTracks = tracks;
+                }
+            }
+            else
+            {
+                var lines = await File.ReadAllLinesAsync(filePath, System.Text.Encoding.UTF8);
+                foreach (var line in lines)
+                {
+                    var trimmed = line.Trim();
+                    if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) continue;
+                    
+                    string trackPath = trimmed;
+                    if (!Path.IsPathRooted(trackPath))
+                    {
+                        string? playlistDir = Path.GetDirectoryName(filePath);
+                        if (playlistDir != null)
+                        {
+                            trackPath = Path.GetFullPath(Path.Combine(playlistDir, trackPath));
+                        }
+                    }
+
+                    if (File.Exists(trackPath))
+                    {
+                        var existing = LibraryManager.Instance.Tracks.FirstOrDefault(t => t.FilePath == trackPath);
+                        if (existing != null)
+                        {
+                            importedTracks.Add(existing);
+                        }
+                        else
+                        {
+                            var newTrack = LibraryManager.Instance.ExtractMetadata(trackPath);
+                            importedTracks.Add(newTrack);
+                        }
+                    }
+                }
+            }
+
+            if (importedTracks.Count > 0)
+            {
+                SaveUndoState("Lista de reproducción cargada");
+                
+                _originalQueue = new List<TrackModel>(importedTracks);
+                if (_isShuffleEnabled)
+                {
+                    CreateShuffledQueue();
+                }
+                else
+                {
+                    _shuffledQueue.Clear();
+                }
+                
+                _currentQueueIndex = 0;
+                QueueChanged?.Invoke(this, EventArgs.Empty);
+                
+                var activeQueue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+                PlayTrackDirectly(activeQueue[0]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, $"Failed to import playlist from {filePath}");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Move a track from one position to another in the active queue.
     /// Adjusts the current playback index so the playing track is not disrupted.
@@ -279,7 +550,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         {
             if (CurrentTrack?.FilePath == track.FilePath)
             {
-                SmtcService.Instance.UpdateMetadata(track, CurrentPosition, TotalDuration);
+                _ = SmtcService.Instance.UpdateMetadataAsync(track, CurrentPosition, TotalDuration);
                 OnPropertyChanged(nameof(CurrentTrack));
                 TrackChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -354,10 +625,16 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
     private long _lastPosition;
     private int _stallCount;
+    private DateTime _playbackActivatedUtc = DateTime.MinValue;
+    private DateTime _lastPlaybackProgressUtc = DateTime.MinValue;
+    private static readonly TimeSpan PlaybackStartupGracePeriod = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan PlaybackStallThreshold = TimeSpan.FromSeconds(5);
+
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
         if (IsPlaying && _audioStream != null)
         {
+            var nowUtc = DateTime.UtcNow;
             OnPropertyChanged(nameof(CurrentPosition));
 
             // Update Lyrics
@@ -369,13 +646,19 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
                 SmtcService.Instance.UpdateTimeline(CurrentPosition, TotalDuration);
             }
 
-            // Stall detection (Silence/Format error fallback)
+            // Stall detection should tolerate decoder startup/buffering and only
+            // treat a lack of forward progress as an error after a real timeout.
             if (_audioStream.Position == _lastPosition && IsPlaying)
             {
                 _stallCount++;
-                if (_stallCount > 10) // ~5 seconds of stall
+                bool startupGraceElapsed = _playbackActivatedUtc != DateTime.MinValue &&
+                    nowUtc - _playbackActivatedUtc >= PlaybackStartupGracePeriod;
+                bool progressTimedOut = _lastPlaybackProgressUtc != DateTime.MinValue &&
+                    nowUtc - _lastPlaybackProgressUtc >= PlaybackStallThreshold;
+
+                if (startupGraceElapsed && progressTimedOut)
                 {
-                    Logger.Warn("Playback stall detected");
+                    Logger.Warn("Playback stall detected after {StallDuration} without progress", nowUtc - _lastPlaybackProgressUtc);
                     PlaybackError?.Invoke(this, "Playback stall detected. The audio file might be corrupted or format is unsupported.");
                     Stop();
                     _stallCount = 0;
@@ -385,6 +668,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             {
                 _lastPosition = _audioStream.Position;
                 _stallCount = 0;
+                _lastPlaybackProgressUtc = nowUtc;
             }
         }
     }
@@ -480,6 +764,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             _manualStop = false;
             _waveOut?.Play();
             IsPlaying = true;
+            ResetStallDetection();
             _positionTimer?.Start();
 
             // Add to history and increment play count
@@ -604,6 +889,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     public void RemoveFromQueue(TrackModel track)
     {
         if (track == null) return;
+        SaveUndoState("Pista eliminada de la cola");
 
         var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
         int removeIndex = queue.IndexOf(track);
@@ -652,28 +938,53 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         Logger.Info($"Removed from queue: {track.Title} - {track.Artist}");
     }
 
+    /// <summary>
+    /// Clears all tracks from the queue except the one that is currently playing.
+    /// If no track is playing, the queue is cleared completely.
+    /// </summary>
+    public void ClearQueuePreservingCurrent()
+    {
+        SaveUndoState("Cola de reproducción limpiada");
+        if (CurrentTrack != null)
+        {
+            var current = CurrentTrack;
+            _originalQueue.Clear();
+            _originalQueue.Add(current);
+            
+            _shuffledQueue.Clear();
+            if (_isShuffleEnabled)
+            {
+                _shuffledQueue.Add(current);
+            }
+            
+            _currentQueueIndex = 0;
+            Logger.Info("Cleared queue preserving current track");
+        }
+        else
+        {
+            _originalQueue.Clear();
+            _shuffledQueue.Clear();
+            _currentQueueIndex = -1;
+            Logger.Info("Cleared queue completely (no current track)");
+        }
+
+        QueueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private void InitializePlayback(string filePath)
     {
         try
         {
-            var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
             ISampleProvider sampleProvider;
+            var readerSelection = AudioReaderFactory.CreateReader(filePath);
+            WaveStream readerStream = readerSelection.Reader;
+            Logger.Info("Decoder selected for {FilePath}: {FormatName} ({DecoderKind})",
+                filePath,
+                readerSelection.FormatName,
+                readerSelection.DecoderKind);
 
-            // AudioFileReader assumes 16-bit PCM output from MediaFoundationReader.
-            // If the FLAC/M4A is 24-bit, it causes heavy interference. 
-            // So we explicitly use MediaFoundationReader and .ToSampleProvider() which handles 24-bit/32-bit correctly.
-            if (extension == ".flac" || extension == ".m4a")
-            {
-                var mfReader = new MediaFoundationReader(filePath);
-                _audioStream = mfReader;
-                sampleProvider = mfReader.ToSampleProvider();
-            }
-            else
-            {
-                var afr = new AudioFileReader(filePath);
-                _audioStream = afr;
-                sampleProvider = afr;
-            }
+            _audioStream = readerStream;
+            sampleProvider = readerStream.ToSampleProvider();
 
             // Apply equalizer processing
             var equalized = new EqualizerSampleProvider(sampleProvider);
@@ -834,6 +1145,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         {
             _waveOut.Pause();
             IsPlaying = false;
+            ResetStallDetection();
             _positionTimer?.Stop();
             SmtcService.Instance.UpdateTimeline(CurrentPosition, TotalDuration);
             Logger.Debug("Playback paused");
@@ -850,6 +1162,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             _manualStop = false;
             _waveOut.Play();
             IsPlaying = true;
+            ResetStallDetection();
             _positionTimer?.Start();
             Logger.Debug("Playback resumed");
         }
@@ -1033,10 +1346,106 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     /// </summary>
     public void Seek(TimeSpan position)
     {
-        if (_audioStream != null)
+        if (_audioStream == null)
         {
-            CurrentPosition = position;
+            return;
         }
+
+        lock (_seekLock)
+        {
+            bool resumePlayback = _waveOut?.PlaybackState == PlaybackState.Playing;
+            TimeSpan normalizedPosition = NormalizeSeekPosition(position);
+
+            try
+            {
+                if (resumePlayback)
+                {
+                    _waveOut?.Pause();
+                }
+
+                _audioStream.CurrentTime = normalizedPosition;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                var fallbackPosition = GetFallbackSeekPosition(normalizedPosition);
+                Logger.Warn(ex, "Seek failed at {RequestedPosition}; retrying at safer position {FallbackPosition}", normalizedPosition, fallbackPosition);
+                _audioStream.CurrentTime = fallbackPosition;
+            }
+            finally
+            {
+                ResetStallDetection();
+                OnPropertyChanged(nameof(CurrentPosition));
+
+                if (SettingsManager.Current.SystemMediaControlEnabled)
+                {
+                    SmtcService.Instance.UpdateTimeline(CurrentPosition, TotalDuration);
+                }
+
+                if (resumePlayback)
+                {
+                    _waveOut?.Play();
+                }
+            }
+        }
+    }
+
+    private TimeSpan NormalizeSeekPosition(TimeSpan position)
+    {
+        if (_audioStream == null)
+        {
+            return TimeSpan.Zero;
+        }
+
+        TimeSpan duration = TotalDuration;
+        if (duration <= TimeSpan.Zero)
+        {
+            return TimeSpan.Zero;
+        }
+
+        TimeSpan clampedPosition = position < TimeSpan.Zero
+            ? TimeSpan.Zero
+            : position > duration
+                ? duration
+                : position;
+
+        TimeSpan safeEndMargin = GetSeekSafetyMargin();
+        if (clampedPosition >= duration && safeEndMargin > TimeSpan.Zero)
+        {
+            return duration > safeEndMargin ? duration - safeEndMargin : TimeSpan.Zero;
+        }
+
+        return clampedPosition;
+    }
+
+    private TimeSpan GetFallbackSeekPosition(TimeSpan position)
+    {
+        TimeSpan fallbackStep = GetSeekSafetyMargin() + TimeSpan.FromMilliseconds(50);
+        TimeSpan fallback = position - fallbackStep;
+        return fallback > TimeSpan.Zero ? fallback : TimeSpan.Zero;
+    }
+
+    private TimeSpan GetSeekSafetyMargin()
+    {
+        if (_audioStream == null)
+        {
+            return TimeSpan.Zero;
+        }
+
+        int averageBytesPerSecond = Math.Max(1, _audioStream.WaveFormat.AverageBytesPerSecond);
+        int blockAlign = Math.Max(1, _audioStream.WaveFormat.BlockAlign);
+        double frameSeconds = (double)blockAlign / averageBytesPerSecond;
+        return TimeSpan.FromSeconds(Math.Max(frameSeconds, 0.05d));
+    }
+
+    private void ResetStallDetection()
+    {
+        long streamPosition = _audioStream?.Position ?? 0;
+        _lastPosition = streamPosition;
+        _stallCount = 0;
+
+        DateTime nowUtc = DateTime.UtcNow;
+        _playbackActivatedUtc = nowUtc;
+        _lastPlaybackProgressUtc = nowUtc;
     }
 
     /// <summary>

@@ -21,7 +21,7 @@ public struct LyricLine
 
 public class LyricsService
 {
-    private static readonly Regex LyricsRegex = new(@"^\[(?<time>\d{2}:\d{2}(?:\.\d{1,3})?)\](?<text>.*)$", RegexOptions.Compiled);
+    private static readonly Regex TimestampRegex = new(@"\[(?<time>\d{2}:\d{2}(?:\.\d{1,3})?)\]", RegexOptions.Compiled);
 
     public List<LyricLine> ParseLrc(string filePath)
     {
@@ -49,40 +49,45 @@ public class LyricsService
         var lines = lrcText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
         {
-            var match = LyricsRegex.Match(line.Trim());
-            if (match.Success)
+            var trimmedLine = line.Trim();
+            var matches = TimestampRegex.Matches(trimmedLine);
+            if (matches.Count > 0)
             {
-                if (TimeSpan.TryParse("00:" + match.Groups["time"].Value, out var time))
+                // The text is the line content after removing all [mm:ss.xx] timestamps
+                string rawText = TimestampRegex.Replace(trimmedLine, "").Trim();
+                
+                // Parse enhanced LRC word timings if present
+                var words = new List<LyricWord>();
+                var wordMatches = WordTimestampRegex.Matches(rawText);
+                if (wordMatches.Count > 0)
                 {
-                    string rawText = match.Groups["text"].Value.Trim();
-                    var words = new List<LyricWord>();
-
-                    // Parse enhanced LRC word timings if present
-                    var wordMatches = WordTimestampRegex.Matches(rawText);
-                    if (wordMatches.Count > 0)
+                    foreach (Match wordMatch in wordMatches)
                     {
-                        foreach (Match wordMatch in wordMatches)
+                        if (TimeSpan.TryParse("00:" + wordMatch.Groups["time"].Value, out var wordTime))
                         {
-                            if (TimeSpan.TryParse("00:" + wordMatch.Groups["time"].Value, out var wordTime))
+                            words.Add(new LyricWord
                             {
-                                words.Add(new LyricWord
-                                {
-                                    Time = wordTime,
-                                    Text = wordMatch.Groups["text"].Value
-                                });
-                            }
+                                Time = wordTime,
+                                Text = wordMatch.Groups["text"].Value
+                            });
                         }
-                        
-                        // Strip tags for the display text
-                        rawText = WordTimestampRegex.Replace(rawText, "$2");
                     }
+                    
+                    // Strip tags for the display text
+                    rawText = WordTimestampRegex.Replace(rawText, "$2");
+                }
 
-                    lyrics.Add(new LyricLine
+                foreach (Match match in matches)
+                {
+                    if (TimeSpan.TryParse("00:" + match.Groups["time"].Value, out var time))
                     {
-                        Time = time,
-                        Text = rawText,
-                        Words = words.Count > 0 ? words : null
-                    });
+                        lyrics.Add(new LyricLine
+                        {
+                            Time = time,
+                            Text = rawText,
+                            Words = words.Count > 0 ? words : null
+                        });
+                    }
                 }
             }
         }

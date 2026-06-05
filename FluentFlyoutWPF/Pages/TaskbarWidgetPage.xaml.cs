@@ -1,8 +1,5 @@
-using FluentFlyout.Classes;
-using FluentFlyout.Classes.Settings;
-using FluentFlyoutWPF.Classes;
-using FluentFlyoutWPF.Classes.Utils;
-using System.Windows;
+using FluentFlyoutWPF.ViewModels;
+using System.ComponentModel;
 using System.Windows.Controls;
 
 namespace FluentFlyoutWPF.Pages;
@@ -12,20 +9,8 @@ public partial class TaskbarWidgetPage : Page
     public TaskbarWidgetPage()
     {
         InitializeComponent();
-        DataContext = SettingsManager.Current;
-        UpdateMonitorList();
-    }
-
-    private async void UnlockPremiumButton_Click(object sender, RoutedEventArgs e)
-    {
-        LicenseManager.UnlockPremium(sender);
-    }
-
-    private void UpdateMonitorList()
-    {
-        MonitorUtil.UpdateMonitorList(
-            TaskbarWidgetSelectedMonitorComboBox,
-            () => SettingsManager.Current.TaskbarWidgetSelectedMonitor,
-            value => SettingsManager.Current.TaskbarWidgetSelectedMonitor = value);
+        DataContext = DesignerProperties.GetIsInDesignMode(this)
+            ? DesignTimeViewModelFactory.CreateSettingsShellViewModel()
+            : App.GetRequiredService<SettingsShellViewModel>();
     }
 }

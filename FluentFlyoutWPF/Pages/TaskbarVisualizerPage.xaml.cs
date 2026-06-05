@@ -1,8 +1,6 @@
-using FluentFlyout.Classes;
-using FluentFlyout.Classes.Settings;
-using System.Diagnostics;
-using System.Windows;
 using System.Windows.Controls;
+using FluentFlyoutWPF.ViewModels;
+using System.ComponentModel;
 
 namespace FluentFlyoutWPF.Pages;
 
@@ -11,18 +9,8 @@ public partial class TaskbarVisualizerPage : Page
     public TaskbarVisualizerPage()
     {
         InitializeComponent();
-        DataContext = SettingsManager.Current;
-    }
-
-    private async void UnlockPremiumButton_Click(object sender, RoutedEventArgs e)
-    {
-        LicenseManager.UnlockPremium(sender);
-    }
-
-    // same as SystemPage.StartupHyperlink_RequestNavigate
-    private void StartupHyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-    {
-        Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
-        e.Handled = true;
+        DataContext = DesignerProperties.GetIsInDesignMode(this)
+            ? DesignTimeViewModelFactory.CreateSettingsShellViewModel()
+            : App.GetRequiredService<SettingsShellViewModel>();
     }
 }

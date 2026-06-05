@@ -1,0 +1,383 @@
+<UserControl x:Class="FluentFlyoutWPF.Controls.ColorPickerControl"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d"
+             d:DesignHeight="430"
+             d:DesignWidth="320"
+             Width="320"
+             Height="430"
+             Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}">
+    
+    <UserControl.Resources>
+        <!-- Swatch Button Template for premium rounded color circles -->
+        <Style x:Key="SwatchButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Ellipse x:Name="SwatchEllipse"
+                                     Fill="{TemplateBinding Background}"
+                                     Stroke="{Binding PickerBorderBrush, ElementName=Root}"
+                                     StrokeThickness="1"/>
+                            <!-- Accent highlight ring on hover -->
+                            <Ellipse x:Name="HoverRing"
+                                     Stroke="White"
+                                     StrokeThickness="1.5"
+                                     Margin="-2"
+                                     Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverRing" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="SwatchEllipse" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="SwatchEllipse" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Padding="16"
+            CornerRadius="16"
+            Background="{Binding PickerSurfaceSecondaryBrush, ElementName=Root}"
+            BorderBrush="{Binding PickerCardBorderBrush, ElementName=Root}"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Selected color header -->
+                <RowDefinition Height="12"/>   <!-- Spacing -->
+                <RowDefinition Height="*"/>    <!-- Canvas & vertical sliders -->
+                <RowDefinition Height="12"/>   <!-- Spacing -->
+                <RowDefinition Height="Auto"/> <!-- RGB / A inputs -->
+                <RowDefinition Height="12"/>   <!-- Spacing -->
+                <RowDefinition Height="Auto"/> <!-- Preset Swatches -->
+                <RowDefinition Height="12"/>   <!-- Spacing -->
+                <RowDefinition Height="Auto"/> <!-- Action buttons -->
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Selected color header with editable Hex text box -->
+            <Border Grid.Row="0"
+                    Padding="12"
+                    CornerRadius="12"
+                    Background="{Binding PickerSurfaceBrush, ElementName=Root}"
+                    BorderBrush="{Binding PickerBorderBrush, ElementName=Root}"
+                    BorderThickness="1">
+                <DockPanel LastChildFill="True">
+                    <Grid Width="40"
+                          Height="40"
+                          Margin="0,0,12,0"
+                          DockPanel.Dock="Left">
+                        <Ellipse Fill="{Binding CheckerPatternBrush, ElementName=Root}"/>
+                        <Ellipse Fill="{Binding SelectedColorBrush, ElementName=Root}"
+                                 Stroke="{Binding PickerStrongBorderBrush, ElementName=Root}"
+                                 StrokeThickness="1"/>
+                    </Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Color seleccionado"
+                                   Foreground="{Binding PickerTextSecondaryBrush, ElementName=Root}"
+                                   FontSize="11"
+                                   Opacity="0.85"
+                                   Margin="0,0,0,2"/>
+                        <ui:TextBox Text="{Binding LocalColorHex, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                    Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"
+                                    Background="Transparent"
+                                    BorderThickness="0,0,0,1"
+                                    BorderBrush="{Binding PickerBorderBrush, ElementName=Root}"
+                                    Padding="0,2"
+                                    MinHeight="0"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Row 2: Interaction Canvas and Sliders -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>   <!-- S/V Canvas -->
+                    <ColumnDefinition Width="12"/>  <!-- Spacing -->
+                    <ColumnDefinition Width="20"/>  <!-- Hue track -->
+                    <ColumnDefinition Width="12"/>  <!-- Spacing -->
+                    <ColumnDefinition Width="20"/>  <!-- Alpha track -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Column 0: Saturation-Value Canvas Area -->
+                <Grid Grid.Column="0"
+                      x:Name="SaturationValueArea"
+                      Background="Transparent"
+                      MouseDown="SaturationValueArea_MouseDown"
+                      MouseMove="SaturationValueArea_MouseMove"
+                      MouseUp="InteractionSurface_MouseUp"
+                      LostMouseCapture="InteractionSurface_LostMouseCapture"
+                      SizeChanged="SaturationValueArea_SizeChanged">
+                    <Border CornerRadius="12"
+                            ClipToBounds="True"
+                            Background="{Binding PickerSurfaceBrush, ElementName=Root}"
+                            BorderBrush="{Binding PickerBorderBrush, ElementName=Root}"
+                            BorderThickness="1"
+                            IsHitTestVisible="False">
+                        <Grid>
+                            <Rectangle Fill="White"/>
+                            <Rectangle Fill="{Binding HuePreviewBrush, ElementName=Root}"/>
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                        <GradientStop Color="#00000000" Offset="0"/>
+                                        <GradientStop Color="#FF000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Grid>
+                    </Border>
+                    <!-- S/V ring thumb with dark drop shadow for high contrast -->
+                    <Ellipse x:Name="SaturationValueThumb"
+                             Width="16"
+                             Height="16"
+                             Stroke="White"
+                             StrokeThickness="2"
+                             Fill="Transparent"
+                             IsHitTestVisible="False"
+                             Margin="-8,-8,0,0">
+                        <Ellipse.Effect>
+                            <DropShadowEffect BlurRadius="4"
+                                              ShadowDepth="1"
+                                              Color="Black"
+                                              Opacity="0.5"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+                </Grid>
+
+                <!-- Column 2: Vertical Hue Slider -->
+                <Grid Grid.Column="2"
+                      x:Name="HueArea"
+                      Background="Transparent"
+                      MouseDown="HueArea_MouseDown"
+                      MouseMove="HueArea_MouseMove"
+                      MouseUp="InteractionSurface_MouseUp"
+                      LostMouseCapture="InteractionSurface_LostMouseCapture"
+                      SizeChanged="HueArea_SizeChanged"
+                      Width="20">
+                    <Border CornerRadius="10"
+                            ClipToBounds="True"
+                            Background="{Binding PickerSurfaceBrush, ElementName=Root}"
+                            BorderBrush="{Binding PickerBorderBrush, ElementName=Root}"
+                            BorderThickness="1"
+                            IsHitTestVisible="False"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Rectangle Margin="0">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                                    <GradientStop Color="#FFFF0000" Offset="0"/>
+                                    <GradientStop Color="#FFFFFF00" Offset="0.17"/>
+                                    <GradientStop Color="#FF00FF00" Offset="0.33"/>
+                                    <GradientStop Color="#FF00FFFF" Offset="0.50"/>
+                                    <GradientStop Color="#FF0000FF" Offset="0.67"/>
+                                    <GradientStop Color="#FFFF00FF" Offset="0.83"/>
+                                    <GradientStop Color="#FFFF0000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Border>
+                    <!-- Pill-style Hue selection indicator -->
+                    <Border x:Name="HueThumb"
+                            Width="28"
+                            Height="8"
+                            CornerRadius="4"
+                            BorderBrush="White"
+                            BorderThickness="1.5"
+                            Background="#F0F0F0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            IsHitTestVisible="False"
+                            Margin="0,-4,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="4"
+                                              ShadowDepth="1"
+                                              Opacity="0.4"/>
+                        </Border.Effect>
+                    </Border>
+                </Grid>
+
+                <!-- Column 4: Vertical Alpha Slider -->
+                <Grid Grid.Column="4"
+                      x:Name="AlphaArea"
+                      Background="Transparent"
+                      MouseDown="AlphaArea_MouseDown"
+                      MouseMove="AlphaArea_MouseMove"
+                      MouseUp="InteractionSurface_MouseUp"
+                      LostMouseCapture="InteractionSurface_LostMouseCapture"
+                      SizeChanged="AlphaArea_SizeChanged"
+                      Width="20">
+                    <Border CornerRadius="10"
+                            ClipToBounds="True"
+                            Background="{Binding PickerSurfaceBrush, ElementName=Root}"
+                            BorderBrush="{Binding PickerBorderBrush, ElementName=Root}"
+                            BorderThickness="1"
+                            IsHitTestVisible="False"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Grid>
+                            <Rectangle Margin="0" Fill="{Binding CheckerPatternBrush, ElementName=Root}"/>
+                            <Rectangle Margin="0" Fill="{Binding AlphaGradientBrush, ElementName=Root}"/>
+                        </Grid>
+                    </Border>
+                    <!-- Pill-style Alpha selection indicator -->
+                    <Border x:Name="AlphaThumb"
+                            Width="28"
+                            Height="8"
+                            CornerRadius="4"
+                            BorderBrush="White"
+                            BorderThickness="1.5"
+                            Background="#F0F0F0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            IsHitTestVisible="False"
+                            Margin="0,-4,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="4"
+                                              ShadowDepth="1"
+                                              Opacity="0.4"/>
+                        </Border.Effect>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- Row 4: RGB and Alpha numeric inputs -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/> <!-- R -->
+                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
+                    <ColumnDefinition Width="*"/> <!-- G -->
+                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
+                    <ColumnDefinition Width="*"/> <!-- B -->
+                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
+                    <ColumnDefinition Width="*"/> <!-- A -->
+                </Grid.ColumnDefinitions>
+
+                <!-- R Input -->
+                <StackPanel Grid.Column="0">
+                    <ui:TextBox Text="{Binding R, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextAlignment="Center"
+                                Padding="2,4"
+                                MinHeight="0"
+                                FontSize="12"
+                                MaxLength="3"/>
+                    <TextBlock Text="R"
+                               FontSize="10"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"
+                               Opacity="0.6"
+                               Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
+                </StackPanel>
+
+                <!-- G Input -->
+                <StackPanel Grid.Column="2">
+                    <ui:TextBox Text="{Binding G, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextAlignment="Center"
+                                Padding="2,4"
+                                MinHeight="0"
+                                FontSize="12"
+                                MaxLength="3"/>
+                    <TextBlock Text="G"
+                               FontSize="10"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"
+                               Opacity="0.6"
+                               Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
+                </StackPanel>
+
+                <!-- B Input -->
+                <StackPanel Grid.Column="4">
+                    <ui:TextBox Text="{Binding B, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextAlignment="Center"
+                                Padding="2,4"
+                                MinHeight="0"
+                                FontSize="12"
+                                MaxLength="3"/>
+                    <TextBlock Text="B"
+                               FontSize="10"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"
+                               Opacity="0.6"
+                               Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
+                </StackPanel>
+
+                <!-- A Input -->
+                <StackPanel Grid.Column="6">
+                    <ui:TextBox Text="{Binding A, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextAlignment="Center"
+                                Padding="2,4"
+                                MinHeight="0"
+                                FontSize="12"
+                                MaxLength="3"/>
+                    <TextBlock Text="A"
+                               FontSize="10"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"
+                               Opacity="0.6"
+                               Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Row 6: Preset Swatches -->
+            <StackPanel Grid.Row="6">
+                <TextBlock Text="Colores rápidos"
+                           FontSize="11"
+                           Margin="0,0,0,6"
+                           Opacity="0.6"
+                           Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
+                <UniformGrid Rows="1" Columns="9">
+                    <!-- Red -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E81123" Tag="#E81123" Click="Swatch_Click" ToolTip="Rojo" HorizontalAlignment="Center"/>
+                    <!-- Orange -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#F7630C" Tag="#F7630C" Click="Swatch_Click" ToolTip="Naranja" HorizontalAlignment="Center"/>
+                    <!-- Yellow -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#FFB900" Tag="#FFB900" Click="Swatch_Click" ToolTip="Amarillo" HorizontalAlignment="Center"/>
+                    <!-- Green -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#107C41" Tag="#107C41" Click="Swatch_Click" ToolTip="Verde" HorizontalAlignment="Center"/>
+                    <!-- Teal -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#00B7C3" Tag="#00B7C3" Click="Swatch_Click" ToolTip="Celeste" HorizontalAlignment="Center"/>
+                    <!-- Blue -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#0078D4" Tag="#0078D4" Click="Swatch_Click" ToolTip="Azul" HorizontalAlignment="Center"/>
+                    <!-- Purple -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#5010B4" Tag="#5010B4" Click="Swatch_Click" ToolTip="Morado" HorizontalAlignment="Center"/>
+                    <!-- Pink -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E3008C" Tag="#E3008C" Click="Swatch_Click" ToolTip="Rosa" HorizontalAlignment="Center"/>
+                    <!-- Grey -->
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#7A7574" Tag="#7A7574" Click="Swatch_Click" ToolTip="Gris" HorizontalAlignment="Center"/>
+                </UniformGrid>
+            </StackPanel>
+
+            <!-- Row 8: Action buttons -->
+            <StackPanel Grid.Row="8"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <ui:Button Content="Cancelar"
+                           Width="100"
+                           Margin="0,0,8,0"
+                           Click="CancelButton_Click"/>
+                <ui:Button Content="Confirmar"
+                           Appearance="Primary"
+                           Width="100"
+                           Click="ConfirmButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using FluentFlyout.Classes.Settings;
+using FluentFlyoutWPF.Classes.Services;
 using FluentFlyoutWPF.Windows;
 
 namespace FluentFlyoutWPF.Classes;
@@ -32,7 +33,7 @@ public class TrayIconService
 
     public void OpenSettings()
     {
-        SettingsWindow.ShowInstance();
+        App.GetRequiredService<IWindowManager>().ShowSettings();
     }
 
     public void OpenRepository()

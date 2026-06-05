@@ -1,5 +1,6 @@
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
+using FluentFlyoutWPF.Classes.Utils;
 using Microsoft.Win32;
 using NAudio.CoreAudioApi;
 using NAudio.Dsp;
@@ -687,10 +688,7 @@ namespace FluentFlyoutWPF.Classes
             DateTime now = DateTime.UtcNow;
             if (_cachedAccentBrush == null || (now - _lastBrushUpdate).TotalSeconds > 1)
             {
-                _cachedAccentBrush = BitmapHelper.SavedDominantColors.Count > 0
-                    ? BitmapHelper.SavedDominantColors.Last()
-                    : (SolidColorBrush)Application.Current.TryFindResource("MicaWPF.Brushes.SystemAccentColorTertiary")
-                    ?? new SolidColorBrush(Colors.DeepSkyBlue);
+                _cachedAccentBrush = AccentColorResolver.ResolveAccentBrush(null);
                 _lastBrushUpdate = now;
             }
             

@@ -1,12 +1,18 @@
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Classes.Utils;
+using FluentFlyoutWPF.Classes.Services;
+using FluentFlyoutWPF.ViewModels;
+using System.ComponentModel;
 using MicaWPF.Core.Enums;
 using MicaWPF.Core.Helpers;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 
 namespace FluentFlyout.Controls;
 
@@ -23,14 +29,19 @@ public partial class TaskbarVisualizerControl : UserControl
         InitializeComponent();
 
         // Set DataContext for bindings
-        DataContext = SettingsManager.Current;
+        DataContext = DesignerProperties.GetIsInDesignMode(this)
+            ? DesignTimeViewModelFactory.CreateSettingsShellViewModel()
+            : App.GetRequiredService<SettingsShellViewModel>();
 
-        if (SettingsManager.Current.TaskbarVisualizerEnabled)
+        if (!DesignerProperties.GetIsInDesignMode(this) && SettingsManager.Current.TaskbarVisualizerEnabled)
         {
             visualizer.Start();
         }
 
-        VisualizerContainer.Source = visualizer.Bitmap;
+        if (!DesignerProperties.GetIsInDesignMode(this))
+        {
+            VisualizerContainer.Source = visualizer.Bitmap;
+        }
 
         // for hover animation
         if (MainBorder.Background is not SolidColorBrush)
@@ -40,6 +51,14 @@ public partial class TaskbarVisualizerControl : UserControl
         }
 
         Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
+
+        if (!DesignerProperties.GetIsInDesignMode(this))
+        {
+            SettingsManager.Current.PropertyChanged += Settings_PropertyChanged;
+            Unloaded += (s, e) => { SettingsManager.Current.PropertyChanged -= Settings_PropertyChanged; };
+        }
+
+        ApplyBackgroundBlur();
     }
 
     public static void OnTaskbarVisualizerEnabledChanged(bool value)
@@ -66,18 +85,10 @@ public partial class TaskbarVisualizerControl : UserControl
     {
         if (!SettingsManager.Current.TaskbarVisualizerClickable || !SettingsManager.Current.TaskbarVisualizerHasContent) return;
 
-        SolidColorBrush targetBackgroundBrush;
-        // hover effects with animations, hard-coded colors because I can't find the resource brushes
-        if (WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark)
-        { // dark mode
-            targetBackgroundBrush = new SolidColorBrush(Color.FromArgb(197, 255, 255, 255)) { Opacity = 0.075 };
-            TopBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 0.25 };
-        }
-        else
-        { // light mode
-            targetBackgroundBrush = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)) { Opacity = 0.6 };
-            TopBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 1 };
-        }
+        SolidColorBrush targetBackgroundBrush = Application.Current.TryFindResource("ControlFillColorSecondaryBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(197, 255, 255, 255)) { Opacity = 0.075 };
+        SolidColorBrush targetBorderBrush = Application.Current.TryFindResource("SurfaceStrokeColorDefaultBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 0.25 };
+
+        TopBorder.BorderBrush = targetBorderBrush;
 
         // Animate background
         var backgroundAnimation = new ColorAnimation
@@ -137,6 +148,32 @@ public partial class TaskbarVisualizerControl : UserControl
         if (!SettingsManager.Current.TaskbarVisualizerClickable || !SettingsManager.Current.TaskbarVisualizerHasContent) return;
 
         // open settings when clicked
-        SettingsWindow.ShowInstance("TaskbarVisualizerPage");
+        App.GetRequiredService<IWindowManager>().ShowSettings("TaskbarVisualizerPage");
+    }
+
+    private ImageSource? _currentImage = null;
+
+    public void UpdateBackground(ImageSource? image)
+    {
+        _currentImage = image;
+        ApplyBackgroundBlur();
+    }
+
+    private void ApplyBackgroundBlur()
+    {
+        var blurOption = SettingsManager.Current.MediaFlyoutBackgroundBlur;
+        MediaBackdropStyleService.ApplyPresetToImage(
+            BackgroundBlurImage,
+            blurOption,
+            MediaBackdropSurface.Taskbar,
+            _currentImage);
+    }
+
+    private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(UserSettings.MediaFlyoutBackgroundBlur))
+        {
+            Dispatcher.Invoke(ApplyBackgroundBlur);
+        }
     }
 }

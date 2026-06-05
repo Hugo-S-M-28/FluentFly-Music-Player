@@ -16,6 +16,14 @@ public class LibraryManager : IDisposable
     private static LibraryManager? _instance;
     private readonly List<FileSystemWatcher> _watchers = new();
     private bool _isScanning;
+    private readonly SemaphoreSlim _scanSemaphore = new(1, 1);
+    private CancellationTokenSource? _debounceCts;
+    private CancellationTokenSource? _derivedRefreshCts;
+    private CancellationTokenSource? _saveLibraryCts;
+    private readonly object _watcherLock = new();
+    private readonly Dictionary<string, TrackModel> _trackIndex = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<PendingLibraryChange> _pendingChanges = new();
+    private readonly object _pendingChangesLock = new();
 
     public static LibraryManager Instance => _instance ??= new LibraryManager();
 
@@ -27,7 +35,7 @@ public class LibraryManager : IDisposable
     public event EventHandler<TrackModel>? TrackLyricsUpdated;
 
     private readonly Dictionary<string, List<string>> _albumArtCache = new();
-    private readonly string[] _supportedExtensions = { ".mp3", ".flac", ".wav", ".m4a", ".ogg", ".wma", ".aac", ".opus" };
+    private readonly string[] _supportedExtensions = AudioReaderFactory.GetSupportedExtensions();
     private static string ArtCachePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FluentFlyout", "ArtCache");
 
     private static string LibraryFilePath => Path.Combine(
@@ -36,13 +44,22 @@ public class LibraryManager : IDisposable
         "library.json"
     );
 
+    private enum PendingLibraryChangeKind
+    {
+        Upsert,
+        Remove,
+        Rename
+    }
+
+    private sealed record PendingLibraryChange(PendingLibraryChangeKind Kind, string Path, string? OldPath = null);
+
     public async Task InitializeAsync()
     {
         if (!Directory.Exists(ArtCachePath)) Directory.CreateDirectory(ArtCachePath);
         
         // Load existing library from JSON first (very fast)
         await LoadLibraryAsync();
-        RebuildAlbumsAndArtists(); // Initial build from cache
+        await RefreshDerivedCollectionsAsync(); // Initial build from cache on background thread
 
         SetupWatchers();
 
@@ -78,6 +95,7 @@ public class LibraryManager : IDisposable
                 };
 
                 watcher.Created += OnFileChanged;
+                watcher.Changed += OnFileChanged;
                 watcher.Deleted += OnFileChanged;
                 watcher.Renamed += OnFileChanged;
 
@@ -92,14 +110,45 @@ public class LibraryManager : IDisposable
 
     private void OnFileChanged(object sender, FileSystemEventArgs e)
     {
-        // Simple debounce: trigger scan after 2 seconds of no activity
-        _ = Task.Delay(2000).ContinueWith(_ => 
+        if (e is RenamedEventArgs renamedEventArgs)
         {
-            if (!_isScanning)
+            QueueLibraryChange(new PendingLibraryChange(PendingLibraryChangeKind.Rename, renamedEventArgs.FullPath, renamedEventArgs.OldFullPath));
+            return;
+        }
+
+        var kind = e.ChangeType == WatcherChangeTypes.Deleted
+            ? PendingLibraryChangeKind.Remove
+            : PendingLibraryChangeKind.Upsert;
+
+        QueueLibraryChange(new PendingLibraryChange(kind, e.FullPath));
+    }
+
+    private void QueueLibraryChange(PendingLibraryChange change)
+    {
+        lock (_watcherLock)
+        {
+            _debounceCts?.Cancel();
+            _debounceCts = new CancellationTokenSource();
+            var token = _debounceCts.Token;
+            lock (_pendingChangesLock)
             {
-                _ = ScanLibraryAsync();
+                _pendingChanges.Add(change);
             }
-        });
+
+            Task.Delay(2000, token).ContinueWith(async t =>
+            {
+                if (t.IsCanceled) return;
+                
+                try
+                {
+                    await ProcessPendingChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error processing pending library changes");
+                }
+            }, token);
+        }
     }
 
     private async Task LoadLibraryAsync()
@@ -109,7 +158,19 @@ public class LibraryManager : IDisposable
             if (File.Exists(LibraryFilePath))
             {
                 var json = await File.ReadAllTextAsync(LibraryFilePath);
-                var tracks = System.Text.Json.JsonSerializer.Deserialize<List<TrackModel>>(json);
+                var tracks = await Task.Run(() =>
+                {
+                    var list = System.Text.Json.JsonSerializer.Deserialize<List<TrackModel>>(json);
+                    if (list != null)
+                    {
+                        foreach (var track in list)
+                        {
+                            track.RefreshSearchIndex();
+                        }
+                    }
+                    return list;
+                });
+
                 if (tracks != null)
                 {
                     // Load tracks in a single batch to minimize UI thread overhead
@@ -117,6 +178,7 @@ public class LibraryManager : IDisposable
                     {
                         Tracks.ReplaceAll(tracks);
                     });
+                    RebuildTrackIndex();
                 }
             }
         }
@@ -138,7 +200,7 @@ public class LibraryManager : IDisposable
 
             var options = new System.Text.Json.JsonSerializerOptions
             {
-                WriteIndented = true,
+                WriteIndented = false,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
             var json = System.Text.Json.JsonSerializer.Serialize(Tracks.ToList(), options);
@@ -153,92 +215,119 @@ public class LibraryManager : IDisposable
     public async Task ScanLibraryAsync()
     {
         if (_isScanning) return;
-        _isScanning = true;
-
-        var folders = SettingsManager.Current.MusicLibraryFolders;
-        if (folders == null || folders.Count == 0) 
+        
+        if (!await _scanSemaphore.WaitAsync(0))
         {
-            _isScanning = false;
+            // Already scanning, skip this request
             return;
         }
 
-        int updatedCount = 0;
-        var existingPaths = new HashSet<string>(Tracks.Select(t => t.FilePath));
-        var folderList = folders.ToList();
-
-        // Parallelize scanning across multiple folders if there are several
-        var scanTasks = folderList.Select(async folder =>
+        _isScanning = true;
+        try
         {
-            if (!Directory.Exists(folder)) return;
-
-            try
+            var folders = SettingsManager.Current.MusicLibraryFolders;
+            if (folders == null || folders.Count == 0) 
             {
-                var files = Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
-                                     .Where(f => _supportedExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
-
-                var newTracks = new List<TrackModel>();
-                foreach (var file in files)
-                {
-                    if (existingPaths.Contains(file)) continue;
-
-                    var track = await Task.Run(() => ExtractMetadata(file));
-                    if (track != null)
-                    {
-                        newTracks.Add(track);
-                        System.Threading.Interlocked.Increment(ref updatedCount);
-                    }
-                    
-                    // Add in batches of 50 to keep UI responsive but avoid too many notifications
-                    if (newTracks.Count >= 50)
-                    {
-                        var batch = newTracks.ToList();
-                        newTracks.Clear();
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            Tracks.AddRange(batch);
-                        });
-                    }
-                }
-
-                if (newTracks.Count > 0)
-                {
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Tracks.AddRange(newTracks);
-                    });
-                }
+                return;
             }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, $"Error scanning folder {folder}");
-            }
-        });
 
-        await Task.WhenAll(scanTasks);
+            var filesInLibrary = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var folderList = folders.ToList();
+            var tracksToUpsert = new List<TrackModel>();
 
-        // Remove tracks that no longer exist
-        var tracksToRemove = Tracks.Where(t => !File.Exists(t.FilePath)).ToList();
-        if (tracksToRemove.Count > 0)
-        {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            // Enumerate files safely on a background thread first
+            var filesToProcess = new List<string>();
+            await Task.Run(() =>
             {
-                foreach (var track in tracksToRemove)
+                foreach (var folder in folderList)
                 {
-                    Tracks.Remove(track);
+                    if (Directory.Exists(folder))
+                    {
+                        filesToProcess.AddRange(SafeEnumerateFiles(folder));
+                    }
                 }
             });
-            System.Threading.Interlocked.Increment(ref updatedCount);
+
+            // Process metadata extraction in parallel
+            await Task.Run(() =>
+            {
+                Parallel.ForEach(filesToProcess, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, filePath =>
+                {
+                    lock (filesInLibrary)
+                    {
+                        filesInLibrary.Add(filePath);
+                    }
+
+                    if (NeedsMetadataRefresh(filePath))
+                    {
+                        var track = ExtractMetadata(filePath);
+                        if (track != null)
+                        {
+                            lock (tracksToUpsert)
+                            {
+                                tracksToUpsert.Add(track);
+                            }
+                        }
+                    }
+                });
+            });
+
+            var indexedPaths = _trackIndex.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var tracksToRemove = indexedPaths.Except(filesInLibrary, StringComparer.OrdinalIgnoreCase).ToList();
+
+            await ApplyTrackChangesAsync(tracksToUpsert, tracksToRemove);
         }
-        
-        if (updatedCount > 0)
+        finally
         {
-            await SaveLibraryAsync();
-            RebuildAlbumsAndArtists();
+            _isScanning = false;
+            _scanSemaphore.Release();
         }
-        _isScanning = false;
     }
 
-    private TrackModel ExtractMetadata(string filePath)
+    private IEnumerable<string> SafeEnumerateFiles(string path)
+    {
+        var files = new List<string>();
+        SafeEnumerateFilesInternal(path, files);
+        return files;
+    }
+
+    private void SafeEnumerateFilesInternal(string path, List<string> result)
+    {
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(path))
+            {
+                var ext = Path.GetExtension(file);
+                if (!string.IsNullOrEmpty(ext) && _supportedExtensions.Contains(ext.ToLowerInvariant()) && !IsPathExcluded(file))
+                {
+                    result.Add(file);
+                }
+            }
+
+            foreach (var dir in Directory.EnumerateDirectories(path))
+            {
+                SafeEnumerateFilesInternal(dir, result);
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Ignore folders without permissions
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Ignore directories deleted mid-scan
+        }
+        catch (PathTooLongException)
+        {
+            // Ignore extremely long paths
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, $"Error traversing directory: {path}");
+        }
+    }
+
+    public TrackModel ExtractMetadata(string filePath)
     {
         try
         {
@@ -265,8 +354,10 @@ public class LibraryManager : IDisposable
                 TrackNumber = trackNumber,
                 Genre = genre,
                 Lyrics = file.Tag?.Lyrics ?? string.Empty,
-                HasLyrics = !string.IsNullOrWhiteSpace(file.Tag?.Lyrics)
+                HasLyrics = !string.IsNullOrWhiteSpace(file.Tag?.Lyrics),
+                FileModifiedUtcTicks = File.GetLastWriteTimeUtc(filePath).Ticks
             };
+            track.RefreshSearchIndex();
 
             // Check for lyrics file (.lrc)
             var lrcPath = Path.ChangeExtension(filePath, ".lrc");
@@ -288,18 +379,28 @@ public class LibraryManager : IDisposable
                     
                     if (!File.Exists(cacheFile))
                     {
-                        File.WriteAllBytes(cacheFile, picture.Data.Data);
+                        try
+                        {
+                            File.WriteAllBytes(cacheFile, picture.Data.Data);
+                        }
+                        catch (IOException)
+                        {
+                            // In case another thread is writing/wrote the file
+                        }
                     }
                     
                     track.AlbumArtPath = cacheFile;
                     
                     // Cache by album key for quick lookup
                     var albumKey = GetAlbumKey(artist, album);
-                    if (!_albumArtCache.ContainsKey(albumKey))
+                    lock (_albumArtCache)
                     {
-                        _albumArtCache[albumKey] = new List<string>();
+                        if (!_albumArtCache.ContainsKey(albumKey))
+                        {
+                            _albumArtCache[albumKey] = new List<string>();
+                        }
+                        _albumArtCache[albumKey].Add(cacheFile);
                     }
-                    _albumArtCache[albumKey].Add(cacheFile);
                 }
             }
 
@@ -308,13 +409,15 @@ public class LibraryManager : IDisposable
         catch (Exception ex)
         {
             Logger.Error(ex, $"Failed to read metadata for {filePath}");
-            return new TrackModel
+            var fallbackTrack = new TrackModel
             {
                 FilePath = filePath,
                 Title = Path.GetFileNameWithoutExtension(filePath),
                 Artist = "Unknown Artist",
                 Album = "Unknown Album"
             };
+            fallbackTrack.RefreshSearchIndex();
+            return fallbackTrack;
         }
     }
 
@@ -434,6 +537,8 @@ public class LibraryManager : IDisposable
             track.Album = newAlbum;
             track.Genre = newGenre;
             track.TrackNumber = newTrackNumber;
+            track.FileModifiedUtcTicks = File.GetLastWriteTimeUtc(track.FilePath).Ticks;
+            track.RefreshSearchIndex();
 
             // Update album art cache if changed
             if (!string.IsNullOrEmpty(newAlbumArtPath) && File.Exists(newAlbumArtPath))
@@ -454,8 +559,8 @@ public class LibraryManager : IDisposable
             }
 
             // Re-save library and notify UI
-            await SaveLibraryAsync();
-            RebuildAlbumsAndArtists();
+            ScheduleLibrarySave();
+            ScheduleDerivedCollectionsRefresh();
             TrackMetadataUpdated?.Invoke(this, track);
 
             // Resume playback if it was playing (optional, but nice)
@@ -544,10 +649,12 @@ public class LibraryManager : IDisposable
 
             track.Lyrics = lyricsText;
             track.HasLyrics = !string.IsNullOrWhiteSpace(lyricsText);
+            track.FileModifiedUtcTicks = File.GetLastWriteTimeUtc(track.FilePath).Ticks;
             
             // Re-save library and notify UI
-            await SaveLibraryAsync();
+            ScheduleLibrarySave();
             TrackLyricsUpdated?.Invoke(this, track);
+            ScheduleDerivedCollectionsRefresh();
 
             // Resume playback if it was playing
             if (wasPlaying)
@@ -567,9 +674,25 @@ public class LibraryManager : IDisposable
 
     private string GetHash(byte[] data)
     {
-        using var md5 = System.Security.Cryptography.MD5.Create();
-        var hash = md5.ComputeHash(data);
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        if (data.Length <= 32 * 1024)
+        {
+            using var md5 = System.Security.Cryptography.MD5.Create();
+            var hash = md5.ComputeHash(data);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
+        else
+        {
+            // For larger data, compute MD5 of a combined sample: first 16KB + last 16KB + data length
+            var sample = new byte[32 * 1024 + sizeof(int)];
+            Array.Copy(data, 0, sample, 0, 16 * 1024);
+            Array.Copy(data, data.Length - 16 * 1024, sample, 16 * 1024, 16 * 1024);
+            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
+            Array.Copy(lengthBytes, 0, sample, 32 * 1024, lengthBytes.Length);
+            
+            using var md5 = System.Security.Cryptography.MD5.Create();
+            var hash = md5.ComputeHash(sample);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
     }
 
     private string GetAlbumKey(string artist, string album)
@@ -579,66 +702,83 @@ public class LibraryManager : IDisposable
 
     public void RebuildAlbumsAndArtists()
     {
-        var tempAlbums = new List<LibraryAlbum>();
-        var tempArtists = new List<LibraryArtist>();
-        _albumArtCache.Clear();
+        RefreshDerivedCollectionsAsync().GetAwaiter().GetResult();
+    }
 
-        // Group tracks by album
-        var albumGroups = Tracks.GroupBy(t => new { t.Artist, t.Album });
-        foreach (var group in albumGroups)
+    private async Task RefreshDerivedCollectionsAsync()
+    {
+        var trackSnapshot = await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => Tracks.ToList());
+        var snapshot = await Task.Run(() =>
         {
-            var albumTracks = group.ToList();
-            var album = new LibraryAlbum
-            {
-                Title = group.Key.Album,
-                Artist = group.Key.Artist,
-                Songs = albumTracks.OrderBy(t => t.TrackNumber).ToList()
-            };
+            var tempAlbums = new List<LibraryAlbum>();
+            var tempArtists = new List<LibraryArtist>();
+            var albumArtCache = new Dictionary<string, List<string>>();
 
-            // Try to get album art
-            var trackWithArt = albumTracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumArtPath));
-            if (trackWithArt != null)
+            var albumGroups = trackSnapshot.GroupBy(t => new { t.Artist, t.Album });
+            foreach (var group in albumGroups)
             {
-                album.ArtPath = trackWithArt.AlbumArtPath;
+                var albumTracks = group.ToList();
+                var album = new LibraryAlbum
+                {
+                    Title = group.Key.Album,
+                    Artist = group.Key.Artist,
+                    Songs = albumTracks.OrderBy(t => t.TrackNumber).ToList(),
+                    HasLyrics = albumTracks.Any(t => t.HasLyrics)
+                };
+                album.RefreshSearchIndex();
+
+                var trackWithArt = albumTracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumArtPath));
+                if (trackWithArt != null)
+                {
+                    album.ArtPath = trackWithArt.AlbumArtPath;
+                }
+
+                tempAlbums.Add(album);
+
+                var albumKey = GetAlbumKey(album.Artist, album.Title);
+                if (!string.IsNullOrEmpty(trackWithArt?.AlbumArtPath))
+                {
+                    albumArtCache[albumKey] = [trackWithArt.AlbumArtPath];
+                }
             }
 
-            tempAlbums.Add(album);
-
-            // Cache album art
-            var albumKey = GetAlbumKey(album.Artist, album.Title);
-            if (!string.IsNullOrEmpty(trackWithArt?.AlbumArtPath))
+            var artistGroups = trackSnapshot.GroupBy(t => t.Artist);
+            foreach (var group in artistGroups)
             {
-                _albumArtCache[albumKey] = new List<string> { trackWithArt.AlbumArtPath };
+                var artistTracks = group.ToList();
+                var artist = new LibraryArtist
+                {
+                    Name = group.Key,
+                    Songs = artistTracks,
+                    HasLyrics = artistTracks.Any(t => t.HasLyrics)
+                };
+                artist.RefreshSearchIndex();
+
+                var trackWithArt = artistTracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumArtPath));
+                if (trackWithArt != null)
+                {
+                    artist.ArtPath = trackWithArt.AlbumArtPath;
+                }
+
+                tempArtists.Add(artist);
             }
-        }
 
-        // Group tracks by artist
-        var artistGroups = Tracks.GroupBy(t => t.Artist);
-        foreach (var group in artistGroups)
+            return (Albums: tempAlbums, Artists: tempArtists, AlbumArtCache: albumArtCache);
+        });
+
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            var artistTracks = group.ToList();
-            var artist = new LibraryArtist
+            lock (_albumArtCache)
             {
-                Name = group.Key,
-                Songs = artistTracks
-            };
-            
-            // Try to get artist image from an album art
-            var trackWithArt = artistTracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumArtPath));
-            if (trackWithArt != null)
-            {
-                artist.ArtPath = trackWithArt.AlbumArtPath;
+                _albumArtCache.Clear();
+                foreach (var entry in snapshot.AlbumArtCache)
+                {
+                    _albumArtCache[entry.Key] = entry.Value;
+                }
             }
-            
-            tempArtists.Add(artist);
-        }
 
-        // Update collections on UI thread once
-        // Update collections on UI thread in bulk
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-        {
-            Albums.ReplaceAll(tempAlbums.OrderBy(x => x.Title));
-            Artists.ReplaceAll(tempArtists.OrderBy(x => x.Name));
+            Albums.ReplaceAll(snapshot.Albums.OrderBy(x => x.Title));
+            Artists.ReplaceAll(snapshot.Artists.OrderBy(x => x.Name));
         });
     }
 
@@ -650,9 +790,12 @@ public class LibraryManager : IDisposable
         {
             // Try to get from cache
             var albumKey = GetAlbumKey(track?.Artist ?? "Unknown Artist", track?.Album ?? "Unknown Album");
-            if (_albumArtCache.TryGetValue(albumKey, out var artList) && artList.Count > 0)
+            lock (_albumArtCache)
             {
-                artPath = artList[0];
+                if (_albumArtCache.TryGetValue(albumKey, out var artList) && artList.Count > 0)
+                {
+                    artPath = artList[0];
+                }
             }
         }
 
@@ -804,6 +947,263 @@ public class LibraryManager : IDisposable
         }
         return -1;
     }
+
+    public bool IsPathExcluded(string path)
+    {
+        var exclusions = SettingsManager.Current.ExcludedLibraryPaths;
+        if (exclusions == null || exclusions.Count == 0) return false;
+
+        string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
+        foreach (var exclusion in exclusions)
+        {
+            string normalizedExclusion = Path.GetFullPath(exclusion).Replace('\\', '/');
+            if (normalizedPath.Equals(normalizedExclusion, StringComparison.OrdinalIgnoreCase) ||
+                normalizedPath.StartsWith(normalizedExclusion + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsInMonitoredFolders(string path)
+    {
+        var folders = SettingsManager.Current.MusicLibraryFolders;
+        if (folders == null || folders.Count == 0) return false;
+
+        string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
+        foreach (var folder in folders)
+        {
+            string normalizedFolder = Path.GetFullPath(folder).Replace('\\', '/');
+            if (normalizedPath.StartsWith(normalizedFolder + "/", StringComparison.OrdinalIgnoreCase) ||
+                normalizedPath.Equals(normalizedFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void CleanAndRefreshLibrary()
+    {
+        var tracksToRemove = Tracks.Where(t => !File.Exists(t.FilePath) || IsPathExcluded(t.FilePath) || !IsInMonitoredFolders(t.FilePath)).ToList();
+        if (tracksToRemove.Count > 0)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (var track in tracksToRemove)
+                {
+                    Tracks.Remove(track);
+                }
+            });
+            RebuildTrackIndex();
+            ScheduleLibrarySave();
+            ScheduleDerivedCollectionsRefresh();
+        }
+    }
+
+    private bool NeedsMetadataRefresh(string filePath)
+    {
+        if (!_trackIndex.TryGetValue(filePath, out var existingTrack))
+            return true;
+
+        return existingTrack.FileModifiedUtcTicks != File.GetLastWriteTimeUtc(filePath).Ticks;
+    }
+
+    private async Task ProcessPendingChangesAsync()
+    {
+        List<PendingLibraryChange> pendingChanges;
+        lock (_pendingChangesLock)
+        {
+            pendingChanges = [.. _pendingChanges];
+            _pendingChanges.Clear();
+        }
+
+        if (pendingChanges.Count == 0)
+            return;
+
+        var removePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var upsertPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var change in pendingChanges)
+        {
+            switch (change.Kind)
+            {
+                case PendingLibraryChangeKind.Remove:
+                    removePaths.Add(change.Path);
+                    upsertPaths.Remove(change.Path);
+                    break;
+                case PendingLibraryChangeKind.Rename:
+                    if (!string.IsNullOrWhiteSpace(change.OldPath))
+                    {
+                        removePaths.Add(change.OldPath);
+                        upsertPaths.Remove(change.OldPath);
+                    }
+                    if (IsSupportedLibraryFile(change.Path))
+                    {
+                        upsertPaths.Add(change.Path);
+                    }
+                    break;
+                default:
+                    if (IsSupportedLibraryFile(change.Path))
+                    {
+                        upsertPaths.Add(change.Path);
+                        removePaths.Remove(change.Path);
+                    }
+                    break;
+            }
+        }
+
+        var tracksToUpsert = await Task.Run(() =>
+        {
+            var updatedTracks = new List<TrackModel>();
+            foreach (var path in upsertPaths)
+            {
+                if (!File.Exists(path) || IsPathExcluded(path) || !IsInMonitoredFolders(path))
+                    continue;
+
+                if (!NeedsMetadataRefresh(path))
+                    continue;
+
+                var extracted = ExtractMetadata(path);
+                if (extracted != null)
+                {
+                    updatedTracks.Add(extracted);
+                }
+            }
+
+            return updatedTracks;
+        });
+
+        await ApplyTrackChangesAsync(tracksToUpsert, removePaths);
+    }
+
+    private async Task ApplyTrackChangesAsync(IReadOnlyList<TrackModel> tracksToUpsert, IEnumerable<string> trackPathsToRemove)
+    {
+        var removeSet = trackPathsToRemove.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        bool hasChanges = removeSet.Count > 0 || tracksToUpsert.Count > 0;
+        if (!hasChanges)
+            return;
+
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            if (removeSet.Count > 0)
+            {
+                var remainingTracks = Tracks.Where(t => !removeSet.Contains(t.FilePath)).ToList();
+                Tracks.ReplaceAll(remainingTracks);
+            }
+
+            var tracksToAdd = new List<TrackModel>();
+            foreach (var updatedTrack in tracksToUpsert)
+            {
+                if (_trackIndex.TryGetValue(updatedTrack.FilePath, out var existingTrack))
+                {
+                    UpdateTrack(existingTrack, updatedTrack);
+                }
+                else
+                {
+                    tracksToAdd.Add(updatedTrack);
+                }
+            }
+
+            if (tracksToAdd.Count > 0)
+            {
+                Tracks.AddRange(tracksToAdd);
+            }
+
+            RebuildTrackIndex();
+        });
+
+        ScheduleLibrarySave();
+        ScheduleDerivedCollectionsRefresh();
+    }
+
+    private void UpdateTrack(TrackModel target, TrackModel source)
+    {
+        target.Title = source.Title;
+        target.Artist = source.Artist;
+        target.Collaborators = source.Collaborators;
+        target.Album = source.Album;
+        target.Duration = source.Duration;
+        target.TrackNumber = source.TrackNumber;
+        target.Genre = source.Genre;
+        target.Lyrics = source.Lyrics;
+        target.HasLyrics = source.HasLyrics;
+        target.AlbumArtPath = source.AlbumArtPath;
+        target.FileModifiedUtcTicks = source.FileModifiedUtcTicks;
+        target.RefreshSearchIndex();
+        TrackMetadataUpdated?.Invoke(this, target);
+    }
+
+    private void RebuildTrackIndex()
+    {
+        _trackIndex.Clear();
+        foreach (var track in Tracks)
+        {
+            _trackIndex[track.FilePath] = track;
+        }
+    }
+
+    private void ScheduleDerivedCollectionsRefresh(int delayMilliseconds = 500)
+    {
+        _derivedRefreshCts?.Cancel();
+        _derivedRefreshCts = new CancellationTokenSource();
+        var token = _derivedRefreshCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delayMilliseconds, token);
+                if (!token.IsCancellationRequested)
+                {
+                    await RefreshDerivedCollectionsAsync();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed to refresh derived library collections");
+            }
+        }, token);
+    }
+
+    private void ScheduleLibrarySave(int delayMilliseconds = 1000)
+    {
+        _saveLibraryCts?.Cancel();
+        _saveLibraryCts = new CancellationTokenSource();
+        var token = _saveLibraryCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delayMilliseconds, token);
+                if (!token.IsCancellationRequested)
+                {
+                    await SaveLibraryAsync();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed to save music library");
+            }
+        }, token);
+    }
+
+    private bool IsSupportedLibraryFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        return _supportedExtensions.Contains(Path.GetExtension(path).ToLowerInvariant());
+    }
+
     public void Dispose()
     {
         foreach (var watcher in _watchers)
@@ -811,5 +1211,9 @@ public class LibraryManager : IDisposable
             watcher.Dispose();
         }
         _watchers.Clear();
+        _debounceCts?.Dispose();
+        _derivedRefreshCts?.Dispose();
+        _saveLibraryCts?.Dispose();
+        _scanSemaphore.Dispose();
     }
 }

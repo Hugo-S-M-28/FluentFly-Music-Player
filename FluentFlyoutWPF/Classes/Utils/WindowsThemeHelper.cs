@@ -19,4 +19,19 @@ public static class WindowsThemeHelper
         }
         return WindowsTheme.Light;
     }
+
+    public static WindowsTheme GetSystemTheme()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            var value = key?.GetValue("SystemUsesLightTheme");
+            if (value is int i && i == 0) return WindowsTheme.Dark;
+        }
+        catch
+        {
+            // Fallback to Light
+        }
+        return WindowsTheme.Light;
+    }
 }
