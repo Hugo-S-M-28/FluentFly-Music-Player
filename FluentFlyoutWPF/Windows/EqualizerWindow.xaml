@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
     mc:Ignorable="d"
     Icon="pack://application:,,,/Resources/FluentFlyout2.ico"
@@ -40,10 +41,10 @@
                                FontWeight="Bold"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                <ui:ToggleSwitch HorizontalAlignment="Right"
-                                 VerticalAlignment="Center"
-                                 ToolTip="{DynamicResource Eq_Enable}"
-                                 IsChecked="{Binding IsEnabled, Mode=TwoWay}"/>
+                <controls:ToggleSwitch HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       ToolTip="{DynamicResource Eq_Enable}"
+                                       IsChecked="{Binding IsEnabled, Mode=TwoWay}"/>
             </Grid>
 
             <Border Grid.Row="1"

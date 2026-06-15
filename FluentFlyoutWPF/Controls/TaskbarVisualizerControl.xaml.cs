@@ -155,8 +155,18 @@ public partial class TaskbarVisualizerControl : UserControl
 
     public void UpdateBackground(ImageSource? image)
     {
-        _currentImage = image;
-        ApplyBackgroundBlur();
+        if (Dispatcher.CheckAccess())
+        {
+            _currentImage = image;
+            ApplyBackgroundBlur();
+            return;
+        }
+
+        _ = Dispatcher.InvokeAsync(() =>
+        {
+            _currentImage = image;
+            ApplyBackgroundBlur();
+        });
     }
 
     private void ApplyBackgroundBlur()

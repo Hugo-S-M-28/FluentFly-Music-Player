@@ -45,8 +45,16 @@ public class AppVolumeService : IAudioSessionEventsHandler, IDisposable
         {
             CleanupSession();
 
-            var enumerator = new MMDeviceEnumerator();
-            _defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            if (_defaultDevice != null)
+            {
+                _defaultDevice.Dispose();
+                _defaultDevice = null;
+            }
+
+            using (var enumerator = new MMDeviceEnumerator())
+            {
+                _defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            }
             
             FindSession();
         }
@@ -184,6 +192,12 @@ public class AppVolumeService : IAudioSessionEventsHandler, IDisposable
         {
             _sessionControl.UnRegisterEventClient(this);
             _sessionControl.Dispose();
+        }
+
+        if (_defaultDevice != null)
+        {
+            _defaultDevice.Dispose();
+            _defaultDevice = null;
         }
 
         GC.SuppressFinalize(this);

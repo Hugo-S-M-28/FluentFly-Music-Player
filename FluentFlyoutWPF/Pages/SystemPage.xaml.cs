@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using PlaybackMode = FluentFlyoutWPF.Models.PlaybackSourceMode;
 
 namespace FluentFlyoutWPF.Pages;
 
@@ -54,5 +55,21 @@ public partial class SystemPage : Page
     private void ColorPickerToggleButton_Click(object sender, RoutedEventArgs e)
     {
         ColorPickerPopup.IsOpen = !ColorPickerPopup.IsOpen;
+    }
+
+    private void InternalPlaybackMode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (SettingsManager.Current.PlaybackSourceMode != PlaybackMode.InternalPlayer)
+        {
+            SettingsManager.Current.PlaybackSourceMode = PlaybackMode.InternalPlayer;
+        }
+    }
+
+    private void ExternalPlaybackMode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (SettingsManager.Current.PlaybackSourceMode != PlaybackMode.ExternalMediaControl)
+        {
+            SettingsManager.Current.PlaybackSourceMode = PlaybackMode.ExternalMediaControl;
+        }
     }
 }

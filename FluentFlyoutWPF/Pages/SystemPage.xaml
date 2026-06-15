@@ -24,282 +24,297 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
-        <StackPanel DataContext="{Binding Settings}"
-                    MaxWidth="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageContentMaxWidthConverter}}"
-                    Margin="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageMarginConverter}}">
-            <ui:TextBlock Text="{DynamicResource SystemSettingsTitle}"
-                          FontTypography="Title"
-                          Margin="0,0,0,20"/>
+    <Grid>
+        <ScrollViewer x:Name="PageScrollViewer"
+                      VerticalScrollBarVisibility="Visible"
+                      HorizontalScrollBarVisibility="Disabled"
+                      CanContentScroll="False"
+                      PanningMode="VerticalOnly"
+                      Padding="0,0,10,0">
+            <StackPanel DataContext="{Binding Settings}"
+                        MaxWidth="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageContentMaxWidthConverter}}"
+                        Margin="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageMarginConverter}}">
+                <ui:TextBlock Text="{DynamicResource SystemSettingsTitle}"
+                              FontTypography="Title"
+                              Margin="0,0,0,20"/>
 
-            <!-- Premium Status InfoBar (only shown for Store versions) -->
-            <ui:InfoBar Title="{DynamicResource PremiumUnlockedMessage}"
-                        Severity="Success"
-                        IsClosable="True"
-                        Margin="0,0,0,3">
-                <ui:InfoBar.Style>
-                    <Style TargetType="ui:InfoBar"
-                           BasedOn="{StaticResource {x:Type ui:InfoBar}}">
-                        <Setter Property="IsOpen"
-                                Value="False"/>
-                        <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsStoreVersion}"
-                                               Value="True"/>
-                                    <Condition Binding="{Binding IsPremiumUnlocked}"
-                                               Value="True"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="IsOpen"
-                                        Value="True"/>
-                            </MultiDataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ui:InfoBar.Style>
-            </ui:InfoBar>
+                <!-- Premium Status InfoBar (only shown for Store versions) -->
+                <ui:InfoBar Title="{DynamicResource PremiumUnlockedMessage}"
+                            Severity="Success"
+                            IsClosable="True"
+                            Margin="0,0,0,3">
+                    <ui:InfoBar.Style>
+                        <Style TargetType="ui:InfoBar"
+                               BasedOn="{StaticResource {x:Type ui:InfoBar}}">
+                            <Setter Property="IsOpen"
+                                    Value="False"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsStoreVersion}"
+                                                   Value="True"/>
+                                        <Condition Binding="{Binding IsPremiumUnlocked}"
+                                                   Value="True"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="IsOpen"
+                                            Value="True"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:InfoBar.Style>
+                </ui:InfoBar>
 
-            <!-- Premium Locked InfoBar (only shown for Store versions without premium) -->
-            <ui:InfoBar IsOpen="True"
-                        Severity="Warning"
-                        IsClosable="False"
-                        Margin="0,0,0,24">
-                <ui:InfoBar.Style>
-                    <Style TargetType="ui:InfoBar">
-                        <Setter Property="Visibility"
-                                Value="Collapsed"/>
-                        <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsStoreVersion}"
-                                               Value="True"/>
-                                    <Condition Binding="{Binding IsPremiumUnlocked}"
-                                               Value="False"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Visibility"
-                                        Value="Visible"/>
-                            </MultiDataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ui:InfoBar.Style>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{DynamicResource PremiumLockedMessage}"
-                               VerticalAlignment="Center"/>
-                    <ui:Button Name="UnlockPremiumButton"
-                               Command="{Binding DataContext.UnlockPremiumCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                               Appearance="Primary"
-                               Margin="12,2,0,2"
-                               FontSize="12"
-                               CornerRadius="6">
-                        <ui:Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource UnlockPremiumButton}"/>
-                                <TextBlock Text=" - "/>
-                                <TextBlock Text="{Binding PremiumPrice}"/>
-                            </StackPanel>
-                        </ui:Button.Content>
-                    </ui:Button>
-                </StackPanel>
-            </ui:InfoBar>
-
-            <StackPanel>
-                <TextBlock Text="{DynamicResource AppearanceBehaviorSectionTitle}"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,6"/>
-                <ui:CardControl Icon="{ui:SymbolIcon ProjectionScreen24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource SelectedMonitorTitle}"
-                                           FontSize="14"
-                                           FontWeight="Regular"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <ComboBox x:Name="FlyoutSelectedMonitorComboBox"
-                              ItemsSource="{Binding DataContext.MonitorOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                              DisplayMemberPath="DisplayName"
-                              SelectedIndex="{Binding FlyoutSelectedMonitor, Mode=TwoWay}"
-                              Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
-                    </ComboBox>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon PaintBucket24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource AcrylicBlurOpacityTitle}"
-                                           FontSize="14"
-                                           FontWeight="Regular"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <TextBlock Text="{DynamicResource AcrylicBlurOpacityDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal"
-                                Opacity="{Binding IsPremiumUnlocked, Converter={StaticResource BoolToFullHalfOpacityConverter}}">
-                        <Slider Minimum="0"
-                                Maximum="255"
-                                Value="{Binding AcrylicBlurOpacity, Mode=TwoWay}"
-                                IsEnabled="{Binding IsPremiumUnlocked}"
-                                TickFrequency="5"
-                                IsSnapToTickEnabled="True"
-                                Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"/>
-                        <ui:TextBlock Text="{Binding AcrylicBlurOpacity}"
-                                      Width="24"
-                                      TextAlignment="Center"
-                                      Margin="12,0,0,0"/>
-                    </StackPanel>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon EyeDropper24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource UseAlbumArtAccentColorTitle}"
-                                           FontSize="14"
-                                           FontWeight="Regular"
-                                           VerticalAlignment="Center"/>
-                                <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
-                                              FontWeight="Medium"
-                                              FontSize="10"
-                                              Margin="6,-2,0,-2"
-                                              Severity="Success"/>
-                            </StackPanel>
-                            <TextBlock Text="{DynamicResource UseAlbumArtAccentColorDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding UseAlbumArtAsAccentColor, Mode=TwoWay}"/>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon PaintBrush24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource UseCustomAccentColorTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource UseCustomAccentColorDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding UseCustomAccentColor, Mode=TwoWay}"/>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon Color24}"
-                                Margin="0,0,0,12"
-                                IsEnabled="{Binding UseCustomAccentColor}">
-                    <ui:CardControl.Header>
-                        <TextBlock Text="{DynamicResource CustomAccentColorHexTitle}"
-                                   FontSize="14"
-                                   FontWeight="Regular"
+                <!-- Premium Locked InfoBar (only shown for Store versions without premium) -->
+                <ui:InfoBar IsOpen="True"
+                            Severity="Warning"
+                            IsClosable="False"
+                            Margin="0,0,0,24">
+                    <ui:InfoBar.Style>
+                        <Style TargetType="ui:InfoBar">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsStoreVersion}"
+                                                   Value="True"/>
+                                        <Condition Binding="{Binding IsPremiumUnlocked}"
+                                                   Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility"
+                                            Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:InfoBar.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{DynamicResource PremiumLockedMessage}"
                                    VerticalAlignment="Center"/>
-                    </ui:CardControl.Header>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <!-- Color swatch button that toggles the picker popup -->
-                            <Button x:Name="ColorPickerToggleButton"
-                                    Width="36" Height="36"
-                                    Padding="0"
-                                    BorderThickness="2"
-                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                    Margin="0,0,8,0"
-                                    ToolTip="Abrir selector de color"
-                                    Click="ColorPickerToggleButton_Click">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border x:Name="SwatchBorder"
-                                                            CornerRadius="8"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                            Background="{TemplateBinding Background}"
-                                                            SnapsToDevicePixels="True">
-                                                        <Border.Effect>
-                                                            <DropShadowEffect Color="Black" Opacity="0.2"
-                                                                              BlurRadius="6" ShadowDepth="1"/>
-                                                        </Border.Effect>
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="SwatchBorder" Property="Opacity" Value="0.85"/>
-                                                        </Trigger>
-                                                        <Trigger Property="IsPressed" Value="True">
-                                                            <Setter TargetName="SwatchBorder" Property="Opacity" Value="0.7"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </Button.Style>
-                                <Button.Background>
-                                    <SolidColorBrush x:Name="SwatchBrush" Color="#808080"/>
-                                </Button.Background>
-                            </Button>
-
-                            <ui:TextBox x:Name="AccentColorTextBox"
-                                        Text="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        Width="110"
-                                        VerticalAlignment="Center"
-                                        ToolTip="{Binding CustomAccentColorHexValidationMessage}">
-                                <ui:TextBox.Style>
-                                    <Style TargetType="ui:TextBox">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasCustomAccentColorHexError}"
-                                                         Value="True">
-                                                <Setter Property="BorderBrush"
-                                                        Value="#C42B1C"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ui:TextBox.Style>
-                            </ui:TextBox>
-                        </StackPanel>
-
-                        <!-- Color Picker Popup -->
-                        <Popup x:Name="ColorPickerPopup"
-                               PlacementTarget="{Binding ElementName=ColorPickerToggleButton}"
-                               Placement="Bottom"
-                               StaysOpen="True"
-                               AllowsTransparency="True"
-                               PopupAnimation="Fade"
-                               HorizontalOffset="-8"
-                               VerticalOffset="6">
-                            <localControls:ColorPickerControl
-                                x:Name="EmbeddedColorPicker"
-                                SelectedColorHex="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        </Popup>
-
-                        <TextBlock Text="{Binding CustomAccentColorHexValidationMessage}"
-                                   Margin="0,6,0,0"
+                        <ui:Button Name="UnlockPremiumButton"
+                                   Command="{Binding DataContext.UnlockPremiumCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                   Appearance="Primary"
+                                   Margin="12,2,0,2"
                                    FontSize="12"
-                                   Foreground="#C42B1C"
-                                   Visibility="{Binding HasCustomAccentColorHexError, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                   CornerRadius="6">
+                            <ui:Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource UnlockPremiumButton}"/>
+                                    <TextBlock Text=" - "/>
+                                    <TextBlock Text="{Binding PremiumPrice}"/>
+                                </StackPanel>
+                            </ui:Button.Content>
+                        </ui:Button>
                     </StackPanel>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon Globe24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource AppLanguageTitle}"
+                </ui:InfoBar>
+
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource AppearanceBehaviorSectionTitle}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,6"/>
+                    <ui:CardControl Icon="{ui:SymbolIcon ProjectionScreen24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource SelectedMonitorTitle}"
+                                               FontSize="14"
+                                               FontWeight="Regular"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ComboBox x:Name="FlyoutSelectedMonitorComboBox"
+                                  ItemsSource="{Binding DataContext.MonitorOptions, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedIndex="{Binding FlyoutSelectedMonitor, Mode=TwoWay}"
+                                  Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
+                        </ComboBox>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon PaintBucket24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource AcrylicBlurOpacityTitle}"
+                                               FontSize="14"
+                                               FontWeight="Regular"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{DynamicResource AcrylicBlurOpacityDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <StackPanel Orientation="Horizontal"
+                                    Opacity="{Binding IsPremiumUnlocked, Converter={StaticResource BoolToFullHalfOpacityConverter}}">
+                            <Slider Minimum="0"
+                                    Maximum="255"
+                                    Value="{Binding AcrylicBlurOpacity, Mode=TwoWay}"
+                                    IsEnabled="{Binding IsPremiumUnlocked}"
+                                    TickFrequency="5"
+                                    IsSnapToTickEnabled="True"
+                                    Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"/>
+                            <ui:TextBlock Text="{Binding AcrylicBlurOpacity}"
+                                          Width="24"
+                                          TextAlignment="Center"
+                                          Margin="12,0,0,0"/>
+                        </StackPanel>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon EyeDropper24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource UseAlbumArtAccentColorTitle}"
+                                               FontSize="14"
+                                               FontWeight="Regular"
+                                               VerticalAlignment="Center"/>
+                                    <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
+                                                  FontWeight="Medium"
+                                                  FontSize="10"
+                                                  Margin="6,-2,0,-2"
+                                                  Severity="Success"/>
+                                </StackPanel>
+                                <TextBlock Text="{DynamicResource UseAlbumArtAccentColorDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch IsChecked="{Binding UseAlbumArtAsAccentColor, Mode=TwoWay}"/>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon PaintBrush24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource UseCustomAccentColorTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource UseCustomAccentColorDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch IsChecked="{Binding UseCustomAccentColor, Mode=TwoWay}"/>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon Color24}"
+                                    Margin="0,0,0,12"
+                                    IsEnabled="{Binding UseCustomAccentColor}">
+                        <ui:CardControl.Header>
+                            <TextBlock Text="{DynamicResource CustomAccentColorHexTitle}"
                                        FontSize="14"
                                        FontWeight="Regular"
                                        VerticalAlignment="Center"/>
-                            <TextBlock VerticalAlignment="Center"
+                        </ui:CardControl.Header>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Color swatch button that toggles the picker popup -->
+                                <Button x:Name="ColorPickerToggleButton"
+                                        Width="36"
+                                        Height="36"
+                                        Padding="0"
+                                        BorderThickness="2"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        Margin="0,0,8,0"
+                                        ToolTip="Abrir selector de color"
+                                        Click="ColorPickerToggleButton_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="SwatchBorder"
+                                                                CornerRadius="8"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                Background="{TemplateBinding Background}"
+                                                                SnapsToDevicePixels="True">
+                                                            <Border.Effect>
+                                                                <DropShadowEffect Color="Black"
+                                                                        Opacity="0.2"
+                                                                                  BlurRadius="6"
+                                                                        ShadowDepth="1"/>
+                                                            </Border.Effect>
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver"
+                                                                    Value="True">
+                                                                <Setter TargetName="SwatchBorder"
+                                                                        Property="Opacity"
+                                                                        Value="0.85"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed"
+                                                                    Value="True">
+                                                                <Setter TargetName="SwatchBorder"
+                                                                        Property="Opacity"
+                                                                        Value="0.7"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                    <Button.Background>
+                                        <SolidColorBrush x:Name="SwatchBrush"
+                                                Color="#808080"/>
+                                    </Button.Background>
+                                </Button>
+
+                                <ui:TextBox x:Name="AccentColorTextBox"
+                                            Text="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Width="110"
+                                            VerticalAlignment="Center"
+                                            ToolTip="{Binding CustomAccentColorHexValidationMessage}">
+                                    <ui:TextBox.Style>
+                                        <Style TargetType="ui:TextBox">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasCustomAccentColorHexError}"
+                                                             Value="True">
+                                                    <Setter Property="BorderBrush"
+                                                            Value="#C42B1C"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ui:TextBox.Style>
+                                </ui:TextBox>
+                            </StackPanel>
+
+                            <!-- Color Picker Popup -->
+                            <Popup x:Name="ColorPickerPopup"
+                                   PlacementTarget="{Binding ElementName=ColorPickerToggleButton}"
+                                   Placement="Bottom"
+                                   StaysOpen="True"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Fade"
+                                   HorizontalOffset="-8"
+                                   VerticalOffset="6">
+                                <localControls:ColorPickerControl
+                                    x:Name="EmbeddedColorPicker"
+                                    SelectedColorHex="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Popup>
+
+                            <TextBlock Text="{Binding CustomAccentColorHexValidationMessage}"
+                                       Margin="0,6,0,0"
                                        FontSize="12"
-                                       Opacity="0.5">
+                                       Foreground="#C42B1C"
+                                       Visibility="{Binding HasCustomAccentColorHexError, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                        </StackPanel>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon Globe24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource AppLanguageTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           FontSize="12"
+                                           Opacity="0.5">
                                 <Run Text="{DynamicResource AppLanguageDescription}"/>
                                 <Hyperlink Command="{Binding DataContext.NavigateUrlCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                            CommandParameter="https://hosted.weblate.org/engage/fluentflyout/"
@@ -310,48 +325,48 @@
                                                                                                               FontSize="14"
                                                                                                               Symbol="Open16"/>
                                 </Hyperlink>
-                            </TextBlock>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <ComboBox Name="AppLanguageComboBox"
-                              ItemsSource="{Binding LanguageOptions}"
-                              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
-                              DisplayMemberPath="DisplayName"
-                              Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"/>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon Color24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource AppThemeTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <ComboBox Name="AppThemeComboBox"
-                              SelectedIndex="{Binding AppTheme, Mode=TwoWay}"
-                              IsReadOnly="False"
-                              Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
-                        <ComboBoxItem Content="{DynamicResource AppThemeDefault}"/>
-                        <ComboBoxItem Content="{DynamicResource AppThemeLight}"/>
-                        <ComboBoxItem Content="{DynamicResource AppThemeDark}"/>
-                    </ComboBox>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon ShareScreenStart24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource LaunchOnStartupTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LaunchOnStartupDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                            <TextBlock VerticalAlignment="Center"
-                                       FontSize="12"
-                                       Opacity="0.5">
+                                </TextBlock>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ComboBox Name="AppLanguageComboBox"
+                                  ItemsSource="{Binding LanguageOptions}"
+                                  SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"/>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon Color24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource AppThemeTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ComboBox Name="AppThemeComboBox"
+                                  SelectedIndex="{Binding AppTheme, Mode=TwoWay}"
+                                  IsReadOnly="False"
+                                  Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
+                            <ComboBoxItem Content="{DynamicResource AppThemeDefault}"/>
+                            <ComboBoxItem Content="{DynamicResource AppThemeLight}"/>
+                            <ComboBoxItem Content="{DynamicResource AppThemeDark}"/>
+                        </ComboBox>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon ShareScreenStart24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource LaunchOnStartupTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LaunchOnStartupDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           FontSize="12"
+                                           Opacity="0.5">
                                 <Run Text="{DynamicResource StartupAppsSettingsInfo}"/>
                                 <Hyperlink x:Name="StartupHyperlink"
                                            Command="{Binding DataContext.NavigateUrlCommand, RelativeSource={RelativeSource AncestorType=Page}}"
@@ -363,46 +378,345 @@
                                                                                                             FontSize="14"
                                                                                                             Symbol="Apps16"/>
                                 </Hyperlink>
-                            </TextBlock>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch x:Name="StartupSwitch"
-                                           IsChecked="{Binding Startup, Mode=TwoWay}"
-                                           Command="{Binding DataContext.SetStartupCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                           CommandParameter="{Binding IsChecked, ElementName=StartupSwitch}"/>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon ArrowMinimize24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource DisableOnFullscreenTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource DisableOnFullscreenDescription}"
+                                </TextBlock>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch x:Name="StartupSwitch"
+                                               IsChecked="{Binding Startup, Mode=TwoWay}"
+                                               Command="{Binding DataContext.SetStartupCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding IsChecked, ElementName=StartupSwitch}"/>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon ArrowMinimize24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource DisableOnFullscreenTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource DisableOnFullscreenDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch Name="DisableIfFullscreenSwitch"
+                                               IsChecked="{Binding DisableIfFullscreen, Mode=TwoWay}"/>
+                    </ui:CardControl>
+
+
+
+                    <!-- internal player section -->
+                    <TextBlock Text="{DynamicResource PlaybackSourceModeTitle}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="0,12,0,6"/>
+
+                    <ui:CardControl Icon="{ui:SymbolIcon PlayCircle24}"
+                                    Margin="0,0,0,12">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource PlaybackSourceModeDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <StackPanel Orientation="Vertical"
+                                    MinWidth="300">
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+                                <RadioButton Content="{DynamicResource PlaybackSourceModeInternal}"
+                                             GroupName="PlaybackSourceModeGroup"
+                                             IsChecked="{Binding IsInternalPlayerMode, Mode=OneWay}"
+                                             Checked="InternalPlaybackMode_Checked"
+                                             Style="{StaticResource AccentSegmentedTabStyle}"
+                                             Padding="16,6"
+                                             Margin="0,0,4,0"/>
+                                <RadioButton Content="{DynamicResource PlaybackSourceModeExternal}"
+                                             GroupName="PlaybackSourceModeGroup"
+                                             IsChecked="{Binding IsExternalMediaControlMode, Mode=OneWay}"
+                                             Checked="ExternalPlaybackMode_Checked"
+                                             Style="{StaticResource AccentSegmentedTabStyle}"
+                                             Padding="16,6"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource PlaybackSourceModeInternalDescription}"
                                        FontSize="12"
-                                       Opacity="0.5"/>
+                                       Opacity="0.6"
+                                       Margin="0,10,0,0"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding IsInternalPlayerMode, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                            <TextBlock Text="{DynamicResource PlaybackSourceModeExternalDescription}"
+                                       FontSize="12"
+                                       Opacity="0.6"
+                                       Margin="0,10,0,0"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding IsExternalMediaControlMode, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
                         </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch Name="DisableIfFullscreenSwitch"
-                                           IsChecked="{Binding DisableIfFullscreen, Mode=TwoWay}"/>
-                </ui:CardControl>
+                    </ui:CardControl>
 
+                    <ui:CardControl Icon="{ui:SymbolIcon Record24}"
+                                    Margin="0,0,0,3"
+                                    Visibility="{Binding IsInternalPlayerMode, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource TurntableModeTitle}"
+                                               FontSize="14"
+                                               FontWeight="Regular"
+                                               VerticalAlignment="Center"/>
+                                    <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
+                                                  FontWeight="Medium"
+                                                  FontSize="10"
+                                                  Margin="6,-2,0,-2"
+                                                  Severity="Success"/>
+                                </StackPanel>
+                                <TextBlock Text="{DynamicResource TurntableModeDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch IsChecked="{Binding TurntableModeEnabled, Mode=TwoWay}"/>
+                    </ui:CardControl>
 
+                    <!-- library appearance section -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,12,0,6">
+                        <TextBlock Text="{DynamicResource LibraryAppearanceSectionTitle}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <ui:Button Icon="{ui:SymbolIcon ArrowCounterclockwise20}"
+                                   Appearance="Transparent"
+                                   Margin="12,0,0,0"
+                                   Padding="4"
+                                   Content="{DynamicResource Lib_ResetAppearance}"
+                                   Command="{Binding DataContext.ResetLibraryLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
+                    </StackPanel>
 
-                <!-- internal player section -->
-                <TextBlock Text="{DynamicResource InternalMusicPlayerSectionTitle}"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,12,0,6"/>
+                    <!-- Live Preview Card -->
+                    <ui:Card Margin="0,0,0,12"
+                             Background="{DynamicResource ControlFillColorDefaultBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                <ui:CardControl Icon="{ui:SymbolIcon Record24}"
-                                Margin="0,0,0,3"
-                                Visibility="{Binding InternalPlayerEnabled, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
-                    <ui:CardControl.Header>
+                            <StackPanel Grid.Column="0"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Lib_PreviewTitle}"
+                                           FontWeight="SemiBold"
+                                           Margin="12,0,0,4"/>
+                                <TextBlock Text="{DynamicResource Lib_PreviewDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"
+                                           Margin="12,0,0,0"/>
+                            </StackPanel>
+
+                            <Border Grid.Column="1"
+                                    Width="80"
+                                    Height="80"
+                                    Margin="12"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="{Binding LibraryItemCornerRadius, Converter={StaticResource DoubleToCornerRadiusConverter}}">
+                                <ui:SymbolIcon Symbol="MusicNote124"
+                                               FontSize="32"
+                                               Opacity="0.3"/>
+                            </Border>
+                        </Grid>
+                    </ui:Card>
+
+                    <ui:CardControl Icon="{ui:SymbolIcon Table24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource LibraryGridSizeTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LibraryGridSizeDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
                         <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+                                <TextBlock Text="{DynamicResource Lib_SizeSmall}"
+                                           FontSize="10"
+                                           Opacity="0.5"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+                                <Slider Minimum="100"
+                                        Maximum="250"
+                                        Value="{Binding LibraryGridItemSize, Mode=TwoWay}"
+                                        TickFrequency="10"
+                                        IsSnapToTickEnabled="True"
+                                        Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
+                                        VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Lib_SizeLarge}"
+                                           FontSize="10"
+                                           Opacity="0.5"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0"/>
+                                <ui:TextBlock Text="{Binding LibraryGridItemSize}"
+                                              Width="30"
+                                              TextAlignment="Right"
+                                              VerticalAlignment="Center"
+                                              Margin="12,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:CardControl>
+
+                    <ui:CardControl Icon="{ui:SymbolIcon MusicNote124}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource LibraryTrackIconSizeTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource LibraryTrackIconSizeDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{DynamicResource Lib_SizeSmall}"
+                                       FontSize="10"
+                                       Opacity="0.5"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <Slider Minimum="32"
+                                    Maximum="96"
+                                    Value="{Binding LibraryTrackIconSize, Mode=TwoWay}"
+                                    TickFrequency="4"
+                                    IsSnapToTickEnabled="True"
+                                    Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
+                                    VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource Lib_SizeLarge}"
+                                       FontSize="10"
+                                       Opacity="0.5"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"/>
+                            <ui:TextBlock Text="{Binding LibraryTrackIconSize}"
+                                          Width="30"
+                                          TextAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Margin="12,0,0,0"/>
+                        </StackPanel>
+                    </ui:CardControl>
+
+                    <ui:CardControl Icon="{ui:SymbolIcon Shapes24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource Lib_CornerRadiusTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Lib_CornerRadiusDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Square24"
+                                           FontSize="12"
+                                           Opacity="0.5"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+                            <Slider Minimum="0"
+                                    Maximum="32"
+                                    Value="{Binding LibraryItemCornerRadius, Mode=TwoWay}"
+                                    TickFrequency="2"
+                                    IsSnapToTickEnabled="True"
+                                    Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
+                                    VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Circle24"
+                                           FontSize="12"
+                                           Opacity="0.5"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0"/>
+                            <ui:TextBlock Text="{Binding LibraryItemCornerRadius}"
+                                          Width="30"
+                                          TextAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Margin="12,0,0,0"/>
+                        </StackPanel>
+                    </ui:CardControl>
+
+                    <!-- tray icon section -->
+                    <TextBlock Text="{DynamicResource TrayIconSectionTitle}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="0,12,0,6"/>
+                    <ui:CardControl Icon="{ui:SymbolIcon CursorHover24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource TrayIconLeftClickBehaviorTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource TrayIconLeftClickBehaviorDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ComboBox SelectedIndex="{Binding NIconLeftClick, Mode=TwoWay}"
+                                  Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
+                            <ComboBoxItem Content="{DynamicResource TrayIconLeftClickOption1}"/>
+                            <ComboBoxItem Content="{DynamicResource TrayIconLeftClickOption2}"/>
+                        </ComboBox>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon PaintBrush24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource Win11TrayIconTitle}"
+                                           FontSize="14"
+                                           FontWeight="Regular"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Win11TrayIconDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch IsChecked="{Binding NIconSymbol, Mode=TwoWay}"/>
+                    </ui:CardControl>
+                    <ui:CardControl Icon="{ui:SymbolIcon EyeOff24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{DynamicResource HideTrayIconTitle}"
+                                               FontSize="14"
+                                               FontWeight="Regular"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{DynamicResource HideTrayIconDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch x:Name="NIconHideSwitch"
+                                               IsChecked="{Binding NIconHide, Mode=TwoWay}"
+                                               IsEnabled="{Binding IsPremiumUnlocked}"
+                                               Command="{Binding DataContext.SetNIconHideCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding IsChecked, ElementName=NIconHideSwitch}"/>
+                    </ui:CardControl>
+
+                    <!-- back up & restore section -->
+                    <TextBlock Text="{DynamicResource BackupRestoreSectionTitle}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="0,12,0,6"/>
+                    <ui:CardControl Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource TurntableModeTitle}"
+                                <TextBlock Text="{DynamicResource BackupRestoreCardTitle}"
                                            FontSize="14"
                                            FontWeight="Regular"
                                            VerticalAlignment="Center"/>
@@ -412,336 +726,65 @@
                                               Margin="6,-2,0,-2"
                                               Severity="Success"/>
                             </StackPanel>
-                            <TextBlock Text="{DynamicResource TurntableModeDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding TurntableModeEnabled, Mode=TwoWay}"/>
-                </ui:CardControl>
-
-                <ui:CardControl Icon="{ui:SymbolIcon MusicNote124}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource InternalPlayerEnabledTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource InternalPlayerEnabledDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding InternalPlayerEnabled, Mode=TwoWay}"/>
-                </ui:CardControl>
-
-                <!-- library appearance section -->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0,12,0,6">
-                    <TextBlock Text="{DynamicResource LibraryAppearanceSectionTitle}"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                    <ui:Button Icon="{ui:SymbolIcon ArrowCounterclockwise20}"
-                               Appearance="Transparent"
-                               Margin="12,0,0,0"
-                               Padding="4"
-                               Content="{DynamicResource Lib_ResetAppearance}"
-                               Command="{Binding DataContext.ResetLibraryLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
-                </StackPanel>
-
-                <!-- Live Preview Card -->
-                <ui:Card Margin="0,0,0,12"
-                         Background="{DynamicResource ControlFillColorDefaultBrush}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0"
-                                    VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource Lib_PreviewTitle}"
-                                       FontWeight="SemiBold"
-                                       Margin="12,0,0,4"/>
-                            <TextBlock Text="{DynamicResource Lib_PreviewDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"
-                                       Margin="12,0,0,0"/>
-                        </StackPanel>
-
-                        <Border Grid.Column="1"
-                                Width="80"
-                                Height="80"
-                                Margin="12"
-                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                CornerRadius="{Binding LibraryItemCornerRadius}">
-                            <ui:SymbolIcon Symbol="MusicNote124"
-                                           FontSize="32"
-                                           Opacity="0.3"/>
-                        </Border>
-                    </Grid>
-                </ui:Card>
-
-                <ui:CardControl Icon="{ui:SymbolIcon Table24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource LibraryGridSizeTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LibraryGridSizeDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Right">
-                            <TextBlock Text="{DynamicResource Lib_SizeSmall}"
-                                       FontSize="10"
-                                       Opacity="0.5"
-                                       VerticalAlignment="Center"
+                        </ui:CardControl.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:Button Content="{DynamicResource ExportSettings}"
+                                       Command="{Binding DataContext.ExportSettingsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                        Margin="0,0,8,0"/>
-                            <Slider Minimum="100"
-                                    Maximum="250"
-                                    Value="{Binding LibraryGridItemSize, Mode=TwoWay}"
-                                    TickFrequency="10"
-                                    IsSnapToTickEnabled="True"
-                                    Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
-                                    VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource Lib_SizeLarge}"
-                                       FontSize="10"
-                                       Opacity="0.5"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0"/>
-                            <ui:TextBlock Text="{Binding LibraryGridItemSize}"
-                                          Width="30"
-                                          TextAlignment="Right"
-                                          VerticalAlignment="Center"
-                                          Margin="12,0,0,0"/>
+                            <ui:Button Content="{DynamicResource ImportSettings}"
+                                       Command="{Binding DataContext.ImportSettingsCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
                         </StackPanel>
-                    </StackPanel>
-                </ui:CardControl>
+                    </ui:CardControl>
 
-                <ui:CardControl Icon="{ui:SymbolIcon MusicNote124}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource LibraryTrackIconSizeTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource LibraryTrackIconSizeDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{DynamicResource Lib_SizeSmall}"
-                                   FontSize="10"
-                                   Opacity="0.5"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
-                        <Slider Minimum="32"
-                                Maximum="96"
-                                Value="{Binding LibraryTrackIconSize, Mode=TwoWay}"
-                                TickFrequency="4"
-                                IsSnapToTickEnabled="True"
-                                Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
-                                VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Lib_SizeLarge}"
-                                   FontSize="10"
-                                   Opacity="0.5"
-                                   VerticalAlignment="Center"
-                                   Margin="8,0,0,0"/>
-                        <ui:TextBlock Text="{Binding LibraryTrackIconSize}"
-                                      Width="30"
-                                      TextAlignment="Right"
-                                      VerticalAlignment="Center"
-                                      Margin="12,0,0,0"/>
-                    </StackPanel>
-                </ui:CardControl>
-
-                <ui:CardControl Icon="{ui:SymbolIcon Shapes24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource Lib_CornerRadiusTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource Lib_CornerRadiusDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Square24"
-                                       FontSize="12"
-                                       Opacity="0.5"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,8,0"/>
-                        <Slider Minimum="0"
-                                Maximum="32"
-                                Value="{Binding LibraryItemCornerRadius, Mode=TwoWay}"
-                                TickFrequency="2"
-                                IsSnapToTickEnabled="True"
-                                Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
-                                VerticalAlignment="Center"/>
-                        <ui:SymbolIcon Symbol="Circle24"
-                                       FontSize="12"
-                                       Opacity="0.5"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0"/>
-                        <ui:TextBlock Text="{Binding LibraryItemCornerRadius}"
-                                      Width="30"
-                                      TextAlignment="Right"
-                                      VerticalAlignment="Center"
-                                      Margin="12,0,0,0"/>
-                    </StackPanel>
-                </ui:CardControl>
-
-                <!-- tray icon section -->
-                <TextBlock Text="{DynamicResource TrayIconSectionTitle}"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,12,0,6"/>
-                <ui:CardControl Icon="{ui:SymbolIcon CursorHover24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource TrayIconLeftClickBehaviorTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource TrayIconLeftClickBehaviorDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <ComboBox SelectedIndex="{Binding NIconLeftClick, Mode=TwoWay}"
-                              Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
-                        <ComboBoxItem Content="{DynamicResource TrayIconLeftClickOption1}"/>
-                        <ComboBoxItem Content="{DynamicResource TrayIconLeftClickOption2}"/>
-                    </ComboBox>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon PaintBrush24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource Win11TrayIconTitle}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource Win11TrayIconDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding NIconSymbol, Mode=TwoWay}"/>
-                </ui:CardControl>
-                <ui:CardControl Icon="{ui:SymbolIcon EyeOff24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{DynamicResource HideTrayIconTitle}"
+                    <ui:CardControl Icon="{ui:SymbolIcon FolderOpen24}"
+                                    Margin="0,0,0,3">
+                        <ui:CardControl.Header>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{DynamicResource TrayIcon_ViewLogsOption}"
                                            FontSize="14"
                                            FontWeight="Regular"
                                            VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource ViewLogsDescription}"
+                                           FontSize="12"
+                                           Opacity="0.5"/>
                             </StackPanel>
-                            <TextBlock Text="{DynamicResource HideTrayIconDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch x:Name="NIconHideSwitch"
-                                           IsChecked="{Binding NIconHide, Mode=TwoWay}"
-                                           IsEnabled="{Binding IsPremiumUnlocked}"
-                                           Command="{Binding DataContext.SetNIconHideCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                           CommandParameter="{Binding IsChecked, ElementName=NIconHideSwitch}"/>
-                </ui:CardControl>
+                        </ui:CardControl.Header>
+                        <ui:Button Content="{DynamicResource ViewLogs}"
+                                   Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
+                    </ui:CardControl>
 
-                <!-- back up & restore section -->
-                <TextBlock Text="{DynamicResource BackupRestoreSectionTitle}"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,12,0,6"/>
-                <ui:CardControl Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{DynamicResource BackupRestoreCardTitle}"
+                    <!-- update section -->
+                    <TextBlock Text="{DynamicResource UpdatesSectionTitle}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="0,12,0,6"/>
+                    <ui:CardControl Margin="0,0,0,36">
+                        <ui:CardControl.Header>
+                            <TextBlock Text="{DynamicResource ShowUpdateNotificationsTitle}"
                                        FontSize="14"
                                        FontWeight="Regular"
                                        VerticalAlignment="Center"/>
-                            <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
-                                          FontWeight="Medium"
-                                          FontSize="10"
-                                          Margin="6,-2,0,-2"
-                                          Severity="Success"/>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:Button Content="{DynamicResource ExportSettings}"
-                                   Command="{Binding DataContext.ExportSettingsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                   Margin="0,0,8,0"/>
-                        <ui:Button Content="{DynamicResource ImportSettings}"
-                                   Command="{Binding DataContext.ImportSettingsCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
-                    </StackPanel>
-                </ui:CardControl>
+                        </ui:CardControl.Header>
+                        <controls:ToggleSwitch IsChecked="{Binding ShowUpdateNotifications, Mode=TwoWay}"/>
+                    </ui:CardControl>
 
-                <ui:CardControl Icon="{ui:SymbolIcon FolderOpen24}"
-                                Margin="0,0,0,3">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{DynamicResource TrayIcon_ViewLogsOption}"
-                                       FontSize="14"
-                                       FontWeight="Regular"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource ViewLogsDescription}"
-                                       FontSize="12"
-                                       Opacity="0.5"/>
+                    <!-- advanced -->
+                    <ui:CardAction Margin="0,0,0,76"
+                                   IsChevronVisible="True"
+                                   Command="{Binding DataContext.NavigateToAdvancedCommand, RelativeSource={RelativeSource AncestorType=Page}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:TextBlock Text="{DynamicResource AdvancedSettingsTitle}"/>
+                                <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
+                                              FontWeight="Medium"
+                                              FontSize="10"
+                                              Margin="6,-2,0,-2"
+                                              Severity="Success"/>
+                            </StackPanel>
                         </StackPanel>
-                    </ui:CardControl.Header>
-                    <ui:Button Content="{DynamicResource ViewLogs}"
-                               Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
-                </ui:CardControl>
-
-                <!-- update section -->
-                <TextBlock Text="{DynamicResource UpdatesSectionTitle}"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,12,0,6"/>
-                <ui:CardControl Margin="0,0,0,36">
-                    <ui:CardControl.Header>
-                        <TextBlock Text="{DynamicResource ShowUpdateNotificationsTitle}"
-                                   FontSize="14"
-                                   FontWeight="Regular"
-                                   VerticalAlignment="Center"/>
-                    </ui:CardControl.Header>
-                    <controls:ToggleSwitch IsChecked="{Binding ShowUpdateNotifications, Mode=TwoWay}"/>
-                </ui:CardControl>
-
-                <!-- advanced -->
-                <ui:CardAction Margin="0,0,0,76"
-                               IsChevronVisible="True"
-                               Command="{Binding DataContext.NavigateToAdvancedCommand, RelativeSource={RelativeSource AncestorType=Page}}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <ui:TextBlock Text="{DynamicResource AdvancedSettingsTitle}"/>
-                            <ui:InfoBadge Value="{DynamicResource General_NewLabel}"
-                                          FontWeight="Medium"
-                                          FontSize="10"
-                                          Margin="6,-2,0,-2"
-                                          Severity="Success"/>
-                        </StackPanel>
-                    </StackPanel>
-                </ui:CardAction>
+                    </ui:CardAction>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </Page>

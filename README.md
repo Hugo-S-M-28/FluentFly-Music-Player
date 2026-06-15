@@ -1,6 +1,6 @@
 # FluentFlyout - Reproductor de Música Moderno
 
-![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg?logo=dotnet&logoColor=white)
+![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg?logo=dotnet&logoColor=white)
 
 ## 🎵 Descripción
 
@@ -29,25 +29,34 @@ Queremos dar todo el crédito al autor original por la idea innovadora y la base
 
 ## ✨ Características Principales
 
-- **Diseño Premium**: Interfaz moderna con efectos de transparencia (Mica/Acrylic) y animaciones suaves.
-- **Control Universal de Medios**: Sincronización en tiempo real con el Servicio Global de Control de Transporte de Medios (GSMTC) de Windows.
-- **Arquitectura MVVM**: Refactorización completa utilizando `CommunityToolkit.Mvvm` para una lógica limpia y reactiva.
-- **Modos Visuales Dinámicos**: Soporte completo para Temas Claro/Oscuro y colores de acento dinámicos basados en el arte del álbum.
-- **Integración con la Barra de Tareas**: Widget personalizado en la barra de tareas para un control rápido.
-- **Notificaciones "Next Up"**: Ventanas emergentes elegantes que muestran la siguiente pista antes de que comience.
-- **Altamente Personalizable**: Ajustes de duración de visibilidad, posición en pantalla, teclas de acceso rápido y comportamientos de control.
+- **Diseño Premium**: Interfaz moderna con efectos de transparencia (Mica/Acrylic), gradientes dinámicos y animaciones fluidas basadas en WPF.
+- **Control Universal de Medios**: Integración bidireccional y en tiempo real con el Servicio Global de Control de Transporte de Medios (GSMTC) de Windows para controlar Spotify, YouTube, navegadores, etc.
+- **Ecualizador de 10 Bandas**: Procesamiento de audio integrado con ecualización de 10 bandas de frecuencia (desde 31 Hz hasta 16 kHz) con preajustes integrados (Pop, Rock, Jazz, etc.) y guardado de ganancias personalizadas.
+- **Visualizador de Espectro en la Barra de Tareas**: Visualizador FFT interactivo integrado en el widget de la barra de tareas con ajustes de cantidad de barras, sensibilidad, picos de audio, efecto espejo y alineación.
+- **Soporte de Formatos de Audio Avanzados**: Reproducción directa y nativa de archivos sin pérdida **FLAC**, además de **Ogg Vorbis**, **Opus**, **MP3** (NLayer) y formatos estándar de Windows.
+- **Gestor de Biblioteca de Música (`LibraryManager`)**: Escaneo inteligente en segundo plano, monitoreo de directorios en tiempo real con `FileSystemWatcher`, persistencia en base de datos JSON (`library.json`) y caché de portadas basada en hash MD5.
+- **Letras Sincronizadas (LRC)**: Soporte para lectura e incrustación de letras en las pistas de audio, con carga de archivos de letras externos con formato `.lrc` sincronizado.
+- **Internacionalización y Soporte Multi-idioma**: Traducido a múltiples idiomas (Español, Inglés, Chino, Ruso, Vietnamita, Turco, etc.) gestionado por un componente de localización dinámica.
+- **Arquitectura MVVM Limpia**: Refactorización completa utilizando `CommunityToolkit.Mvvm` y contenedor de Inyección de Dependencias de Microsoft para un mantenimiento ágil.
+- **Notificaciones "Next Up"**: Ventanas emergentes de aviso previo sobre la siguiente pista en reproducción.
 
 ---
 
 ## 🛠️ Tecnologías
 
-- **Lenguaje**: C# / .NET 8
-- **Framework UI**: WPF (Windows Presentation Foundation)
-- **Librerías de Diseño**:
-  - [WPF-UI](https://github.com/lepoco/wpfui) - Componentes Fluent modernos.
-  - [MicaWPF](https://github.com/SimpLeischa/MicaWPF) - Soporte nativo para efectos de fondo de Windows 11.
-- **Arquitectura**: MVVM (Model-View-ViewModel) con Community Toolkit.
-- **Logging**: NLog para un seguimiento robusto de errores y eventos.
+- **Lenguaje y Runtime**: C# / .NET 10 (WPF)
+- **Motor de Audio**:
+  - [NAudio](https://github.com/naudio/NAudio) - Motor de reproducción y procesamiento.
+  - [BunLabs.NAudio.Flac](https://github.com/BunLabs/BunLabs.NAudio.Flac) - Decodificación FLAC.
+  - [NAudio.Vorbis](https://github.com/naudio/NAudio.Vorbis) - Decodificación Ogg Vorbis.
+  - [Concentus](https://github.com/losttech/Concentus) & [Concentus.Oggfile](https://github.com/losttech/Concentus) - Decodificación de audio Opus.
+- **Librerías de Diseño e Interfaz**:
+  - [WPF-UI](https://github.com/lepoco/wpfui) - Componentes visuales y controles de diseño Fluent.
+  - [MicaWPF](https://github.com/SimpLeischa/MicaWPF) - Soporte avanzado para efectos Mica y Acrylic de Windows 11.
+- **Metadatos y Utilidades**:
+  - [TagLibSharp](https://github.com/mono/taglib-sharp) - Lectura y escritura de etiquetas/metadatos e imágenes incrustadas.
+  - [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/WindowsCommunityToolkit) - Patrón MVVM reactivo.
+  - [NLog](https://github.com/NLog/NLog) - Registro y monitoreo de eventos en el sistema.
 
 ---
 
@@ -56,7 +65,7 @@ Queremos dar todo el crédito al autor original por la idea innovadora y la base
 ### Requisitos
 
 - Windows 10 (1809+) o Windows 11.
-- .NET 8.0 Runtime o SDK.
+- .NET 10.0 Runtime o SDK.
 
 ### Ejecución desde el código
 
@@ -66,7 +75,7 @@ Queremos dar todo el crédito al autor original por la idea innovadora y la base
    git clone https://github.com/Hugo-S-M-28/Reproductor-Musica.git
    ```
 
-2. Abrir `FluentFlyout.sln` en Visual Studio 2022.
+2. Abrir `FluentFlyout.sln` en Visual Studio 2022 o 2026.
 3. Restaurar los paquetes NuGet.
 4. Establecer `FluentFlyoutWPF` como proyecto de inicio y presionar `F5`.
 
@@ -170,7 +179,7 @@ El proyecto sigue una estructura estricta de Model-View-ViewModel para garantiza
 ### 1. Requisitos Previos
 
 - **Sistema Operativo**: Windows 10 (1809 o superior) o Windows 11.
-- **Entorno**: .NET 8.0 SDK instalado.
+- **Entorno**: .NET 10.0 SDK instalado.
 
 ## 🚀 Instalación y Despliegue Local
 
@@ -191,7 +200,7 @@ dotnet restore
 
 ### 3️⃣ Ejecutar la Aplicación
 
-Puedes ejecutar el proyecto directamente desde la terminal o usando Visual Studio 2022:
+Puedes ejecutar el proyecto directamente desde la terminal o usando Visual Studio 2022 / 2026:
 
 ```bash
 dotnet run --project FluentFlyoutWPF

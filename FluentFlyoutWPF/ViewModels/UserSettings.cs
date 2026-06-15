@@ -15,6 +15,7 @@ using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentFlyoutWPF.Classes.Messages;
 using System.ComponentModel;
+using PlaybackMode = FluentFlyoutWPF.Models.PlaybackSourceMode;
 
 namespace FluentFlyoutWPF.ViewModels;
 
@@ -24,16 +25,118 @@ namespace FluentFlyoutWPF.ViewModels;
 public partial class UserSettings : ObservableObject
 {
     /// <summary>
+    /// Serialized playback mode for new settings files.
+    /// </summary>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [XmlElement(ElementName = "PlaybackSourceMode")]
+    public string PlaybackSourceModeSerialized
+    {
+        get => PlaybackSourceMode.ToString();
+        set
+        {
+            if (Enum.TryParse<PlaybackMode>(value, out var mode))
+            {
+                _playbackSourceMode = mode;
+                _playbackSourceModeLoadedFromXml = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Legacy migration hook for old settings.xml files.
+    /// </summary>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [XmlElement(ElementName = "InternalPlayerEnabled")]
+    public bool LegacyInternalPlayerEnabled
+    {
+        get => InternalPlayerEnabled;
+        set => _legacyInternalPlayerEnabled = value;
+    }
+
+    /// <summary>
+    /// Legacy migration hook for old settings.xml files.
+    /// </summary>
+    [Browsable(false)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [XmlElement(ElementName = "SystemMediaControlEnabled")]
+    public bool LegacySystemMediaControlEnabled
+    {
+        get => SystemMediaControlEnabled;
+        set => _legacySystemMediaControlEnabled = value;
+    }
+
+    [XmlIgnore]
+    public PlaybackMode PlaybackSourceMode
+    {
+        get => _playbackSourceMode;
+        set
+        {
+            if (!SetProperty(ref _playbackSourceMode, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(InternalPlayerEnabled));
+            OnPropertyChanged(nameof(SystemMediaControlEnabled));
+            OnPropertyChanged(nameof(IsInternalPlayerMode));
+            OnPropertyChanged(nameof(IsExternalMediaControlMode));
+
+            if (_initializing)
+            {
+                return;
+            }
+
+            ApplyPlaybackSourceModeChange(value);
+        }
+    }
+
+    /// <summary>
     /// Enable internal music player (playing local files instead of system media)
     /// </summary>
-    [ObservableProperty]
-    public partial bool InternalPlayerEnabled { get; set; }
+    [XmlIgnore]
+    public bool InternalPlayerEnabled
+    {
+        get => PlaybackSourceMode == PlaybackMode.InternalPlayer;
+        set
+        {
+            if (value)
+            {
+                PlaybackSourceMode = PlaybackMode.InternalPlayer;
+            }
+            else if (PlaybackSourceMode == PlaybackMode.InternalPlayer)
+            {
+                PlaybackSourceMode = PlaybackMode.ExternalMediaControl;
+            }
+        }
+    }
 
     /// <summary>
     /// Enable controlling other media applications (Spotify, YouTube, etc.)
     /// </summary>
-    [ObservableProperty]
-    public partial bool SystemMediaControlEnabled { get; set; }
+    [XmlIgnore]
+    public bool SystemMediaControlEnabled
+    {
+        get => PlaybackSourceMode == PlaybackMode.ExternalMediaControl;
+        set
+        {
+            if (value)
+            {
+                PlaybackSourceMode = PlaybackMode.ExternalMediaControl;
+            }
+            else if (PlaybackSourceMode == PlaybackMode.ExternalMediaControl)
+            {
+                PlaybackSourceMode = PlaybackMode.InternalPlayer;
+            }
+        }
+    }
+
+    [XmlIgnore]
+    public bool IsInternalPlayerMode => PlaybackSourceMode == PlaybackMode.InternalPlayer;
+
+    [XmlIgnore]
+    public bool IsExternalMediaControlMode => PlaybackSourceMode == PlaybackMode.ExternalMediaControl;
 
     /// <summary>
     /// User selected music library folders
@@ -705,6 +808,14 @@ public partial class UserSettings : ObservableObject
 
     [XmlIgnore]
     private bool _initializing = true;
+    [XmlIgnore]
+    private PlaybackMode _playbackSourceMode = PlaybackMode.InternalPlayer;
+    [XmlIgnore]
+    private bool _playbackSourceModeLoadedFromXml;
+    [XmlIgnore]
+    private bool? _legacyInternalPlayerEnabled;
+    [XmlIgnore]
+    private bool? _legacySystemMediaControlEnabled;
 
     public UserSettings()
     {
@@ -713,84 +824,84 @@ public partial class UserSettings : ObservableObject
             LanguageOptions.Add(new LanguageOption(supportedLanguage.Key, supportedLanguage.Value));
         }
 
-        InternalPlayerEnabled = true;
-        SystemMediaControlEnabled = true;
+        _playbackSourceMode = PlaybackMode.InternalPlayer;
         CompactLayout = false;
         FlyoutSelectedMonitor = 0;
         Position = 0;
         FlyoutAnimationSpeed = 2;
         PlayerInfoEnabled = true;
-        RepeatEnabled = false;
-        ShuffleEnabled = false;
+        RepeatEnabled = true;
+        ShuffleEnabled = true;
         Startup = true;
         Duration = 3000;
-        NextUpEnabled = false;
+        NextUpEnabled = true;
         NextUpDuration = 2000;
         NIconLeftClick = 0;
-        CenterTitleArtist = false;
+        CenterTitleArtist = true;
         FlyoutAnimationEasingStyle = 2;
         LockKeysEnabled = true;
         LockKeysDuration = 2000;
-        AppTheme = 0;
+        AppTheme = 2;
         MediaFlyoutEnabled = true;
         EqualizerEnabled = true;
         ActiveEqPresetName = "Normal";
         EqualizerGains = new float[10];
         MediaFlyoutAlwaysDisplay = false;
         MediaFlyoutVolumeKeysExcluded = false;
-        NIconSymbol = false;
+        NIconSymbol = true;
         NIconHide = false;
         DisableIfFullscreen = true;
-        LockKeysBoldUi = false;
+        LockKeysBoldUi = true;
         LockKeysMonitorPreference = 0;
         LastKnownVersion = "";
-        SeekbarEnabled = false;
+        SeekbarEnabled = true;
         PauseOtherSessionsEnabled = false;
         LockKeysAnimated = true;
         LockKeysInsertEnabled = true;
-        MediaFlyoutBackgroundBlur = 0;
+        MediaFlyoutBackgroundBlur = 3;
         MediaFlyoutAcrylicWindowEnabled = true;
-        AppLanguage = "system";
+        AppLanguage = "es";
         FlowDirection = FlowDirection.LeftToRight;
         FontFamily = "Segoe UI Variable, Microsoft YaHei UI, Yu Gothic UI";
         NextUpAcrylicWindowEnabled = true;
         LockKeysAcrylicWindowEnabled = true;
-        TaskbarWidgetEnabled = false;
+        TaskbarWidgetEnabled = true;
         TaskbarWidgetSelectedMonitor = 0;
-        TaskbarWidgetPosition = 0;
+        TaskbarWidgetAutoHide = false;
+        TaskbarWidgetPosition = 1;
         TaskbarWidgetPadding = true;
         TaskbarWidgetManualPadding = 0;
-        TaskbarWidgetBackgroundBlur = false;
+        TaskbarWidgetBackgroundBlur = true;
         TaskbarWidgetHideCompletely = false;
-        TaskbarWidgetControlsEnabled = false;
+        TaskbarWidgetControlsEnabled = true;
         TaskbarWidgetControlsPosition = 1;
         TaskbarWidgetAnimated = true;
-        TaskbarVisualizerEnabled = false;
+        TaskbarVisualizerEnabled = true;
         TaskbarVisualizerPosition = 1;
-        TaskbarVisualizerClickable = false;
-        TaskbarVisualizerBarCount = 10;
-        TaskbarVisualizerCenteredBars = false;
-        TaskbarVisualizerBaseline = false;
-        TaskbarVisualizerAudioSensitivity = 5;
-        TaskbarVisualizerAudioPeakLevel = 8;
-        TaskbarVisualizerStereoMode = 0;
+        TaskbarVisualizerClickable = true;
+        TaskbarVisualizerBarCount = 12;
+        TaskbarVisualizerCenteredBars = true;
+        TaskbarVisualizerBaseline = true;
+        TaskbarVisualizerAudioSensitivity = 6;
+        TaskbarVisualizerAudioPeakLevel = 5;
+        TaskbarVisualizerStereoMode = 1;
         AcrylicBlurOpacity = 175;
-        UseAlbumArtAsAccentColor = false;
-        UseCustomAccentColor = false;
-        CustomAccentColorHex = "#808080";
+        UseAlbumArtAsAccentColor = true;
+        UseCustomAccentColor = true;
+        CustomAccentColorHex = "#00B7C3";
         LastUpdateNotificationUnixSeconds = 0;
         ShowUpdateNotifications = true;
         LegacyTaskbarWidthEnabled = false;
-        LibraryTrackIconSize = 40.0;
-        LibraryGridItemSize = 160.0;
-        LibrarySortProperty = "Title";
+        LibraryTrackIconSize = 80.0;
+        LibraryGridItemSize = 180.0;
+        LibrarySortProperty = "Artist";
         LibrarySortAscending = true;
         LibrarySearchText = string.Empty;
         LibrarySelectedTab = 0;
         LibraryLyricsFilterEnabled = false;
-        LibraryPlaylistVisible = false;
+        LibraryPlaylistVisible = true;
         LibraryItemCornerRadius = 12.0;
-        TurntableModeEnabled = false;
+        TurntableModeEnabled = true;
     }
 
     /// <summary>
@@ -798,7 +909,85 @@ public partial class UserSettings : ObservableObject
     /// </summary>
     internal void CompleteInitialization()
     {
+        EnsureDefaultLibraryFolders();
+        RemoveDuplicateLibraryEntries();
+        InitializePlaybackSourceMode();
         _initializing = false;
+    }
+
+    public bool ShouldSerializeLegacyInternalPlayerEnabled() => false;
+
+    public bool ShouldSerializeLegacySystemMediaControlEnabled() => false;
+
+    private void InitializePlaybackSourceMode()
+    {
+        _playbackSourceMode = _playbackSourceModeLoadedFromXml
+            ? _playbackSourceMode
+            : ResolvePlaybackSourceMode(_legacyInternalPlayerEnabled, _legacySystemMediaControlEnabled);
+    }
+
+    private static PlaybackMode ResolvePlaybackSourceMode(bool? legacyInternalPlayerEnabled, bool? legacySystemMediaControlEnabled)
+    {
+        return (legacyInternalPlayerEnabled, legacySystemMediaControlEnabled) switch
+        {
+            (true, false) => PlaybackMode.InternalPlayer,
+            (false, true) => PlaybackMode.ExternalMediaControl,
+            _ => PlaybackMode.InternalPlayer
+        };
+    }
+
+    private void EnsureDefaultLibraryFolders()
+    {
+        if (MusicLibraryFolders.Count > 0)
+        {
+            return;
+        }
+
+        string defaultMusicFolder = global::System.Environment.GetFolderPath(global::System.Environment.SpecialFolder.MyMusic);
+        if (!string.IsNullOrWhiteSpace(defaultMusicFolder))
+        {
+            MusicLibraryFolders.Add(defaultMusicFolder);
+        }
+    }
+
+    private void RemoveDuplicateLibraryEntries()
+    {
+        RemoveDuplicateEntries(MusicLibraryFolders);
+        RemoveDuplicateEntries(ExcludedLibraryPaths);
+    }
+
+    private static void RemoveDuplicateEntries(ObservableCollection<string> paths)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = paths.Count - 1; i >= 0; i--)
+        {
+            string? path = paths[i]?.Trim();
+
+            if (string.IsNullOrWhiteSpace(path) || !seen.Add(path))
+            {
+                paths.RemoveAt(i);
+                continue;
+            }
+
+            if (!string.Equals(paths[i], path, StringComparison.Ordinal))
+            {
+                paths[i] = path;
+            }
+        }
+    }
+
+    private void ApplyPlaybackSourceModeChange(PlaybackMode mode)
+    {
+        if (mode == PlaybackMode.ExternalMediaControl)
+        {
+            MusicPlayerService.Instance.Stop();
+        }
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            ExternalMediaService.Instance.UpdateStateFromSettings();
+        });
     }
 
     partial void OnAppLanguageChanged(string oldValue, string newValue)
@@ -1071,30 +1260,6 @@ public partial class UserSettings : ObservableObject
         }
     }
 
-    partial void OnInternalPlayerEnabledChanged(bool oldValue, bool newValue)
-    {
-        if (oldValue == newValue || _initializing) return;
-
-        if (!newValue)
-        {
-            MusicPlayerService.Instance.Stop();
-        }
-
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-            ExternalMediaService.Instance.UpdateStateFromSettings();
-        });
-    }
-
-    partial void OnSystemMediaControlEnabledChanged(bool oldValue, bool newValue)
-    {
-        if (oldValue == newValue || _initializing) return;
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-            ExternalMediaService.Instance.UpdateStateFromSettings();
-        });
-    }
-
     partial void OnMediaFlyoutEnabledChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
@@ -1117,6 +1282,8 @@ public partial class UserSettings : ObservableObject
         if (!_initializing && 
             e.PropertyName != nameof(IsPremiumUnlocked) && 
             e.PropertyName != nameof(IsDurationEditable) &&
+            e.PropertyName != nameof(Volume) && // Saved separately with debounce by MusicPlayerService
+            e.PropertyName != nameof(LibrarySearchText) && // Avoid persisting every search keystroke
             e.PropertyName != nameof(LastPlaybackPosition) && // Avoid excessive writes during playback
             !string.IsNullOrEmpty(e.PropertyName))
         {

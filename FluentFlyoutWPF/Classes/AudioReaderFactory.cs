@@ -159,7 +159,8 @@ public static class AudioReaderFactory
         const int ProbeSize = 64 * 1024;
         stream.Position = 0;
 
-        byte[] buffer = new byte[Math.Min((int)Math.Max(stream.Length, firstBytes.Length), ProbeSize)];
+        int size = (int)Math.Min(stream.Length, (long)ProbeSize);
+        byte[] buffer = new byte[size];
         int read = stream.Read(buffer, 0, buffer.Length);
         var probe = new ReadOnlySpan<byte>(buffer, 0, read);
 

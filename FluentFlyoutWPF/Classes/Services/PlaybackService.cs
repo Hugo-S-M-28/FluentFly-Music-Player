@@ -36,7 +36,7 @@ public sealed class PlaybackService : IPlaybackService
     public TrackModel? CurrentTrack => Player.CurrentTrack;
     public int CurrentQueueIndex => Player.CurrentQueueIndex;
     public bool CanUndo => Player.CanUndo;
-    public string UndoActionName => Player.UndoActionName;
+    public QueueUndoActionKind UndoActionKind => Player.UndoActionKind;
 
     public bool IsShuffleEnabled
     {

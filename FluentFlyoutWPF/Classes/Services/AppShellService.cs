@@ -1,4 +1,5 @@
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Pages;
 
 namespace FluentFlyoutWPF.Classes.Services;
 
@@ -13,7 +14,7 @@ public class AppShellService : IAppShellService
 
     public void OpenSettings()
     {
-        _windowManager.ShowSettings();
+        _windowManager.NavigateSettings(typeof(SystemPage));
     }
 
     public void OpenRepository()

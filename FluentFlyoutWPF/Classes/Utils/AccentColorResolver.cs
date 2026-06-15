@@ -36,7 +36,7 @@ public static class AccentColorResolver
         bool hasAlbumArt,
         SolidColorBrush? albumArtBrush = null)
     {
-        if (useAlbumArtAsAccentColor && hasAlbumArt && albumArtBrush != null)
+        if (useAlbumArtAsAccentColor && hasAlbumArt)
         {
             return AccentColorSource.AlbumArt;
         }
@@ -62,15 +62,34 @@ public static class AccentColorResolver
 
         return source switch
         {
-            AccentColorSource.AlbumArt => resolvedAlbumArtBrush!,
+            AccentColorSource.AlbumArt when resolvedAlbumArtBrush != null => resolvedAlbumArtBrush,
             AccentColorSource.Custom when TryParseCustomAccent(settings.CustomAccentColorHex, out var customBrush) => customBrush!,
+            AccentColorSource.AlbumArt when settings.UseCustomAccentColor && TryParseCustomAccent(settings.CustomAccentColorHex, out var customBrush) => customBrush!,
             _ => ThemeResourceHelper.GetSecondaryTextSolidBrush()
         };
     }
 
     public static bool ShouldUseAccent(SolidColorBrush? albumArtBrush = null)
     {
-        return ResolveAccentSource(albumArtBrush) != AccentColorSource.Neutral;
+        var settings = SettingsManager.Current;
+        var resolvedAlbumArtBrush = albumArtBrush ?? BitmapHelper.SavedDominantColors.FirstOrDefault();
+        var source = ResolveAccentSource(
+            settings.UseAlbumArtAsAccentColor,
+            settings.UseCustomAccentColor,
+            settings.CustomAccentColorHex,
+            BitmapHelper.HasAlbumArt,
+            resolvedAlbumArtBrush);
+
+        if (source == AccentColorSource.AlbumArt && resolvedAlbumArtBrush == null)
+        {
+            if (settings.UseCustomAccentColor && TryParseCustomAccent(settings.CustomAccentColorHex, out _))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        return source != AccentColorSource.Neutral;
     }
 
     public static bool TryParseCustomAccent(string? hex, out SolidColorBrush? brush)

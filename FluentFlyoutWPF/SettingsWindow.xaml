@@ -13,7 +13,7 @@
     MinWidth="800"
     Width="1000"
     WindowStartupLocation="CenterScreen"
-    Title="FluentFlyout"
+    Title="{DynamicResource App_ProductName}"
     Icon="/Resources/FluentFlyout2.ico"
     TextOptions.TextRenderingMode="ClearType"
     TextOptions.TextFormattingMode="Ideal"
@@ -29,12 +29,18 @@
     Loaded="SettingsWindow_Loaded">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
         <ui:NavigationView x:Name="RootNavigation"
+                           Grid.Row="1"
                            PaneDisplayMode="Left"
                            TransitionDuration="300"
                            Navigated="RootNavigation_OnNavigated"
                            IsPaneToggleVisible="true"
-                           Margin="0, 40, 0, 0"
+                           Margin="0"
                            FrameMargin="0, 0, 0, 0"
                            OpenPaneLength="250"
                            IsTopSeparatorVisible="false"
@@ -73,8 +79,9 @@
 
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="FluentFlyout"
-            Grid.Row="0">
+            Title="{DynamicResource App_ProductName}"
+            Grid.Row="0"
+            Height="40">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="/Resources/FluentFlyout2.ico"/>
             </ui:TitleBar.Icon>

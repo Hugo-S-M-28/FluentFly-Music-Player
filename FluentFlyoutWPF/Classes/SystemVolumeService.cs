@@ -43,10 +43,14 @@ public class SystemVolumeService : IDisposable
             if (_defaultDevice != null)
             {
                 _defaultDevice.AudioEndpointVolume.OnVolumeNotification -= AudioEndpointVolume_OnVolumeNotification;
+                _defaultDevice.Dispose();
+                _defaultDevice = null;
             }
 
-            var enumerator = new MMDeviceEnumerator();
-            _defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            using (var enumerator = new MMDeviceEnumerator())
+            {
+                _defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            }
             _defaultDevice.AudioEndpointVolume.OnVolumeNotification += AudioEndpointVolume_OnVolumeNotification;
             
             Logger.Info($"SystemVolumeService initialized with device: {_defaultDevice.FriendlyName}");
@@ -97,6 +101,8 @@ public class SystemVolumeService : IDisposable
         if (_defaultDevice != null)
         {
             _defaultDevice.AudioEndpointVolume.OnVolumeNotification -= AudioEndpointVolume_OnVolumeNotification;
+            _defaultDevice.Dispose();
+            _defaultDevice = null;
         }
 
         GC.SuppressFinalize(this);

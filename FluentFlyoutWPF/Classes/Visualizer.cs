@@ -284,6 +284,15 @@ namespace FluentFlyoutWPF.Classes
                 _isRunning = true;
                 _lastDataAvailableUtc = DateTime.UtcNow;
 
+                // Show the visualizer immediately when capture starts so it appears
+                // at the same time as the music note, without waiting for the first
+                // FFT frame with actual audio content.
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    SettingsManager.Current.TaskbarVisualizerHasContent = true;
+                    UpdateBitmap();
+                });
+
                 // Rebuild frequency bands if sample rate changed
                 RebuildFrequencyBands();
 
@@ -346,6 +355,12 @@ namespace FluentFlyoutWPF.Classes
             _captureWatchdog?.Stop();
             _captureWatchdog?.Dispose();
             _captureWatchdog = null;
+
+            // Reset HasContent so the visualizer container collapses when stopped.
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                SettingsManager.Current.TaskbarVisualizerHasContent = false;
+            });
         }
 
         private void OnDataAvailable(object? sender, WaveInEventArgs e)

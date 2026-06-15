@@ -5,6 +5,7 @@ using FluentFlyout.Classes.Settings;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -99,6 +100,7 @@ internal static class BitmapHelper
 
     // current or latest dominant colors
     private static List<SolidColorBrush>? _currentDominantColors;
+    private readonly record struct ColorSample(byte R, byte G, byte B, double Weight);
 
     public static List<SolidColorBrush> SavedDominantColors
     {
@@ -109,13 +111,16 @@ internal static class BitmapHelper
         => (_currentHashCodeContext.Value != 0 ? _currentHashCodeContext.Value : _currentHashCode) != 0;
 
     public static int GetStableThumbnailHash(IRandomAccessStreamReference thumbnail)
+        => GetStableThumbnailHashAsync(thumbnail).GetAwaiter().GetResult();
+
+    public static async Task<int> GetStableThumbnailHashAsync(IRandomAccessStreamReference thumbnail)
     {
         if (thumbnail == null)
             return 0;
 
         try
         {
-            using Stream stream = thumbnail.OpenReadAsync().GetAwaiter().GetResult().AsStreamForRead();
+            await using Stream stream = await OpenThumbnailReadStreamAsync(thumbnail).ConfigureAwait(false);
             using SHA256 sha256 = SHA256.Create();
             byte[] hashBytes = sha256.ComputeHash(stream);
             return BitConverter.ToInt32(hashBytes, 0);
@@ -144,11 +149,14 @@ internal static class BitmapHelper
     }
 
     internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference? thumbnail, int maxThumbnailSize = _maxThumbnailSize)
+        => GetThumbnailAsync(thumbnail, maxThumbnailSize).GetAwaiter().GetResult();
+
+    internal static async Task<BitmapImage?> GetThumbnailAsync(IRandomAccessStreamReference? thumbnail, int maxThumbnailSize = _maxThumbnailSize)
     {
         if (thumbnail == null)
             return null;
 
-        int hashCode = GetStableThumbnailHash(thumbnail);
+        int hashCode = await GetStableThumbnailHashAsync(thumbnail).ConfigureAwait(false);
 
         if (hashCode == 0)
             return null;
@@ -159,7 +167,7 @@ internal static class BitmapHelper
             _currentHashCodeContext.Value = hashCode;
             return cachedImage;
         }
-        using (var imageStream = thumbnail.OpenReadAsync().GetAwaiter().GetResult().AsStreamForRead())
+        await using (var imageStream = await OpenThumbnailReadStreamAsync(thumbnail).ConfigureAwait(false))
         {
             // initialize the BitmapImage
             imageStream.Position = 0;
@@ -178,6 +186,15 @@ internal static class BitmapHelper
             _currentHashCodeContext.Value = hashCode;
             return image;
         }
+    }
+
+    private static Stream OpenThumbnailReadStream(IRandomAccessStreamReference thumbnail)
+        => OpenThumbnailReadStreamAsync(thumbnail).GetAwaiter().GetResult();
+
+    private static async Task<Stream> OpenThumbnailReadStreamAsync(IRandomAccessStreamReference thumbnail)
+    {
+        var stream = await thumbnail.OpenReadAsync().AsTask().ConfigureAwait(false);
+        return stream.AsStreamForRead();
     }
 
     internal static CroppedBitmap? CropToSquare(BitmapImage? sourceImage)
@@ -249,179 +266,19 @@ internal static class BitmapHelper
             byte[] pixels = new byte[height * stride];
             formattedBitmap.CopyPixels(pixels, stride, 0);
 
-            // downsample pixels
-            var rng = new Random();
-            var samples = new List<int[]>();
-
-            for (int i = 0; i < pixels.Length; i += 4)
+            bool darkTheme = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
+            var samples = BuildDeterministicSamples(pixels, width, height);
+            if (samples.Count == 0)
             {
-                byte b = pixels[i];
-                byte g = pixels[i + 1];
-                byte r = pixels[i + 2];
-                byte a = pixels[i + 3];
-
-                if (a < 128) continue;
-                if (rng.Next(10) != 0) continue; // sample ~10%
-
-                samples.Add([r, g, b]);
+                _currentDominantColors = [];
+                return _currentDominantColors;
             }
 
-            List<Color> result;
+            List<Color> result = colorCount == 1
+                ? [ExtractRepresentativeColor(samples)]
+                : ExtractClusterColors(samples, colorCount, maxIterations);
 
-            if (colorCount == 1)
-            {
-                // histogram peak for single dominant color for single color extraction (~2x faster than k-means)
-                const int quantBits = 4;
-                const int bins = 1 << quantBits;
-                var histogram = new int[bins * bins * bins];
-
-                foreach (var pixel in samples)
-                {
-                    float r = pixel[0] / 255f;
-                    float g = pixel[1] / 255f;
-                    float b = pixel[2] / 255f;
-
-                    float max = MathF.Max(r, MathF.Max(g, b));
-                    float min = MathF.Min(r, MathF.Min(g, b));
-                    float chroma = max - min;
-                    float lightness = (max + min) / 2f;
-
-                    // skip blacks, whites, and neutrals
-                    if (chroma < 0.15f) continue;
-                    if (lightness < 0.15f || lightness > 0.85f) continue;
-
-                    // weight by chroma so vivid colors dominate
-                    float weight = chroma * chroma;
-
-                    int ri = pixel[0] >> (8 - quantBits);
-                    int gi = pixel[1] >> (8 - quantBits);
-                    int bi = pixel[2] >> (8 - quantBits);
-                    histogram[ri * bins * bins + gi * bins + bi] += (int)(weight * 100);
-                }
-
-                int peakIdx = 0;
-                for (int i = 1; i < histogram.Length; i++)
-                    if (histogram[i] > histogram[peakIdx]) peakIdx = i;
-
-                int pr = peakIdx / (bins * bins);
-                int pg = (peakIdx / bins) % bins;
-                int pb = peakIdx % bins;
-
-                // map each bin index back to the center of its value range
-                byte peakR = (byte)((pr << (8 - quantBits)) + (1 << (8 - quantBits - 1)));
-                byte peakG = (byte)((pg << (8 - quantBits)) + (1 << (8 - quantBits - 1)));
-                byte peakB = (byte)((pb << (8 - quantBits)) + (1 << (8 - quantBits - 1)));
-
-                result = [Color.FromArgb(255, peakR, peakG, peakB)];
-            }
-            else
-            {
-                // get random initial centroids
-                var centroids = samples
-                    .OrderBy(_ => rng.Next())
-                    .Take(colorCount)
-                    .Select(p => new double[] { p[0], p[1], p[2] })
-                    .ToList();
-
-                // k-means iterations
-                for (int iter = 0; iter < maxIterations; iter++)
-                {
-                    var clusters = Enumerable.Range(0, colorCount)
-                        .Select(_ => new List<int[]>())
-                        .ToList();
-
-                    // assign pixels to nearest centroid
-                    foreach (var pixel in samples)
-                    {
-                        int best = 0;
-                        double bestDist = double.MaxValue;
-
-                        for (int i = 0; i < colorCount; i++)
-                        {
-                            double dr = pixel[0] - centroids[i][0];
-                            double dg = pixel[1] - centroids[i][1];
-                            double db = pixel[2] - centroids[i][2];
-                            double dist = dr * dr + dg * dg + db * db;
-
-                            if (dist < bestDist) { bestDist = dist; best = i; }
-                        }
-
-                        clusters[best].Add(pixel);
-                    }
-
-                    // recalculate centroids + check convergence
-                    bool converged = true;
-                    for (int i = 0; i < colorCount; i++)
-                    {
-                        if (clusters[i].Count == 0) continue;
-
-                        double newR = clusters[i].Average(p => p[0]);
-                        double newG = clusters[i].Average(p => p[1]);
-                        double newB = clusters[i].Average(p => p[2]);
-
-                        double dr = newR - centroids[i][0];
-                        double dg = newG - centroids[i][1];
-                        double db = newB - centroids[i][2];
-
-                        if (dr * dr + dg * dg + db * db > 1.0) converged = false;
-
-                        centroids[i][0] = newR;
-                        centroids[i][1] = newG;
-                        centroids[i][2] = newB;
-                    }
-
-                    if (converged) break;
-                }
-
-                result = [.. centroids.Select(c => Color.FromArgb(255, (byte)c[0], (byte)c[1], (byte)c[2]))];
-            }
-
-            if (ApplicationThemeManager.GetSystemTheme() == SystemTheme.Dark)
-            {
-                // lighten colors and add contrast when in dark mode
-                result = [.. result
-                .Select(c =>
-                {
-                    double r = ToLinear(c.R);
-                    double g = ToLinear(c.G);
-                    double b = ToLinear(c.B);
-
-                    double luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-                    // lift colors that are too dark for black backgrounds
-                    double targetL = Math.Max(luminance, 0.75);
-                    double scale = targetL / Math.Max(0.0001, luminance);
-                    r *= scale; g *= scale; b *= scale;
-
-                    // desaturate
-                    double desaturation = 0.35;
-                    double newL = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                    r += (newL - r) * desaturation;
-                    g += (newL - g) * desaturation;
-                    b += (newL - b) * desaturation;
-
-                    return Color.FromArgb(c.A, ToGamma(r), ToGamma(g), ToGamma(b));
-                })];
-            }
-            else
-            {
-                // just desaturate when in light mode
-                result = [.. result
-            .Select(c =>
-            {
-                double r = ToLinear(c.R);
-                double g = ToLinear(c.G);
-                double b = ToLinear(c.B);
-
-                double desaturation = 0.35;
-                double newL = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                r += (newL - r) * desaturation;
-                g += (newL - g) * desaturation;
-                b += (newL - b) * desaturation;
-
-                return Color.FromArgb(c.A, ToGamma(r), ToGamma(g), ToGamma(b));
-            })];
-            }
+            result = [.. result.Select(c => NormalizeAccentColor(c, darkTheme))];
 
             // convert to brushes
             var brushes = result.Select(c =>
@@ -454,4 +311,222 @@ internal static class BitmapHelper
 
     private static byte ToGamma(double v)
         => (byte)Math.Clamp(Math.Pow(v, 1.0 / 2.2) * 255.0, 0, 255);
+
+    internal static Color ExtractRepresentativeColorForTests(params (byte r, byte g, byte b, double weight)[] samples)
+    {
+        var colorSamples = samples.Select(sample => new ColorSample(sample.r, sample.g, sample.b, sample.weight)).ToList();
+        return ExtractRepresentativeColor(colorSamples);
+    }
+
+    private static List<ColorSample> BuildDeterministicSamples(byte[] pixels, int width, int height)
+    {
+        var samples = new List<ColorSample>(Math.Min(width * height, 4096));
+        int stepX = Math.Max(1, width / 48);
+        int stepY = Math.Max(1, height / 48);
+        double centerX = (width - 1) / 2.0;
+        double centerY = (height - 1) / 2.0;
+        double maxDistance = Math.Sqrt((centerX * centerX) + (centerY * centerY));
+
+        for (int y = 0; y < height; y += stepY)
+        {
+            for (int x = 0; x < width; x += stepX)
+            {
+                int pixelIndex = ((y * width) + x) * 4;
+                byte b = pixels[pixelIndex];
+                byte g = pixels[pixelIndex + 1];
+                byte r = pixels[pixelIndex + 2];
+                byte a = pixels[pixelIndex + 3];
+
+                if (a < 160)
+                    continue;
+
+                var metrics = AnalyzeColor(r, g, b);
+                if (metrics.Chroma < 0.08f)
+                    continue;
+
+                double distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
+                double centerWeight = 1.0 - (distance / Math.Max(1.0, maxDistance));
+                double lumaWeight = metrics.Lightness switch
+                {
+                    < 0.10f => 0.15,
+                    > 0.92f => 0.20,
+                    _ => 1.0
+                };
+                double weight = Math.Max(0.15, (0.35 + (metrics.Chroma * 1.8) + (centerWeight * 0.9)) * lumaWeight);
+
+                samples.Add(new ColorSample(r, g, b, weight));
+            }
+        }
+
+        return samples;
+    }
+
+    private static Color ExtractRepresentativeColor(List<ColorSample> samples)
+    {
+        const int quantBits = 4;
+        const int bins = 1 << quantBits;
+        var histogram = new double[bins * bins * bins];
+        var totals = new (double R, double G, double B, double Weight)[histogram.Length];
+
+        foreach (var sample in samples)
+        {
+            var metrics = AnalyzeColor(sample.R, sample.G, sample.B);
+            double prominence = sample.Weight
+                * Math.Max(0.18, metrics.Chroma)
+                * (1.0 - Math.Abs(metrics.Lightness - 0.52f));
+
+            int ri = sample.R >> (8 - quantBits);
+            int gi = sample.G >> (8 - quantBits);
+            int bi = sample.B >> (8 - quantBits);
+            int index = ri * bins * bins + gi * bins + bi;
+
+            histogram[index] += prominence;
+            totals[index].R += sample.R * prominence;
+            totals[index].G += sample.G * prominence;
+            totals[index].B += sample.B * prominence;
+            totals[index].Weight += prominence;
+        }
+
+        int peakIndex = Array.IndexOf(histogram, histogram.Max());
+        if (peakIndex < 0 || totals[peakIndex].Weight <= 0.0001)
+        {
+            var fallback = samples
+                .OrderByDescending(s => s.Weight)
+                .First();
+            return Color.FromArgb(255, fallback.R, fallback.G, fallback.B);
+        }
+
+        byte r = (byte)Math.Clamp(totals[peakIndex].R / totals[peakIndex].Weight, 0, 255);
+        byte g = (byte)Math.Clamp(totals[peakIndex].G / totals[peakIndex].Weight, 0, 255);
+        byte b = (byte)Math.Clamp(totals[peakIndex].B / totals[peakIndex].Weight, 0, 255);
+        return Color.FromArgb(255, r, g, b);
+    }
+
+    private static List<Color> ExtractClusterColors(List<ColorSample> samples, int colorCount, int maxIterations)
+    {
+        var orderedSeeds = samples
+            .OrderByDescending(sample => sample.Weight)
+            .Take(Math.Max(colorCount * 3, colorCount))
+            .ToList();
+
+        var centroids = orderedSeeds
+            .Take(colorCount)
+            .Select(sample => new double[] { sample.R, sample.G, sample.B })
+            .ToList();
+
+        while (centroids.Count < colorCount)
+        {
+            var fallback = orderedSeeds[centroids.Count % orderedSeeds.Count];
+            centroids.Add([fallback.R, fallback.G, fallback.B]);
+        }
+
+        for (int iteration = 0; iteration < maxIterations; iteration++)
+        {
+            var sums = Enumerable.Range(0, colorCount)
+                .Select(_ => new double[4])
+                .ToArray();
+            bool converged = true;
+
+            foreach (var sample in samples)
+            {
+                int best = 0;
+                double bestDistance = double.MaxValue;
+
+                for (int i = 0; i < colorCount; i++)
+                {
+                    double dr = sample.R - centroids[i][0];
+                    double dg = sample.G - centroids[i][1];
+                    double db = sample.B - centroids[i][2];
+                    double distance = dr * dr + dg * dg + db * db;
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        best = i;
+                    }
+                }
+
+                sums[best][0] += sample.R * sample.Weight;
+                sums[best][1] += sample.G * sample.Weight;
+                sums[best][2] += sample.B * sample.Weight;
+                sums[best][3] += sample.Weight;
+            }
+
+            for (int i = 0; i < colorCount; i++)
+            {
+                if (sums[i][3] <= 0.0001)
+                    continue;
+
+                double newR = sums[i][0] / sums[i][3];
+                double newG = sums[i][1] / sums[i][3];
+                double newB = sums[i][2] / sums[i][3];
+
+                double dr = newR - centroids[i][0];
+                double dg = newG - centroids[i][1];
+                double db = newB - centroids[i][2];
+                if ((dr * dr) + (dg * dg) + (db * db) > 1.0)
+                    converged = false;
+
+                centroids[i][0] = newR;
+                centroids[i][1] = newG;
+                centroids[i][2] = newB;
+            }
+
+            if (converged)
+                break;
+        }
+
+        return [.. centroids.Select(c => Color.FromArgb(255, (byte)c[0], (byte)c[1], (byte)c[2]))];
+    }
+
+    private static Color NormalizeAccentColor(Color color, bool darkTheme)
+    {
+        double r = ToLinear(color.R);
+        double g = ToLinear(color.G);
+        double b = ToLinear(color.B);
+        double luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+        if (darkTheme)
+        {
+            double targetLuminance = Math.Clamp(Math.Max(luminance, 0.42), 0.42, 0.74);
+            double scale = targetLuminance / Math.Max(0.0001, luminance);
+            r *= scale;
+            g *= scale;
+            b *= scale;
+
+            const double desaturation = 0.22;
+            double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            r += (l - r) * desaturation;
+            g += (l - g) * desaturation;
+            b += (l - b) * desaturation;
+        }
+        else
+        {
+            const double desaturation = 0.28;
+            double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            r += (l - r) * desaturation;
+            g += (l - g) * desaturation;
+            b += (l - b) * desaturation;
+
+            double adjustedLuminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            if (adjustedLuminance > 0.72)
+            {
+                double scale = 0.72 / adjustedLuminance;
+                r *= scale;
+                g *= scale;
+                b *= scale;
+            }
+        }
+
+        return Color.FromArgb(color.A, ToGamma(r), ToGamma(g), ToGamma(b));
+    }
+
+    private static (float Chroma, float Lightness) AnalyzeColor(byte rByte, byte gByte, byte bByte)
+    {
+        float r = rByte / 255f;
+        float g = gByte / 255f;
+        float b = bByte / 255f;
+        float max = MathF.Max(r, MathF.Max(g, b));
+        float min = MathF.Min(r, MathF.Min(g, b));
+        return (max - min, (max + min) / 2f);
+    }
 }

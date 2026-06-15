@@ -253,6 +253,8 @@ public partial class TaskbarWidgetControl : UserControl
                 ProgressLine.Width = 0;
                 ProgressLine.Visibility = Visibility.Collapsed;
 
+                ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
+
                 Visibility = Visibility.Visible;
             });
             return;
@@ -327,10 +329,6 @@ public partial class TaskbarWidgetControl : UserControl
                 PlayPauseIcon.Symbol = _isPaused ? SymbolRegular.Play24 : SymbolRegular.Pause24;
             }
 
-            ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
-
-            // Handled in ApplyAccentColor
-
             if (icon != null)
             {
                 if (_isPaused)
@@ -355,6 +353,8 @@ public partial class TaskbarWidgetControl : UserControl
                 SongImage.ImageSource = null;
                 BackgroundImage.Source = null;
             }
+
+            ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
 
             SongTitle.Visibility = Visibility.Visible;
             SongArtist.Visibility = !string.IsNullOrEmpty(artist) ? Visibility.Visible : Visibility.Collapsed; // hide artist if it's not available
@@ -418,13 +418,12 @@ public partial class TaskbarWidgetControl : UserControl
     // event handlers for media control buttons
     private async void Previous_Click(object sender, RoutedEventArgs e)
     {
-
-        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
-        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            await focusedSession.ControlSession.TrySkipPreviousAsync();
+            await resolved.ExternalSession.ControlSession.TrySkipPreviousAsync();
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.PlayPrevious();
         }
@@ -432,14 +431,13 @@ public partial class TaskbarWidgetControl : UserControl
 
     private async void PlayPause_Click(object sender, RoutedEventArgs e)
     {
-
-        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
-        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            if (_isPaused) await focusedSession.ControlSession.TryPlayAsync();
-            else await focusedSession.ControlSession.TryPauseAsync();
+            if (_isPaused) await resolved.ExternalSession.ControlSession.TryPlayAsync();
+            else await resolved.ExternalSession.ControlSession.TryPauseAsync();
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.TogglePlayPause();
         }
@@ -447,13 +445,12 @@ public partial class TaskbarWidgetControl : UserControl
 
     private async void Next_Click(object sender, RoutedEventArgs e)
     {
-
-        var focusedSession = ExternalMediaService.Instance.GetPreferredSession();
-        if (focusedSession != null && !ExternalMediaService.Instance.IsInternalSession(focusedSession))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            await focusedSession.ControlSession.TrySkipNextAsync();
+            await resolved.ExternalSession.ControlSession.TrySkipNextAsync();
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.PlayNext();
         }
@@ -508,9 +505,10 @@ public partial class TaskbarWidgetControl : UserControl
         if (!IsVisible || string.IsNullOrEmpty(SongTitle.Text))
             return;
 
-        var preferredSession = ExternalMediaService.Instance.GetPreferredSession();
-        if (preferredSession != null && !ExternalMediaService.Instance.IsInternalSession(preferredSession))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
+            var preferredSession = resolved.ExternalSession;
             var timeline = preferredSession.ControlSession.GetTimelineProperties();
             var playbackInfo = preferredSession.ControlSession.GetPlaybackInfo();
             var currentPosition = timeline.Position;
@@ -539,7 +537,7 @@ public partial class TaskbarWidgetControl : UserControl
             return;
         }
 
-        if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             UpdateProgress(
                 MusicPlayerService.Instance.CurrentPosition.TotalSeconds,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -86,5 +87,19 @@ public class PathToImageConverter : IValueConverter
     public static void ClearCache()
     {
         _cache.Clear();
+    }
+
+    public static void InvalidatePath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        string prefix = $"{path}|";
+        foreach (var key in _cache.Keys.Where(key => key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            _cache.TryRemove(key, out _);
+        }
     }
 }

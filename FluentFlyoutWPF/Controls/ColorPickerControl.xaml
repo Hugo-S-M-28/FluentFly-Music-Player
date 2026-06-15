@@ -81,7 +81,7 @@
                                  StrokeThickness="1"/>
                     </Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Color seleccionado"
+                        <TextBlock Text="{DynamicResource ColorPicker_SelectedColor}"
                                    Foreground="{Binding PickerTextSecondaryBrush, ElementName=Root}"
                                    FontSize="11"
                                    Opacity="0.85"
@@ -338,30 +338,30 @@
 
             <!-- Row 6: Preset Swatches -->
             <StackPanel Grid.Row="6">
-                <TextBlock Text="Colores rápidos"
+                <TextBlock Text="{DynamicResource ColorPicker_QuickColors}"
                            FontSize="11"
                            Margin="0,0,0,6"
                            Opacity="0.6"
                            Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
                 <UniformGrid Rows="1" Columns="9">
                     <!-- Red -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E81123" Tag="#E81123" Click="Swatch_Click" ToolTip="Rojo" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E81123" Tag="#E81123" Click="Swatch_Click" ToolTip="{DynamicResource Color_Red}" HorizontalAlignment="Center"/>
                     <!-- Orange -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#F7630C" Tag="#F7630C" Click="Swatch_Click" ToolTip="Naranja" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#F7630C" Tag="#F7630C" Click="Swatch_Click" ToolTip="{DynamicResource Color_Orange}" HorizontalAlignment="Center"/>
                     <!-- Yellow -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#FFB900" Tag="#FFB900" Click="Swatch_Click" ToolTip="Amarillo" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#FFB900" Tag="#FFB900" Click="Swatch_Click" ToolTip="{DynamicResource Color_Yellow}" HorizontalAlignment="Center"/>
                     <!-- Green -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#107C41" Tag="#107C41" Click="Swatch_Click" ToolTip="Verde" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#107C41" Tag="#107C41" Click="Swatch_Click" ToolTip="{DynamicResource Color_Green}" HorizontalAlignment="Center"/>
                     <!-- Teal -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#00B7C3" Tag="#00B7C3" Click="Swatch_Click" ToolTip="Celeste" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#00B7C3" Tag="#00B7C3" Click="Swatch_Click" ToolTip="{DynamicResource Color_Teal}" HorizontalAlignment="Center"/>
                     <!-- Blue -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#0078D4" Tag="#0078D4" Click="Swatch_Click" ToolTip="Azul" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#0078D4" Tag="#0078D4" Click="Swatch_Click" ToolTip="{DynamicResource Color_Blue}" HorizontalAlignment="Center"/>
                     <!-- Purple -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#5010B4" Tag="#5010B4" Click="Swatch_Click" ToolTip="Morado" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#5010B4" Tag="#5010B4" Click="Swatch_Click" ToolTip="{DynamicResource Color_Purple}" HorizontalAlignment="Center"/>
                     <!-- Pink -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E3008C" Tag="#E3008C" Click="Swatch_Click" ToolTip="Rosa" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E3008C" Tag="#E3008C" Click="Swatch_Click" ToolTip="{DynamicResource Color_Pink}" HorizontalAlignment="Center"/>
                     <!-- Grey -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#7A7574" Tag="#7A7574" Click="Swatch_Click" ToolTip="Gris" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#7A7574" Tag="#7A7574" Click="Swatch_Click" ToolTip="{DynamicResource Color_Grey}" HorizontalAlignment="Center"/>
                 </UniformGrid>
             </StackPanel>
 
@@ -369,11 +369,11 @@
             <StackPanel Grid.Row="8"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
-                <ui:Button Content="Cancelar"
+                <ui:Button Content="{DynamicResource ColorPicker_Cancel}"
                            Width="100"
                            Margin="0,0,8,0"
                            Click="CancelButton_Click"/>
-                <ui:Button Content="Confirmar"
+                <ui:Button Content="{DynamicResource ColorPicker_Confirm}"
                            Appearance="Primary"
                            Width="100"
                            Click="ConfirmButton_Click"/>

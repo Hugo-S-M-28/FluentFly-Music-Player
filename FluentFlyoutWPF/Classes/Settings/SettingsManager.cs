@@ -62,48 +62,51 @@ public class SettingsManager
         filePath ??= SettingsFilePath;
         string backupPath = filePath + ".bak";
 
-        try
+        lock (SettingsFileLock)
         {
-            if (DeserializeSettings(filePath, out var loadedSettings) && loadedSettings != null)
+            try
             {
-                _current = loadedSettings;
-                _current.CompleteInitialization();
+                if (DeserializeSettings(filePath, out var loadedSettings) && loadedSettings != null)
+                {
+                    _current = loadedSettings;
+                    _current.CompleteInitialization();
 
-                Logger.Info("Settings successfully restored");
-                return _current;
+                    Logger.Info("Settings successfully restored");
+                    return _current;
+                }
             }
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            Logger.Error(ex, "No permission to read in settings file");
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Error restoring settings");
-        }
-
-        // try restoring backup (version before the last save)
-        try
-        {
-            if (DeserializeSettings(backupPath, out var backupSettings) && backupSettings != null)
+            catch (UnauthorizedAccessException ex)
             {
-                _current = backupSettings;
-                _current.CompleteInitialization();
-
-                Logger.Warn("Could not restore primary settings file, restored settings from backup");
-                return _current;
+                Logger.Error(ex, "No permission to read in settings file");
             }
-        }
-        catch (Exception backupEx)
-        {
-            Logger.Error(backupEx, "Error restoring settings from backup file");
-        }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error restoring settings");
+            }
 
-        // if the settings/backup file not found or cannot be read
-        Logger.Warn("Settings & backup file not found or cannot be read, loading default settings");
-        _current = new UserSettings();
-        _current.CompleteInitialization();
-        return _current;
+            // try restoring backup (version before the last save)
+            try
+            {
+                if (DeserializeSettings(backupPath, out var backupSettings) && backupSettings != null)
+                {
+                    _current = backupSettings;
+                    _current.CompleteInitialization();
+
+                    Logger.Warn("Could not restore primary settings file, restored settings from backup");
+                    return _current;
+                }
+            }
+            catch (Exception backupEx)
+            {
+                Logger.Error(backupEx, "Error restoring settings from backup file");
+            }
+
+            // if the settings/backup file not found or cannot be read
+            Logger.Warn("Settings & backup file not found or cannot be read, loading default settings");
+            _current = new UserSettings();
+            _current.CompleteInitialization();
+            return _current;
+        }
     }
 
     /// <summary>

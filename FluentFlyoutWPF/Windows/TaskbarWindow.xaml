@@ -9,7 +9,6 @@
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
     xmlns:local="clr-namespace:FluentFlyout.Windows"
     mc:Ignorable="d"
-
     Title="TaskbarWindow"
     Height="40"
     Width="100"
@@ -18,12 +17,10 @@
     ShowInTaskbar="False"
     AllowsTransparency="True"
     Background="Transparent"
-
     TextOptions.TextRenderingMode="ClearType"
     TextOptions.TextFormattingMode="Ideal"
     FontFamily="{Binding Settings.FontFamily}"
     FlowDirection="{Binding Settings.FlowDirection}"
-
     Loaded="Window_Loaded"
     Visibility="Collapsed"
     d:Visibility="Visible"
@@ -42,8 +39,8 @@
         Background="Transparent">
         <controls:TaskbarVisualizerControl
             x:Name="TaskbarVisualizer"
-            Margin="0,1,0,0" />
+            Margin="0,1,0,0"/>
         <controls:TaskbarWidgetControl
-            x:Name="Widget" />
+            x:Name="Widget"/>
     </Canvas>
 </Window>

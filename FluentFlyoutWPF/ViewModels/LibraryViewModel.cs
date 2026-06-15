@@ -1,5 +1,6 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF.Classes.Services;
 using FluentFlyoutWPF.Models;
@@ -92,7 +93,6 @@ public partial class LibraryViewModel : ObservableObject
         {
             _searchDebounceTimer.Stop();
             Settings.LibrarySearchText = SearchText;
-            SettingsManager.SaveSettings();
             _normalizedSearchText = NormalizeSearchText(SearchText);
             MarkViewsDirty();
             RefreshActiveView();
@@ -106,6 +106,10 @@ public partial class LibraryViewModel : ObservableObject
             if (e.PropertyName == nameof(UserSettings.LibrarySelectedTab))
             {
                 UpdateBindings();
+            }
+            else if (e.PropertyName == nameof(UserSettings.AppLanguage))
+            {
+                SyncVisualState();
             }
         };
 
@@ -471,22 +475,29 @@ public partial class LibraryViewModel : ObservableObject
 
     private static string GetSortLabel(string sortProperty)
     {
-        return sortProperty switch
+        string resourceKey = sortProperty switch
         {
-            "Artist" => "Artista",
-            "Album" => "Ãlbum",
-            "Duration" => "DuraciÃ³n",
-            "PlayCount" => "Reproducciones",
-            _ => "TÃ­tulo"
+            "Artist" => "Lib_Sort_Artist",
+            "Album" => "Lib_Sort_Album",
+            "Duration" => "Lib_Sort_Duration",
+            "PlayCount" => "Lib_Sort_PlayCount",
+            _ => "Lib_Sort_Title"
         };
+
+        if (System.Windows.Application.Current?.TryFindResource(resourceKey) is string localized)
+        {
+            return localized;
+        }
+
+        return sortProperty;
     }
 
     [RelayCommand]
     public async Task LoadPlaylistAsync()
     {
         var filePath = _fileDialogService.OpenFile(
-            "Cargar Lista de ReproducciÃ³n",
-            "Archivos de Lista de ReproducciÃ³n (*.m3u;*.m3u8;*.json)|*.m3u;*.m3u8;*.json|Todos los archivos (*.*)|*.*");
+            LocalizationManager.GetString("Playlist_LoadTitle"),
+            LocalizationManager.GetString("Playlist_Filter"));
 
         if (!string.IsNullOrEmpty(filePath))
         {
@@ -496,7 +507,8 @@ public partial class LibraryViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync("Error", $"Error al cargar la lista: {ex.Message}");
+                var errorTitle = LocalizationManager.GetString("Playlist_ErrorLoading");
+                await _dialogService.ShowErrorAsync(errorTitle, $"{errorTitle}: {ex.Message}");
             }
         }
     }
@@ -506,14 +518,16 @@ public partial class LibraryViewModel : ObservableObject
     {
         if (_playbackService.CurrentQueue.Count == 0)
         {
-            await _dialogService.ShowMessageAsync("Guardar Lista", "La lista de reproducciÃ³n estÃ¡ vacÃ­a y no se puede guardar.");
+            await _dialogService.ShowMessageAsync(
+                LocalizationManager.GetString("Playlist_EmptyTitle"),
+                LocalizationManager.GetString("Playlist_EmptyMessage"));
             return;
         }
 
         var filePath = _fileDialogService.SaveFile(
-            "Guardar Lista de ReproducciÃ³n",
-            "Archivos de Lista de ReproducciÃ³n (*.m3u;*.json)|*.m3u;*.json|Lista M3U (*.m3u)|*.m3u|Lista JSON (*.json)|*.json",
-            "lista");
+            LocalizationManager.GetString("Playlist_SaveTitle"),
+            LocalizationManager.GetString("Playlist_FilterSave"),
+            LocalizationManager.GetString("Playlist_SaveTitle"));
 
         if (!string.IsNullOrEmpty(filePath))
         {
@@ -523,7 +537,8 @@ public partial class LibraryViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync("Error", $"Error al guardar la lista: {ex.Message}");
+                var errorTitle = LocalizationManager.GetString("Playlist_ErrorSaving");
+                await _dialogService.ShowErrorAsync(errorTitle, $"{errorTitle}: {ex.Message}");
             }
         }
     }
@@ -620,3 +635,5 @@ public partial class LibraryViewModel : ObservableObject
     private static string NormalizeSearchText(string? value)
         => value?.Trim().ToLowerInvariant() ?? string.Empty;
 }
+
+

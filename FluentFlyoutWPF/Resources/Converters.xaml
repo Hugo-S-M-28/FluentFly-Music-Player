@@ -3,6 +3,7 @@
                     xmlns:utils="clr-namespace:FluentFlyoutWPF.Classes.Utils">
 
     <!-- XAML utility resources -->
+    <utils:DoubleToCornerRadiusConverter x:Key="DoubleToCornerRadiusConverter"/>
     <utils:BoolToVisibleCollapsedConverter x:Key="BoolToVisibleCollapsedConverter"/>
     <utils:BoolToVisibleCollapsedConverter x:Key="BoolToCollapsedVisibleConverter"
                                            TrueValue="Collapsed"

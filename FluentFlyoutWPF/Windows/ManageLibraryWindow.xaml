@@ -7,7 +7,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
     mc:Ignorable="d"
-    Title="Gestionar Biblioteca"
+    Title="{DynamicResource ManageLibrary_Title}"
     Icon="pack://application:,,,/Resources/FluentFlyout2.ico"
     Height="550"
     Width="650"
@@ -65,7 +65,7 @@
     </ui:FluentWindow.Resources>
 
     <Grid>
-        <ui:TitleBar Title="Gestionar Biblioteca"
+        <ui:TitleBar Title="{DynamicResource ManageLibrary_Title}"
                      VerticalAlignment="Top"/>
 
         <Grid Margin="24,40,24,24">
@@ -78,7 +78,7 @@
                         Background="Transparent"
                         BorderThickness="0">
                 <!-- Tab 1: Carpetas Monitorizadas -->
-                <TabItem Header="Carpetas Monitorizadas">
+                <TabItem Header="{DynamicResource ManageLibrary_TabFolders}">
                     <Grid Margin="0,12,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -111,7 +111,7 @@
                                                 Style="{StaticResource TransparentIconButtonStyle}"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
                                                 CommandParameter="{Binding}"
-                                                ToolTip="Eliminar Carpeta">
+                                                ToolTip="{DynamicResource ManageLibrary_DeleteFolder}">
                                             <ui:SymbolIcon Symbol="Delete24"/>
                                         </Button>
                                     </Grid>
@@ -120,7 +120,7 @@
                         </ListView>
 
                         <ui:Button Grid.Row="1"
-                                   Content="Añadir Carpeta"
+                                   Content="{DynamicResource ManageLibrary_AddFolder}"
                                    Icon="{ui:SymbolIcon FolderAdd24}"
                                    Command="{Binding AddFolderCommand}"
                                    Appearance="Primary"
@@ -129,7 +129,7 @@
                 </TabItem>
 
                 <!-- Tab 2: Carpetas y Archivos Excluidos -->
-                <TabItem Header="Exclusiones">
+                <TabItem Header="{DynamicResource ManageLibrary_TabExclusions}">
                     <Grid Margin="0,12,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -162,7 +162,7 @@
                                                 Style="{StaticResource TransparentIconButtonStyle}"
                                                 Command="{Binding DataContext.RemoveExclusionCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
                                                 CommandParameter="{Binding}"
-                                                ToolTip="Eliminar Exclusión">
+                                                ToolTip="{DynamicResource ManageLibrary_DeleteExclusion}">
                                             <ui:SymbolIcon Symbol="Delete24"/>
                                         </Button>
                                     </Grid>
@@ -173,12 +173,12 @@
                         <StackPanel Grid.Row="1"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
-                            <ui:Button Content="Excluir Carpeta"
+                            <ui:Button Content="{DynamicResource ManageLibrary_ExcludeFolder}"
                                        Icon="{ui:SymbolIcon FolderProhibited24}"
                                        Command="{Binding AddFolderExclusionCommand}"
                                        Appearance="Secondary"
                                        Margin="0,0,8,0"/>
-                            <ui:Button Content="Excluir Archivo"
+                            <ui:Button Content="{DynamicResource ManageLibrary_ExcludeFile}"
                                        Icon="{ui:SymbolIcon DocumentProhibited24}"
                                        Command="{Binding AddFileExclusionCommand}"
                                        Appearance="Secondary"/>
@@ -193,7 +193,7 @@
                     BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
                     Padding="0,16,0,0"
                     Margin="0,12,0,0">
-                <ui:Button Content="Cerrar"
+                <ui:Button Content="{DynamicResource ManageLibrary_Close}"
                            Appearance="Primary"
                            Command="{Binding CloseWindowCommand}"
                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"

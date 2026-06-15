@@ -175,6 +175,62 @@ public class AccentColorResolverTests
         Assert.Null(brush);
     }
 
+    [Fact]
+    public void ResolveAccentBrush_AlbumArtActiveButBrushNull_FallsBackToCustom()
+    {
+        var previousSettings = SettingsManager.Current;
+        try
+        {
+            SettingsManager.Current = new UserSettings
+            {
+                UseAlbumArtAsAccentColor = true,
+                UseCustomAccentColor = true,
+                CustomAccentColorHex = "#FF5733"
+            };
+
+            SetBitmapHelperHasAlbumArt(true);
+
+            var resolved = AccentColorResolver.ResolveAccentBrush(null);
+
+            Assert.Equal(AccentColorSource.AlbumArt, AccentColorResolver.ResolveAccentSource(null));
+            Assert.Equal(CreateBrush("#FF5733").Color, resolved.Color);
+            Assert.True(AccentColorResolver.ShouldUseAccent(null));
+        }
+        finally
+        {
+            SetBitmapHelperHasAlbumArt(false);
+            SettingsManager.Current = previousSettings;
+        }
+    }
+
+    [Fact]
+    public void ResolveAccentBrush_AlbumArtActiveButBrushNullNoCustom_FallsBackToNeutral()
+    {
+        var previousSettings = SettingsManager.Current;
+        try
+        {
+            SettingsManager.Current = new UserSettings
+            {
+                UseAlbumArtAsAccentColor = true,
+                UseCustomAccentColor = false
+            };
+
+            SetBitmapHelperHasAlbumArt(true);
+
+            var resolved = AccentColorResolver.ResolveAccentBrush(null);
+            var neutral = ThemeResourceHelper.GetSecondaryTextSolidBrush();
+
+            Assert.Equal(AccentColorSource.AlbumArt, AccentColorResolver.ResolveAccentSource(null));
+            Assert.Equal(neutral.Color, resolved.Color);
+            Assert.False(AccentColorResolver.ShouldUseAccent(null));
+        }
+        finally
+        {
+            SetBitmapHelperHasAlbumArt(false);
+            SettingsManager.Current = previousSettings;
+        }
+    }
+
     private static SolidColorBrush CreateBrush(string hex)
         => new((Color)ColorConverter.ConvertFromString(hex)!);
 

@@ -9,6 +9,8 @@ using FluentFlyoutWPF.Pages;
 using CommunityToolkit.Mvvm.Messaging;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
 
@@ -19,7 +21,6 @@ public partial class SettingsWindow : FluentWindow
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private Type? _currentPageType;
-    private ScrollViewer? _contentScrollViewer;
 
     public ViewModels.SettingsShellViewModel ViewModel { get; }
 
@@ -30,10 +31,13 @@ public partial class SettingsWindow : FluentWindow
         DataContext = ViewModel;
 
         RootNavigation.SetCurrentValue(NavigationView.IsPaneOpenProperty, false);
+        PreviewMouseWheel += SettingsWindow_PreviewMouseWheel;
+        SizeChanged += SettingsWindow_SizeChanged;
     }
 
     public void NavigateToPage(Type pageType)
     {
+        _currentPageType = pageType;
         RootNavigation.Navigate(pageType);
     }
 
@@ -43,7 +47,7 @@ public partial class SettingsWindow : FluentWindow
 
         RootNavigation.IsPaneOpen = false;
 
-        _currentPageType = typeof(HomePage);
+        _currentPageType ??= typeof(HomePage);
         RootNavigation.Navigate(_currentPageType);
 
         // wrkaround for WPF-UI NavigationView theme change bug:
@@ -59,6 +63,7 @@ public partial class SettingsWindow : FluentWindow
         RootNavigation.Navigated += (s, args) =>
         {
             _currentPageType = args.Page?.GetType();
+            SyncCurrentPageScrollViewerViewport();
             ResetScrollPosition();
         };
 
@@ -116,6 +121,8 @@ public partial class SettingsWindow : FluentWindow
     {
         ViewModel.Settings.PropertyChanged -= OnSettingsPropertyChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        PreviewMouseWheel -= SettingsWindow_PreviewMouseWheel;
+        SizeChanged -= SettingsWindow_SizeChanged;
         SettingsManager.SaveSettings();
     }
 
@@ -131,11 +138,13 @@ public partial class SettingsWindow : FluentWindow
         {
             try
             {
-                _contentScrollViewer ??= FindScrollableScrollViewer(RootNavigation);
+                RootNavigation.UpdateLayout();
+                SyncCurrentPageScrollViewerViewport();
+                var contentScrollViewer = FindCurrentPageScrollViewer();
 
-                if (_contentScrollViewer != null)
+                if (contentScrollViewer != null)
                 {
-                    _contentScrollViewer.ScrollToVerticalOffset(0);
+                    contentScrollViewer.ScrollToVerticalOffset(0);
                 }
             }
             catch (Exception ex)
@@ -166,23 +175,37 @@ public partial class SettingsWindow : FluentWindow
         return null;
     }
 
-    private static ScrollViewer? FindScrollableScrollViewer(DependencyObject parent)
+    private static ScrollViewer? FindNamedPageScrollViewer(DependencyObject parent)
     {
+        if (parent is FrameworkElement namedElement)
+        {
+            if (namedElement.Name == "PageScrollViewer" && namedElement is ScrollViewer namedScrollViewer)
+            {
+                return namedScrollViewer;
+            }
+        }
+
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is ScrollViewer sv && sv.ScrollableHeight > 0)
-            {
-                return sv;
-            }
-
-            var result = FindScrollableScrollViewer(child);
+            var result = FindNamedPageScrollViewer(child);
             if (result != null)
             {
                 return result;
             }
         }
         return null;
+    }
+
+    private ScrollViewer? FindCurrentPageScrollViewer()
+    {
+        var frame = FindVisualChild<Frame>(RootNavigation);
+        if (frame?.Content is DependencyObject page)
+        {
+            return FindNamedPageScrollViewer(page);
+        }
+
+        return FindNamedPageScrollViewer(RootNavigation);
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
@@ -207,6 +230,77 @@ public partial class SettingsWindow : FluentWindow
     private void NavigationViewItem_Click(object sender, RoutedEventArgs e)
     {
 
+    }
+
+    private void SettingsWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        SyncCurrentPageScrollViewerViewport();
+    }
+
+    private void SettingsWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (e.Handled)
+            return;
+
+        if (e.OriginalSource is DependencyObject source &&
+            (FindVisualParent<Slider>(source) != null ||
+             FindVisualParent<ComboBox>(source) != null ||
+             FindVisualParent<ScrollBar>(source) != null ||
+             FindVisualParent<ListBox>(source) != null))
+        {
+            return;
+        }
+
+        var scrollViewer = FindCurrentPageScrollViewer();
+        if (scrollViewer == null)
+            return;
+
+        if (scrollViewer.ScrollableHeight <= 0 && scrollViewer.ComputedVerticalScrollBarVisibility != Visibility.Visible)
+            return;
+
+        double targetOffset = scrollViewer.VerticalOffset - e.Delta;
+        targetOffset = Math.Max(0, Math.Min(scrollViewer.ScrollableHeight, targetOffset));
+        scrollViewer.ScrollToVerticalOffset(targetOffset);
+        e.Handled = true;
+    }
+
+    private void SyncCurrentPageScrollViewerViewport()
+    {
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            try
+            {
+                RootNavigation.UpdateLayout();
+
+                var frame = FindVisualChild<Frame>(RootNavigation);
+                var scrollViewer = FindCurrentPageScrollViewer();
+                if (frame == null || scrollViewer == null)
+                    return;
+
+                double viewportHeight = Math.Max(120, frame.ActualHeight - 8);
+                if (!double.IsNaN(viewportHeight) && viewportHeight > 0)
+                {
+                    scrollViewer.Height = viewportHeight;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error syncing settings page scroll viewport");
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+    {
+        while (child != null)
+        {
+            if (child is T typed)
+                return typed;
+
+            child = VisualTreeHelper.GetParent(child);
+        }
+
+        return null;
     }
 
     private void ApplyResolvedAccentToNavigation()

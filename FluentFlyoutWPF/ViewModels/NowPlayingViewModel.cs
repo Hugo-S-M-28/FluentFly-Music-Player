@@ -23,6 +23,7 @@ namespace FluentFlyoutWPF.ViewModels;
 public partial class NowPlayingViewModel : ObservableObject
 {
     private bool _isUserSeeking;
+    private System.Threading.CancellationTokenSource? _syncCts;
     public UserSettings Settings => SettingsManager.Current;
 
     [ObservableProperty]
@@ -97,12 +98,24 @@ public partial class NowPlayingViewModel : ObservableObject
 
     private void SyncWithPlayer()
     {
-        // 1. Check Internal Player
-        if (MusicPlayerService.Instance.IsPlaying || (MusicPlayerService.Instance.CurrentTrack != null && SettingsManager.Current.InternalPlayerEnabled))
+        _syncCts?.Cancel();
+        _syncCts = new System.Threading.CancellationTokenSource();
+        _ = SyncWithPlayerAsync(_syncCts.Token);
+    }
+
+    private async Task SyncWithPlayerAsync(System.Threading.CancellationToken ct)
+    {
+        await Task.Yield();
+        if (ct.IsCancellationRequested) return;
+
+        var resolved = PlaybackSourceResolver.Resolve();
+
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             var track = MusicPlayerService.Instance.CurrentTrack;
             if (track != null)
             {
+                if (ct.IsCancellationRequested) return;
                 Title = track.Title;
                 Artist = track.FullArtistDisplay;
                 HasTrack = true;
@@ -126,20 +139,21 @@ public partial class NowPlayingViewModel : ObservableObject
                 return;
             }
         }
-
-        // 2. Fallback to External Media
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null)
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
+            var session = resolved.ExternalSession;
             var props = session.ControlSession.GetPlaybackInfo();
-            var mediaProps = session.ControlSession.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
+            if (ct.IsCancellationRequested) return;
+            var mediaProps = await session.ControlSession.TryGetMediaPropertiesAsync().AsTask().ConfigureAwait(true);
+            if (ct.IsCancellationRequested) return;
             
             if (mediaProps != null)
             {
                 Title = mediaProps.Title;
                 Artist = mediaProps.Artist;
                 HasTrack = true;
-                CoverImage = BitmapHelper.GetThumbnail(mediaProps.Thumbnail);
+                CoverImage = await BitmapHelper.GetThumbnailAsync(mediaProps.Thumbnail).ConfigureAwait(true);
+                if (ct.IsCancellationRequested) return;
                 CoverUrl = string.Empty;
                 BackdropImage = CoverImage ?? MediaBackdropStyleService.GetFallbackImageSource();
                 IsPlaying = props.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
@@ -192,23 +206,21 @@ public partial class NowPlayingViewModel : ObservableObject
             return;
         }
 
-        if (MusicPlayerService.Instance.IsPlaying || (MusicPlayerService.Instance.CurrentTrack != null && SettingsManager.Current.InternalPlayerEnabled))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             var pos = MusicPlayerService.Instance.CurrentPosition;
             SeekValue = pos.TotalSeconds;
             CurrentTime = pos.ToString(@"mm\:ss");
             CurrentPositionTimeSpan = pos;
         }
-        else
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            var session = ExternalMediaService.Instance.GetPreferredSession();
-            if (session != null)
-            {
-                var timeline = session.ControlSession.GetTimelineProperties();
-                SeekValue = timeline.Position.TotalSeconds;
-                CurrentTime = timeline.Position.ToString(@"mm\:ss");
-                CurrentPositionTimeSpan = timeline.Position;
-            }
+            var session = resolved.ExternalSession;
+            var timeline = session.ControlSession.GetTimelineProperties();
+            SeekValue = timeline.Position.TotalSeconds;
+            CurrentTime = timeline.Position.ToString(@"mm\:ss");
+            CurrentPositionTimeSpan = timeline.Position;
         }
     }
 
@@ -246,9 +258,19 @@ public partial class NowPlayingViewModel : ObservableObject
 
     public void CommitSeek()
     {
-        if (MusicPlayerService.Instance.CurrentTrack != null)
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            MusicPlayerService.Instance.Seek(TimeSpan.FromSeconds(SeekValue));
+            if (MusicPlayerService.Instance.CurrentTrack != null)
+            {
+                MusicPlayerService.Instance.Seek(TimeSpan.FromSeconds(SeekValue));
+            }
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            var seekPosition = TimeSpan.FromSeconds(SeekValue);
+            long ticks = seekPosition.Ticks > 0 ? seekPosition.Ticks : 1;
+            _ = resolved.ExternalSession.ControlSession.TryChangePlaybackPositionAsync(ticks);
         }
     }
 
@@ -468,42 +490,102 @@ public partial class NowPlayingViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void PlayPause()
+    private async Task PlayPause()
     {
-        MusicPlayerService.Instance.TogglePlayPause();
-    }
-
-    [RelayCommand]
-    private void SkipNext()
-    {
-        MusicPlayerService.Instance.PlayNext();
-    }
-
-    [RelayCommand]
-    private void SkipPrevious()
-    {
-        MusicPlayerService.Instance.PlayPrevious();
-    }
-
-    [RelayCommand]
-    private void ToggleShuffle()
-    {
-        MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
-        IsShuffleEnabled = MusicPlayerService.Instance.IsShuffleEnabled;
-    }
-
-    [RelayCommand]
-    private void ToggleRepeat()
-    {
-        var mode = MusicPlayerService.Instance.RepeatMode;
-        MusicPlayerService.Instance.RepeatMode = mode switch
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            RepeatMode.None => RepeatMode.All,
-            RepeatMode.All => RepeatMode.One,
-            RepeatMode.One => RepeatMode.None,
-            _ => RepeatMode.None
-        };
-        RepeatMode = MusicPlayerService.Instance.RepeatMode;
+            MusicPlayerService.Instance.TogglePlayPause();
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            var session = resolved.ExternalSession;
+            var status = session.ControlSession.GetPlaybackInfo().PlaybackStatus;
+            if (status == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                await session.ControlSession.TryPauseAsync();
+            else
+                await session.ControlSession.TryPlayAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task SkipNext()
+    {
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
+        {
+            MusicPlayerService.Instance.PlayNext();
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            await resolved.ExternalSession.ControlSession.TrySkipNextAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task SkipPrevious()
+    {
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
+        {
+            MusicPlayerService.Instance.PlayPrevious();
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            await resolved.ExternalSession.ControlSession.TrySkipPreviousAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleShuffle()
+    {
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
+        {
+            MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
+            IsShuffleEnabled = MusicPlayerService.Instance.IsShuffleEnabled;
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            var session = resolved.ExternalSession;
+            bool current = session.ControlSession.GetPlaybackInfo().IsShuffleActive ?? false;
+            await session.ControlSession.TryChangeShuffleActiveAsync(!current);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleRepeat()
+    {
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
+        {
+            var mode = MusicPlayerService.Instance.RepeatMode;
+            MusicPlayerService.Instance.RepeatMode = mode switch
+            {
+                RepeatMode.None => RepeatMode.All,
+                RepeatMode.All => RepeatMode.One,
+                RepeatMode.One => RepeatMode.None,
+                _ => RepeatMode.None
+            };
+            RepeatMode = MusicPlayerService.Instance.RepeatMode;
+        }
+        else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
+        {
+            var session = resolved.ExternalSession;
+            var playbackInfo = session.ControlSession.GetPlaybackInfo();
+            if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.None)
+            {
+                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.List);
+            }
+            else if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List)
+            {
+                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.Track);
+            }
+            else if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track)
+            {
+                await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.None);
+            }
+        }
     }
 
     [RelayCommand]

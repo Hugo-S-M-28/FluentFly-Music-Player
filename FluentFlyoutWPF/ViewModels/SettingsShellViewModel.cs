@@ -6,6 +6,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF.Classes.Messages;
 using FluentFlyoutWPF.Classes.Services;
@@ -51,7 +52,6 @@ public partial class SettingsShellViewModel : ObservableObject
         };
     }
 
-    // Delegates/Wrappers for direct bindings on SettingsShellViewModel
     public bool IsStoreVersion => Settings.IsStoreVersion;
     public bool IsPremiumUnlocked => Settings.IsPremiumUnlocked;
     public string PremiumPrice => Settings.PremiumPrice;
@@ -73,8 +73,8 @@ public partial class SettingsShellViewModel : ObservableObject
     public async Task ExportSettingsAsync()
     {
         var filePath = _fileDialogService.SaveFile(
-            "Guardar Configuración",
-            "XML Files (*.xml)|*.xml|All Files (*.*)|*.*",
+            LocalizationManager.GetString("ExportSettings"),
+            LocalizationManager.GetString("Settings_LoadConfigFilter"),
             $"FluentFlyout_Settings_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xml"
         );
 
@@ -84,16 +84,16 @@ public partial class SettingsShellViewModel : ObservableObject
             {
                 SettingsManager.SaveSettings(filePath);
 
-                var successTitle = Application.Current.FindResource("ExportSuccessful")?.ToString() ?? "Success";
-                var successContent = Application.Current.FindResource("SettingsExportedSuccessfully")?.ToString() ?? "Settings exported.";
+                var successTitle = LocalizationManager.GetString("ExportSuccessful");
+                var successContent = LocalizationManager.GetString("SettingsExportedSuccessfully");
                 await _dialogService.ShowMessageAsync(successTitle, successContent);
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "Error exporting settings");
 
-                var failedTitle = Application.Current.FindResource("ExportFailed")?.ToString() ?? "Error";
-                var failedContent = Application.Current.FindResource("FailedToExportSettings")?.ToString() ?? "Failed to export.";
+                var failedTitle = LocalizationManager.GetString("ExportFailed");
+                var failedContent = LocalizationManager.GetString("FailedToExportSettings");
                 await _dialogService.ShowErrorAsync(failedTitle, failedContent);
             }
         }
@@ -103,14 +103,14 @@ public partial class SettingsShellViewModel : ObservableObject
     public async Task ImportSettingsAsync()
     {
         var filePath = _fileDialogService.OpenFile(
-            "Cargar Configuración",
-            "XML Files (*.xml)|*.xml|All Files (*.*)|*.*"
+            LocalizationManager.GetString("Settings_LoadConfigTitle"),
+            LocalizationManager.GetString("Settings_LoadConfigFilter")
         );
 
         if (!string.IsNullOrEmpty(filePath))
         {
-            var confirmTitle = Application.Current.FindResource("ImportSettings")?.ToString() ?? "Import";
-            var confirmContent = Application.Current.FindResource("ImportSettingsWarning")?.ToString() ?? "This will overwrite current settings.";
+            var confirmTitle = LocalizationManager.GetString("ImportSettings");
+            var confirmContent = LocalizationManager.GetString("ImportSettingsWarning");
             var confirmed = await _dialogService.ShowConfirmAsync(confirmTitle, confirmContent);
 
             if (confirmed)
@@ -120,11 +120,10 @@ public partial class SettingsShellViewModel : ObservableObject
                     SettingsManager.RestoreSettings(filePath);
                     SettingsManager.SaveSettings();
 
-                    var successTitle = Application.Current.FindResource("ImportSuccessful")?.ToString() ?? "Success";
-                    var successContent = Application.Current.FindResource("SettingsImportedSuccessfully")?.ToString() ?? "Settings imported.";
+                    var successTitle = LocalizationManager.GetString("ImportSuccessful");
+                    var successContent = LocalizationManager.GetString("SettingsImportedSuccessfully");
                     await _dialogService.ShowMessageAsync(successTitle, successContent);
 
-                    // Restart the application
                     Application.Current.Shutdown();
                     var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
                     if (exePath != null) System.Diagnostics.Process.Start(exePath);
@@ -133,8 +132,8 @@ public partial class SettingsShellViewModel : ObservableObject
                 {
                     Logger.Error(ex, "Error importing settings");
 
-                    var failedTitle = Application.Current.FindResource("ImportFailed")?.ToString() ?? "Error";
-                    var failedContent = Application.Current.FindResource("FailedToImportSettings")?.ToString() ?? "Failed to import.";
+                    var failedTitle = LocalizationManager.GetString("ImportFailed");
+                    var failedContent = LocalizationManager.GetString("FailedToImportSettings");
                     await _dialogService.ShowErrorAsync(failedTitle, failedContent);
                 }
             }
@@ -162,22 +161,24 @@ public partial class SettingsShellViewModel : ObservableObject
             if (success)
             {
                 SettingsManager.Current.IsPremiumUnlocked = true;
-                
-                var title = "Success";
-                var content = Application.Current.TryFindResource("PremiumPurchaseSuccess")?.ToString() ?? "Premium features successfully unlocked!";
+
+                var title = LocalizationManager.GetString("License_Success");
+                var content = LocalizationManager.GetString("PremiumPurchaseSuccess");
                 await _dialogService.ShowMessageAsync(title, content);
             }
             else
             {
-                var title = "Purchase Failed";
-                var content = $"{Application.Current.TryFindResource("PremiumPurchaseFailed")?.ToString() ?? "Purchase failed."} ({result})";
+                var title = LocalizationManager.GetString("License_PurchaseFailed");
+                var content = $"{LocalizationManager.GetString("PremiumPurchaseFailed")} ({result})";
                 await _dialogService.ShowErrorAsync(title, content);
             }
         }
         catch (Exception ex)
         {
             Logger.Error(ex, "Error unlocking premium");
-            await _dialogService.ShowErrorAsync("Error", $"An error occurred: {ex.Message}");
+            await _dialogService.ShowErrorAsync(
+                LocalizationManager.GetString("License_Error"),
+                string.Format(LocalizationManager.GetString("General_UnexpectedError"), ex.Message));
         }
         finally
         {
@@ -216,8 +217,8 @@ public partial class SettingsShellViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            var title = Application.Current.FindResource("Edit_ErrorTitle")?.ToString() ?? "Error";
-            var message = $"{(Application.Current.FindResource("Error_FailedSetStartup") ?? "Failed to set startup")}: {ex.Message}";
+            var title = LocalizationManager.GetString("Edit_ErrorTitle");
+            var message = $"{LocalizationManager.GetString("Error_FailedSetStartup")}: {ex.Message}";
             _ = _dialogService.ShowErrorAsync(title, message);
         }
     }

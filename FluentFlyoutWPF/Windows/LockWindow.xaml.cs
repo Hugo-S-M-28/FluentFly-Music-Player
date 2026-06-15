@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
 using FluentFlyoutWPF.Classes;
@@ -143,7 +140,8 @@ public partial class LockWindow : MicaWindow
                 _openedMonitor = GetPreferredTargetDisplay();
                 FlyoutAnimationService.OpenAnimation(this, true, _openedMonitor);
             }
-            cts.Cancel();
+            cts?.Cancel();
+            cts?.Dispose();
             cts = new CancellationTokenSource();
             var token = cts.Token;
 

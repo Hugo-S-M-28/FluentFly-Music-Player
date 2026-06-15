@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FluentFlyout.Classes;
 using FluentFlyoutWPF.Classes;
 using FluentFlyoutWPF.Classes.Services;
 using FluentFlyoutWPF.Models;
@@ -77,8 +78,8 @@ public partial class EditTrackViewModel : ObservableObject
         Genre = track.Genre ?? string.Empty;
         TrackNumber = track.TrackNumber > 0 ? track.TrackNumber.ToString() : string.Empty;
 
-        HeaderTitle = string.IsNullOrWhiteSpace(Title) ? "Untitled" : Title;
-        HeaderArtist = string.IsNullOrWhiteSpace(Artist) ? "Unknown Artist" : Artist;
+        HeaderTitle = string.IsNullOrWhiteSpace(Title) ? LocalizationManager.GetString("Edit_Untitled") : Title;
+        HeaderArtist = string.IsNullOrWhiteSpace(Artist) ? LocalizationManager.GetString("Edit_UnknownArtist") : Artist;
         HeaderFileInfo = Path.GetFileName(track.FilePath) ?? string.Empty;
         HeaderDuration = track.Duration.ToString(@"m\:ss");
 
@@ -152,20 +153,20 @@ public partial class EditTrackViewModel : ObservableObject
 
     partial void OnTitleChanged(string value)
     {
-        HeaderTitle = string.IsNullOrWhiteSpace(value) ? "Untitled" : value;
+        HeaderTitle = string.IsNullOrWhiteSpace(value) ? LocalizationManager.GetString("Edit_Untitled") : value;
     }
 
     partial void OnArtistChanged(string value)
     {
-        HeaderArtist = string.IsNullOrWhiteSpace(value) ? "Unknown Artist" : value;
+        HeaderArtist = string.IsNullOrWhiteSpace(value) ? LocalizationManager.GetString("Edit_UnknownArtist") : value;
     }
 
     [RelayCommand]
     public void SelectAlbumArt()
     {
         var filePath = ServiceLocator.FileDialog.OpenFile(
-            "Select cover image",
-            "Images|*.jpg;*.jpeg;*.png;*.bmp;*.webp|All files|*.*"
+            LocalizationManager.GetString("Edit_SelectArtTitle"),
+            LocalizationManager.GetString("Edit_ArtFilter")
         );
 
         if (!string.IsNullOrEmpty(filePath))
@@ -206,15 +207,18 @@ public partial class EditTrackViewModel : ObservableObject
             else
             {
                 await ServiceLocator.Dialog.ShowErrorAsync(
-                    "Error",
-                    "Could not save changes. Make sure the file is not being used by another process."
+                    LocalizationManager.GetString("Edit_ErrorTitle"),
+                    LocalizationManager.GetString("Edit_SaveErrorMsg")
                 );
             }
         }
         catch (Exception ex)
         {
             Logger.Error(ex, "Crash during track save");
-            await ServiceLocator.Dialog.ShowErrorAsync("Error", $"An unexpected error occurred: {ex.Message}");
+            await ServiceLocator.Dialog.ShowErrorAsync(
+                LocalizationManager.GetString("Edit_ErrorTitle"),
+                string.Format(LocalizationManager.GetString("General_UnexpectedError"), ex.Message)
+            );
         }
     }
 
@@ -269,8 +273,8 @@ public partial class EditTrackViewModel : ObservableObject
     public void LoadLrc()
     {
         var filePath = ServiceLocator.FileDialog.OpenFile(
-            "Select lyrics file",
-            "LRC Files (*.lrc)|*.lrc|Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+            LocalizationManager.GetString("Edit_SelectLrcTitle"),
+            LocalizationManager.GetString("Edit_LrcFilter")
         );
 
         if (!string.IsNullOrEmpty(filePath))
@@ -282,7 +286,10 @@ public partial class EditTrackViewModel : ObservableObject
             catch (Exception ex)
             {
                 Logger.Error(ex, "Failed to load LRC file");
-                _ = ServiceLocator.Dialog.ShowErrorAsync("Error", "Could not load the selected file.");
+                _ = ServiceLocator.Dialog.ShowErrorAsync(
+                    LocalizationManager.GetString("Edit_ErrorTitle"),
+                    LocalizationManager.GetString("Edit_LrcLoadError")
+                );
             }
         }
     }
@@ -299,8 +306,8 @@ public partial class EditTrackViewModel : ObservableObject
             if (!firstMatch.Success)
             {
                 await ServiceLocator.Dialog.ShowMessageAsync(
-                    "No Timestamps",
-                    "The lyrics don't have timestamps to synchronize."
+                    LocalizationManager.GetString("Edit_AutoSyncNoTimestampsTitle"),
+                    LocalizationManager.GetString("Edit_AutoSyncNoTimestampsMsg")
                 );
                 return;
             }
@@ -311,7 +318,10 @@ public partial class EditTrackViewModel : ObservableObject
 
             if (audioPeakMs < 0)
             {
-                await ServiceLocator.Dialog.ShowErrorAsync("Error", "Could not analyze the audio file.");
+                await ServiceLocator.Dialog.ShowErrorAsync(
+                    LocalizationManager.GetString("Edit_ErrorTitle"),
+                    LocalizationManager.GetString("Edit_AutoSyncAnalysisError")
+                );
                 IsAutoSyncEnabled = true;
                 return;
             }
@@ -329,8 +339,8 @@ public partial class EditTrackViewModel : ObservableObject
             ShiftTimestamps(offsetMs);
 
             await ServiceLocator.Dialog.ShowMessageAsync(
-                "Synchronized",
-                $"Lyrics shifted by {offsetMs / 1000.0:F1}s to match audio peaks."
+                LocalizationManager.GetString("Edit_AutoSyncSuccessTitle"),
+                string.Format(LocalizationManager.GetString("Edit_AutoSyncSuccessMsg"), offsetMs / 1000.0)
             );
         }
         catch (Exception ex)

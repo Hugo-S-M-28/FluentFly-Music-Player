@@ -1,457 +1,268 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
-
-    <system:String x:Key="AboutContributorsDescription">A big thank you to all the amazing people who have contributed to FluentFlyout's development and success!</system:String>
-
-    <system:String x:Key="AboutContributorsTitle">?? Meet Our Contributors</system:String>
-
-    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout is built with the following open source packages:</system:String>
-
-    <system:String x:Key="AboutOpenSourceLicensesTitle">Open Source Licenses</system:String>
-
-    <system:String x:Key="AboutPremiumTitle">About Premium</system:String>
-
-    <system:String x:Key="AboutTitle">About</system:String>
-
+    <system:String x:Key="AboutContributorsDescription">Terima kasih banyak kepada semua orang hebat yang telah berkontribusi pada pengembangan dan kesuksesan FluentFlyout!</system:String>
+    <system:String x:Key="AboutContributorsTitle">❤ Kontributor kami</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesDescription">FluentFlyout dibangun dengan paket sumber terbuka berikut:</system:String>
+    <system:String x:Key="AboutOpenSourceLicensesTitle">Lisensi sumber terbuka</system:String>
+    <system:String x:Key="AboutPremiumTitle">Tentang Premium</system:String>
+    <system:String x:Key="AboutTitle">Tentang</system:String>
     <system:String x:Key="AcrylicBlurOpacityDescription">Adjust the see-through effect on Acrylic flyouts (default: 175)</system:String>
-
-    <system:String x:Key="AcrylicBlurOpacityPerk">Acrylic Blur Opacity</system:String>
-
-    <system:String x:Key="AcrylicBlurOpacityTitle">Acrylic Blur Opacity</system:String>
-
+    <system:String x:Key="AcrylicBlurOpacityPerk">Opasitas blur akrilik</system:String>
+    <system:String x:Key="AcrylicBlurOpacityTitle">Opasitas blur akrilik</system:String>
     <system:String x:Key="AcrylicWindowDescription">Apply transparent acrylic blur effect to the flyout (off reverts to Mica)</system:String>
-
-    <system:String x:Key="AcrylicWindowTitle">Acrylic Window</system:String>
-
-    <system:String x:Key="AdvancedSettingsTitle">Advanced Settings</system:String>
-
-    <system:String x:Key="AllFuturePremiumFeatures">All future Premium features</system:String>
-
-    <system:String x:Key="AnimationDurationScaleDescription">Faster or slower flyout animation speed (default: 1x)</system:String>
-
-    <system:String x:Key="AnimationDurationScaleTitle">Animation Duration Scale</system:String>
-
+    <system:String x:Key="AcrylicWindowTitle">Jendela akrilik</system:String>
+    <system:String x:Key="AdvancedSettingsTitle">Pengaturan lanjutan</system:String>
+    <system:String x:Key="AllFuturePremiumFeatures">Semua fitur Premium di masa mendatang</system:String>
+    <system:String x:Key="AnimationDurationScaleDescription">Kecepatan animasi flyout yang lebih cepat atau lebih lambat (default: 1x)</system:String>
+    <system:String x:Key="AnimationDurationScaleTitle">Skala durasi animasi</system:String>
     <system:String x:Key="AnimationEasingStyleDescription">(default: Quadratic)</system:String>
-
-    <system:String x:Key="AnimationEasingStyleTitle">Animation Easing Style</system:String>
-
-    <system:String x:Key="AnimationSettingsDescription">Tweak the animations to your liking</system:String>
-
-    <system:String x:Key="AnimationSettingsTitle">Animation Settings</system:String>
-
-    <system:String x:Key="AnimationSpeedOff">Off</system:String>
-
+    <system:String x:Key="AnimationEasingStyleTitle">Gaya easing animasi</system:String>
+    <system:String x:Key="AnimationSettingsDescription">Sesuaikan animasi sesuai selera Anda</system:String>
+    <system:String x:Key="AnimationSettingsTitle">Pengaturan animasi</system:String>
+    <system:String x:Key="AnimationSpeedOff">Nonaktif</system:String>
     <system:String x:Key="AppLanguageDescription">If your language is not listed or incomplete, it will default to English.
 
 
 
 You can help contribute translations on</system:String>
-
-    <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
-
-    <system:String x:Key="AppLanguageTitle">App Language</system:String>
-
+    <system:String x:Key="AppLanguageTitle">Bahasa aplikasi</system:String>
     <system:String x:Key="AppThemeDark"> Dark</system:String>
-
     <system:String x:Key="AppThemeDefault"> Windows Default</system:String>
-
     <system:String x:Key="AppThemeLight"> Light</system:String>
-
-    <system:String x:Key="AppThemeTitle">App Theme</system:String>
-
-    <system:String x:Key="AppearanceBehaviorSectionTitle">Appearance &amp; behavior</system:String>
-
+    <system:String x:Key="AppThemeTitle">Tema aplikasi</system:String>
+    <system:String x:Key="AppearanceBehaviorSectionTitle">Tampilan dan perilaku</system:String>
     <system:String x:Key="BackgroundBlurOption1"> None</system:String>
-
     <system:String x:Key="BackgroundBlurOption2"> Style 1 (Cover Glow)</system:String>
-
     <system:String x:Key="BackgroundBlurOption3"> Style 2 (Rising Glow)</system:String>
-
     <system:String x:Key="BackgroundBlurOption4"> Style 3 (Blur)</system:String>
-
-    <system:String x:Key="BackgroundBlurTitle">Background Blur</system:String>
-
-    <system:String x:Key="BackupRestoreCardTitle">Back up and restore your settings</system:String>
-
-    <system:String x:Key="BackupRestoreSectionTitle">Back up &amp; restore</system:String>
-
-    <system:String x:Key="BuyMeCoffeeLink">Buy me a coffee</system:String>
-
-    <system:String x:Key="CenterTitleArtistDescription">Align text to the center instead of the left</system:String>
-
-    <system:String x:Key="CenterTitleArtistTitle">Center Title and Artist</system:String>
-
-    <system:String x:Key="CheckingForUpdates">Checking...</system:String>
-
-    <system:String x:Key="CloseButton">Close</system:String>
-
+    <system:String x:Key="BackgroundBlurTitle">Blur latar belakang</system:String>
+    <system:String x:Key="BackupRestoreCardTitle">Cadangkan dan pulihkan pengaturan Anda</system:String>
+    <system:String x:Key="BackupRestoreSectionTitle">Cadangkan dan pulihkan</system:String>
+    <system:String x:Key="BuyMeCoffeeLink">Traktir saya kopi</system:String>
+    <system:String x:Key="CenterTitleArtistDescription">Ratakan teks ke tengah alih-alih ke kiri</system:String>
+    <system:String x:Key="CenterTitleArtistTitle">Pusatkan Judul dan Artis</system:String>
+    <system:String x:Key="CheckingForUpdates">Memeriksa...</system:String>
+    <system:String x:Key="CloseButton">Tutup</system:String>
     <system:String x:Key="CompactLayoutDescription">Slimmer and less intrusive layout
 
 
 
 hides repeat, shuffle and player info</system:String>
-
-    <system:String x:Key="CompactLayoutTitle">Compact Layout</system:String>
-
-    <system:String x:Key="DefaultLockLayoutPosition">Default (Flyout Target Display)</system:String>
-
-    <system:String x:Key="DevelopersTitle">Developers</system:String>
-
-    <system:String x:Key="DisableOnFullscreenDescription">Prevents DirectX games in exclusive fullscreen from minimizing if a flyout pops up</system:String>
-
-    <system:String x:Key="DisableOnFullscreenTitle">Disable Flyouts if DirectX fullscreen program is detected</system:String>
-
-    <system:String x:Key="Disabled">Disabled</system:String>
-
+    <system:String x:Key="CompactLayoutTitle">Tata letak ringkas</system:String>
+    <system:String x:Key="DefaultLockLayoutPosition">Default (Layar target flyout)</system:String>
+    <system:String x:Key="DevelopersTitle">Pengembang</system:String>
+    <system:String x:Key="DisableOnFullscreenDescription">Mencegah game DirectX layar penuh eksklusif diminimalkan saat flyout muncul</system:String>
+    <system:String x:Key="DisableOnFullscreenTitle">Nonaktifkan flyout jika program DirectX layar penuh terdeteksi</system:String>
+    <system:String x:Key="Disabled">Nonaktif</system:String>
     <system:String x:Key="EasingCubic"> Cubic</system:String>
-
     <system:String x:Key="EasingLinear"> Linear</system:String>
-
     <system:String x:Key="EasingQuadratic"> Quadratic</system:String>
-
     <system:String x:Key="EasingSine"> Sine</system:String>
-
     <system:String x:Key="Edit_AlbumLabel">Album</system:String>
-
-    <system:String x:Key="Edit_AlbumPlaceholder">Album name</system:String>
-
-    <system:String x:Key="Edit_ArtFilter">Images|*.jpg;*.jpeg;*.png;*.bmp;*.webp|All files|*.*</system:String>
-
-    <system:String x:Key="Edit_ArtistLabel">Artist</system:String>
-
-    <system:String x:Key="Edit_ArtistPlaceholder">Artist name</system:String>
-
-    <system:String x:Key="Edit_Cancel">Cancel</system:String>
-
-    <system:String x:Key="Edit_ChangeArtOverlay">Change</system:String>
-
-    <system:String x:Key="Edit_ChangeArtTooltip">Click to change cover art</system:String>
-
-    <system:String x:Key="Edit_CollaboratorsLabel">Collaborators</system:String>
-
-    <system:String x:Key="Edit_CollaboratorsPlaceholder">Guest artists (separated by ;)</system:String>
-
-    <system:String x:Key="Edit_ErrorTitle">Error</system:String>
-
-    <system:String x:Key="Edit_FileInfoSection">Music file information</system:String>
-
+    <system:String x:Key="Edit_AlbumPlaceholder">Nama album</system:String>
+    <system:String x:Key="Edit_ArtFilter">Gambar|*.jpg;*.jpeg;*.png;*.bmp;*.webp|Semua file|*.*</system:String>
+    <system:String x:Key="Edit_ArtistLabel">Artis</system:String>
+    <system:String x:Key="Edit_ArtistPlaceholder">Nama artis</system:String>
+    <system:String x:Key="Edit_AutoSyncAnalysisError">Tidak dapat menganalisis file audio.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">Lirik tidak memiliki tanda waktu untuk disinkronkan.</system:String>
+    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">Tidak Ada Tanda Waktu</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessMsg">Lirik digeser sebesar {0:F1} detik agar sesuai dengan puncak audio.</system:String>
+    <system:String x:Key="Edit_AutoSyncSuccessTitle">Disinkronkan</system:String>
+    <system:String x:Key="Edit_AutoSyncTip">Auto-Sync: Analisis audio untuk menyelaraskan tanda waktu pertama</system:String>
+    <system:String x:Key="Edit_Cancel">Batal</system:String>
+    <system:String x:Key="Edit_ChangeArtOverlay">Ubah</system:String>
+    <system:String x:Key="Edit_ChangeArtTooltip">Klik untuk mengubah sampul</system:String>
+    <system:String x:Key="Edit_CollaboratorsLabel">Kolaborator</system:String>
+    <system:String x:Key="Edit_CollaboratorsPlaceholder">Artis tamu (pisahkan dengan ;)</system:String>
+    <system:String x:Key="Edit_FileInfoSection">Informasi file musik</system:String>
     <system:String x:Key="Edit_GenreLabel">Genre</system:String>
-
-    <system:String x:Key="Edit_GenrePlaceholder">Pop, Rock, etc.</system:String>
-
     <system:String x:Key="Edit_HeaderSummary">Edit metadata</system:String>
-
-    <system:String x:Key="Edit_InfoNote">Changes will be permanently saved to the original audio file.</system:String>
-
-    <system:String x:Key="Edit_LoadLrc">Load file</system:String>
-
-    <system:String x:Key="Edit_LrcLoadError">Could not load the selected file.</system:String>
-
-    <system:String x:Key="Edit_LyricsFormatInfo">LRC Format</system:String>
-
+    <system:String x:Key="Edit_InfoNote">Perubahan akan disimpan secara permanen ke file audio asli.</system:String>
+    <system:String x:Key="Edit_LoadLrc">Muat file</system:String>
+    <system:String x:Key="Edit_LrcFilter">File LRC (*.lrc)|*.lrc|File teks (*.txt)|*.txt|Semua file|*.*</system:String>
+    <system:String x:Key="Edit_LrcLoadError">Gagal memuat file yang dipilih.</system:String>
+    <system:String x:Key="Edit_LyricsFormatInfo">Format LRC</system:String>
     <system:String x:Key="Edit_LyricsFormatMsg">Enter lyrics in [mm:ss.xx]Text format for automatic synchronization.</system:String>
-
-    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Lyrics here...</system:String>
-
+    <system:String x:Key="Edit_LyricsPlaceholder">[00:00.00] Lirik di sini...</system:String>
     <system:String x:Key="Edit_Ok">OK</system:String>
-
-    <system:String x:Key="Edit_OpenLocation">Open location</system:String>
-
-    <system:String x:Key="Edit_Save">Save changes</system:String>
-
-    <system:String x:Key="Edit_SaveErrorMsg">Could not save changes. Make sure the file is not being used by another process.</system:String>
-
-    <system:String x:Key="Edit_SelectArtTitle">Select cover image</system:String>
-
-    <system:String x:Key="Edit_SelectLrcTitle">Select lyrics file</system:String>
-
-    <system:String x:Key="Edit_SyncCurrentTime">Sync current time</system:String>
-
-    <system:String x:Key="Edit_SyncLyricsTip">Inserts the current player time at the cursor position.</system:String>
-
-    <system:String x:Key="Edit_TabLyrics">Lyrics (.lrc)</system:String>
-
+    <system:String x:Key="Edit_OpenLocation">Buka lokasi</system:String>
+    <system:String x:Key="Edit_Save">Simpan perubahan</system:String>
+    <system:String x:Key="Edit_SaveErrorMsg">Gagal menyimpan perubahan. Pastikan file tidak sedang digunakan.</system:String>
+    <system:String x:Key="Edit_SelectArtTitle">Pilih gambar sampul</system:String>
+    <system:String x:Key="Edit_SelectLrcTitle">Pilih file lirik</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTip">Geser semua tanda waktu ke depan atau ke belakang</system:String>
+    <system:String x:Key="Edit_ShiftLyricsTitle">Sinkronkan Lirik</system:String>
+    <system:String x:Key="Edit_SyncCurrentTime">Sinkronkan waktu saat ini</system:String>
+    <system:String x:Key="Edit_SyncLyricsTip">Menyisipkan waktu pemutar saat ini pada posisi kursor.</system:String>
+    <system:String x:Key="Edit_TabLyrics">Lirik (.lrc)</system:String>
     <system:String x:Key="Edit_TabMetadata">Metadata</system:String>
-
-    <system:String x:Key="Edit_TitleLabel">Song title</system:String>
-
-    <system:String x:Key="Edit_TitlePlaceholder">Enter title</system:String>
-
+    <system:String x:Key="Edit_TitleLabel">Judul lagu</system:String>
+    <system:String x:Key="Edit_TitlePlaceholder">Masukkan judul</system:String>
     <system:String x:Key="Edit_TrackNumberLabel">Track #</system:String>
-
-    <system:String x:Key="Edit_UnknownArtist">Unknown Artist</system:String>
-
-    <system:String x:Key="Edit_Untitled">Untitled</system:String>
-
-    <system:String x:Key="Edit_WindowTitle">Edit Track Info</system:String>
-
-    <system:String x:Key="EnableInsertKeyDescription">Determines whether pressing insert/overwrite will show the flyout</system:String>
-
-    <system:String x:Key="EnableInsertKeyTitle">Enable Insert Key Popup</system:String>
-
-    <system:String x:Key="EnableLockKeysDescription">Displays whether the specified lock key is on or off</system:String>
-
-    <system:String x:Key="EnableLockKeysTitle">Enable Lock Keys Flyout</system:String>
-
-    <system:String x:Key="EnableNextUpDescription">Shows what's next when a song/video ends</system:String>
-
-    <system:String x:Key="EnableNextUpTitle">Enable Next Up Flyout</system:String>
-
-    <system:String x:Key="Enabled">Enabled</system:String>
-
-    <system:String x:Key="EnjoyingAppText">Enjoying the app? Star it on GitHub,
-
-
-
-or leave a review on Microsoft Store!</system:String>
-
-    <system:String x:Key="Eq_Enable">Enable Equalizer</system:String>
-
-    <system:String x:Key="Eq_Presets">Presets</system:String>
-
+    <system:String x:Key="Edit_UnknownArtist">Artis Tidak Dikenal</system:String>
+    <system:String x:Key="Edit_Untitled">Tanpa judul</system:String>
+    <system:String x:Key="Edit_WindowTitle">Edit info trek</system:String>
+    <system:String x:Key="EnableInsertKeyDescription">Menentukan apakah menekan Insert/Overwrite akan menampilkan flyout</system:String>
+    <system:String x:Key="EnableInsertKeyTitle">Aktifkan flyout tombol Insert</system:String>
+    <system:String x:Key="EnableLockKeysDescription">Menampilkan apakah tombol kunci tertentu aktif atau nonaktif</system:String>
+    <system:String x:Key="EnableLockKeysTitle">Aktifkan flyout tombol kunci</system:String>
+    <system:String x:Key="EnableNextUpDescription">Menampilkan apa yang akan diputar berikutnya saat lagu/video berakhir</system:String>
+    <system:String x:Key="EnableNextUpTitle">Aktifkan flyout Lagu Berikutnya</system:String>
+    <system:String x:Key="Enabled">Aktif</system:String>
+    <system:String x:Key="EnjoyingAppText">Suka aplikasinya? Beri kami bintang di GitHub,
+atau tinggalkan ulasan di Microsoft Store!</system:String>
+    <system:String x:Key="Eq_Enable">Aktifkan equalizer</system:String>
+    <system:String x:Key="Eq_Presets">Preset</system:String>
     <system:String x:Key="Eq_Title">Equalizer</system:String>
-
-    <system:String x:Key="Error_RestoreSettings">Failed to restore settings</system:String>
-
-    <system:String x:Key="ExportFailed">Export Failed</system:String>
-
-    <system:String x:Key="ExportSettings">Export Settings</system:String>
-
-    <system:String x:Key="ExportSuccessful">Export Successful</system:String>
-
-    <system:String x:Key="ExternalMediaSectionTitle">External Media Integration</system:String>
-
-    <system:String x:Key="FailedToExportSettings">Failed to export settings. Check the logs for details.</system:String>
-
-    <system:String x:Key="FailedToImportSettings">Failed to import settings. Check the logs for details.</system:String>
-
-    <system:String x:Key="FeaturesLayoutSectionTitle">Features &amp; Layout</system:String>
-
-    <system:String x:Key="FlyoutPositionTitle">Flyout Position</system:String>
-
-    <system:String x:Key="FlyoutStayDurationDescription">(default: 3000 ms)</system:String>
-
-    <system:String x:Key="FlyoutStayDurationTitle">Flyout Stay Duration</system:String>
-
-    <system:String x:Key="General_Loading">Loading...</system:String>
-
-    <system:String x:Key="General_No">No</system:String>
-
+    <system:String x:Key="Error_FailedSetStartup">Gagal mengatur startup otomatis</system:String>
+    <system:String x:Key="Error_RestoreSettings">Kesalahan saat memulihkan pengaturan</system:String>
+    <system:String x:Key="ExportFailed">Ekspor gagal</system:String>
+    <system:String x:Key="ExportSettings">Ekspor pengaturan</system:String>
+    <system:String x:Key="ExportSuccessful">Ekspor berhasil</system:String>
+    <system:String x:Key="ExternalMediaSectionTitle">Integrasi media eksternal</system:String>
+    <system:String x:Key="FailedToExportSettings">Gagal mengekspor pengaturan. Periksa log.</system:String>
+    <system:String x:Key="FailedToImportSettings">Gagal mengimpor pengaturan. Periksa log.</system:String>
+    <system:String x:Key="FeaturesLayoutSectionTitle">Fitur dan tata letak</system:String>
+    <system:String x:Key="FlyoutPositionTitle">Posisi flyout</system:String>
+    <system:String x:Key="FlyoutStayDurationDescription">(default: 3000 md)</system:String>
+    <system:String x:Key="FlyoutStayDurationTitle">Durasi flyout</system:String>
+    <system:String x:Key="General_Loading">Memuat...</system:String>
+    <system:String x:Key="General_NewLabel">BARU</system:String>
     <system:String x:Key="General_Ok">OK</system:String>
-
-    <system:String x:Key="General_Yes">Yes</system:String>
-
-    <system:String x:Key="GitHubRepoLink">GitHub Repository</system:String>
-
-    <system:String x:Key="HideTrayIconDescription">Access settings from launching the program twice</system:String>
-
-    <system:String x:Key="HideTrayIconPerk">Hide Tray Icon</system:String>
-
-    <system:String x:Key="HideTrayIconTitle">Hide Tray Icon Completely</system:String>
-
-    <system:String x:Key="HomeDashboardTitle">Dashboard</system:String>
-
-    <system:String x:Key="HomeTitle">Home</system:String>
-
-    <system:String x:Key="HomeUpdateDescription">Learn what's new</system:String>
-
-    <system:String x:Key="Home_LyricsNotAvailable">Lyrics not available</system:String>
-
-    <system:String x:Key="Home_Repeat">Repeat</system:String>
-
-    <system:String x:Key="Home_SelectSongToSeeLyrics">Select a song to see its lyrics</system:String>
-
-    <system:String x:Key="Home_Shuffle">Shuffle</system:String>
-
-    <system:String x:Key="Home_Title">Music Player</system:String>
-
-    <system:String x:Key="ImportFailed">Import Failed</system:String>
-
-    <system:String x:Key="ImportSettings">Import Settings</system:String>
-
-    <system:String x:Key="ImportSettingsWarning">This will replace all your current settings. Continue?</system:String>
-
-    <system:String x:Key="ImportSuccessful">Import Successful</system:String>
-
-    <system:String x:Key="InternalMusicPlayerSectionTitle">Internal Music Player</system:String>
-
-    <system:String x:Key="InternalPlayerEnabledDescription">Use FluentFlyout as a standalone local music player for your library</system:String>
-
-    <system:String x:Key="InternalPlayerEnabledTitle">Enable Internal Music Player</system:String>
-
-    <system:String x:Key="LastChecked">Last checked: {0}</system:String>
-
-    <system:String x:Key="LaunchOnStartupDescription">Start minimized to tray when you log in to Windows</system:String>
-
-    <system:String x:Key="LaunchOnStartupTitle">Launch on Startup</system:String>
-
-    <system:String x:Key="LegacyTaskbarWidthDescription">Use the legacy Taskbar width system for Taskbar Widgets</system:String>
-
-    <system:String x:Key="LegacyTaskbarWidthTitle">Legacy Taskbar Width System</system:String>
-
-    <system:String x:Key="Lib_Albums">Albums</system:String>
-
-    <system:String x:Key="Lib_AppearanceTitle">Library Appearance</system:String>
-
-    <system:String x:Key="Lib_Artists">Artists</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_AddToQueue">Add to queue</system:String>
-
+    <system:String x:Key="General_Open">Buka</system:String>
+    <system:String x:Key="General_Yes">Ya</system:String>
+    <system:String x:Key="General_UnexpectedError">Terjadi kesalahan tak terduga: {0}</system:String>
+    <system:String x:Key="GitHubRepoLink">Repositori GitHub</system:String>
+    <system:String x:Key="HideTrayIconDescription">Akses pengaturan dengan menjalankan program dua kali</system:String>
+    <system:String x:Key="HideTrayIconPerk">Sembunyikan ikon baki</system:String>
+    <system:String x:Key="HideTrayIconTitle">Sembunyikan ikon baki sepenuhnya</system:String>
+    <system:String x:Key="HomeDashboardTitle">Dasbor</system:String>
+    <system:String x:Key="HomeTitle">Beranda</system:String>
+    <system:String x:Key="HomeUpdateDescription">Lihat apa yang baru</system:String>
+    <system:String x:Key="Home_LyricsNotAvailable">Lirik tidak tersedia</system:String>
+    <system:String x:Key="Home_Repeat">Ulangi</system:String>
+    <system:String x:Key="Home_SelectSongToSeeLyrics">Pilih lagu untuk melihat lirik</system:String>
+    <system:String x:Key="Home_Shuffle">Acak</system:String>
+    <system:String x:Key="Home_SyncButton">Sinkronkan</system:String>
+    <system:String x:Key="Home_Title">Pemutar Musik</system:String>
+    <system:String x:Key="ImportFailed">Impor gagal</system:String>
+    <system:String x:Key="ImportSettings">Impor pengaturan</system:String>
+    <system:String x:Key="ImportSettingsWarning">Ini akan menggantikan pengaturan Anda saat ini. Lanjutkan?</system:String>
+    <system:String x:Key="ImportSuccessful">Impor berhasil</system:String>
+    <system:String x:Key="InternalMusicPlayerSectionTitle">Pemutar musik internal</system:String>
+    <system:String x:Key="InternalPlayerEnabledDescription">Gunakan FluentFlyout sebagai pemutar musik lokal mandiri</system:String>
+    <system:String x:Key="InternalPlayerEnabledTitle">Aktifkan pemutar musik internal</system:String>
+    <system:String x:Key="PlaybackSourceModeTitle">Fuente de Reproduccion</system:String>
+<system:String x:Key="PlaybackSourceModeDescription">Elige si FluentFlyout funciona como reproductor interno o como controlador multimedia de aplicaciones externas.</system:String>
+<system:String x:Key="PlaybackSourceModeInternal">Reproductor interno</system:String>
+<system:String x:Key="PlaybackSourceModeExternal">Control externo</system:String>
+<system:String x:Key="PlaybackSourceModeInternalDescription">Activa la biblioteca local, Home y la reproduccion integrada de FluentFlyout.</system:String>
+<system:String x:Key="PlaybackSourceModeExternalDescription">Usa el flyout y los controles para Spotify, YouTube, Chrome y otras aplicaciones externas compatibles.</system:String>
+<system:String x:Key="LastChecked">Terakhir diperiksa: {0}</system:String>
+    <system:String x:Key="LaunchOnStartupDescription">Mulai dalam keadaan diminimalkan ke tray saat masuk ke Windows</system:String>
+    <system:String x:Key="LaunchOnStartupTitle">Jalankan saat startup</system:String>
+    <system:String x:Key="LegacyTaskbarWidthDescription">Gunakan sistem lebar taskbar lama untuk Widget</system:String>
+    <system:String x:Key="LegacyTaskbarWidthTitle">Sistem lebar taskbar lama</system:String>
+    <system:String x:Key="Lib_Albums">Album</system:String>
+    <system:String x:Key="Lib_AppearanceTitle">Tampilan perpustakaan</system:String>
+    <system:String x:Key="Lib_Artists">Artis</system:String>
+    <system:String x:Key="Lib_ContextMenu_AddToQueue">Tambahkan ke antrean</system:String>
     <system:String x:Key="Lib_ContextMenu_Edit">Edit info</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">Open file location</system:String>
-
-    <system:String x:Key="Lib_ContextMenu_Play">Play</system:String>
-
-    <system:String x:Key="Lib_Folders">Folders</system:String>
-
-    <system:String x:Key="Lib_GridSizeDescription">Grid Size (Albums)</system:String>
-
-    <system:String x:Key="Lib_GridSizeTitle">Grid Size</system:String>
-
-    <system:String x:Key="Lib_IconSizeDescription">Icon Size (List)</system:String>
-
-    <system:String x:Key="Lib_IconSizeTitle">Icon Size</system:String>
-
-    <system:String x:Key="Lib_LyricsBadge">LYRICS</system:String>
-
-    <system:String x:Key="Lib_LyricsFilterTooltip">Show only songs with lyrics</system:String>
-
-    <system:String x:Key="Lib_PlayAll">Play all</system:String>
-
-    <system:String x:Key="Lib_ResetAppearance">Reset appearance</system:String>
-
-    <system:String x:Key="Lib_SearchPlaceholder">Search your collection...</system:String>
-
-    <system:String x:Key="Lib_SelectFolderDescription">Select a folder to add to your music library</system:String>
-
-    <system:String x:Key="Lib_Shuffle">Shuffle</system:String>
-
-    <system:String x:Key="Lib_Songs">Songs</system:String>
-
-    <system:String x:Key="Lib_SongsCountFormat">{0} songs</system:String>
-
-    <system:String x:Key="Lib_SortBy">Sort by:</system:String>
-
-    <system:String x:Key="Lib_SortDirection">Change direction (?/?)</system:String>
-
+    <system:String x:Key="Lib_ContextMenu_OpenFileLocation">Buka lokasi file</system:String>
+    <system:String x:Key="Lib_ContextMenu_Play">Putar</system:String>
+    <system:String x:Key="Lib_CornerRadiusDescription">Sesuaikan radius sudut untuk sampul dan kartu</system:String>
+    <system:String x:Key="Lib_CornerRadiusTitle">Radius Sudut</system:String>
+    <system:String x:Key="Lib_Folders">Folder</system:String>
+    <system:String x:Key="Lib_GridSizeDescription">Ukuran kisi (Album)</system:String>
+    <system:String x:Key="Lib_GridSizeTitle">Ukuran kisi</system:String>
+    <system:String x:Key="Lib_IconSizeDescription">Ukuran ikon (Daftar)</system:String>
+    <system:String x:Key="Lib_IconSizeTitle">Ukuran ikon</system:String>
+    <system:String x:Key="Lib_LyricsBadge">LIRIK</system:String>
+    <system:String x:Key="Lib_LyricsFilterTooltip">Tampilkan hanya lagu yang memiliki lirik</system:String>
+    <system:String x:Key="Lib_PlayAll">Putar semua</system:String>
+    <system:String x:Key="Lib_PreviewDescription">Beginilah tampilan perpustakaan Anda</system:String>
+    <system:String x:Key="Lib_PreviewTitle">Pratinjau</system:String>
+    <system:String x:Key="Lib_ResetAppearance">Reset tampilan</system:String>
+    <system:String x:Key="Lib_ResetLayoutTooltip">Atur ulang desain</system:String>
+    <system:String x:Key="Lib_SearchPlaceholder">Cari di koleksi Anda...</system:String>
+    <system:String x:Key="Lib_SelectFolderDescription">Pilih folder untuk ditambahkan ke perpustakaan Anda</system:String>
+    <system:String x:Key="Lib_Shuffle">Acak</system:String>
+    <system:String x:Key="Lib_SizeLarge">Besar</system:String>
+    <system:String x:Key="Lib_SizeSmall">Kecil</system:String>
+    <system:String x:Key="Lib_Songs">Lagu</system:String>
+    <system:String x:Key="Lib_SongsCountFormat">{0} lagu</system:String>
+    <system:String x:Key="Lib_SortBy">Urutkan berdasarkan:</system:String>
+    <system:String x:Key="Lib_SortDirection">Ubah arah pengurutan (↑/↓)</system:String>
     <system:String x:Key="Lib_Sort_Album">Album</system:String>
-
-    <system:String x:Key="Lib_Sort_Artist">Artist</system:String>
-
-    <system:String x:Key="Lib_Sort_Duration">Duration</system:String>
-
-    <system:String x:Key="Lib_Sort_PlayCount">Most played</system:String>
-
-    <system:String x:Key="Lib_Sort_Title">Title (A-Z)</system:String>
-
-    <system:String x:Key="Lib_Title">Music Library</system:String>
-
-    <system:String x:Key="Lib_ToggleList">Show/hide list</system:String>
-
-    <system:String x:Key="Lib_ViewSettingsTooltip">View Settings</system:String>
-
-    <system:String x:Key="LibraryAppearanceSectionTitle">Library Appearance</system:String>
-
-    <system:String x:Key="LibraryGridSizeDescription">Adjust the size of albums and artists (default: 160px)</system:String>
-
-    <system:String x:Key="LibraryGridSizeTitle">Grid Size</system:String>
-
-    <system:String x:Key="LibraryTrackIconSizeDescription">Adjust the size of icons in the song list (default: 40px)</system:String>
-
-    <system:String x:Key="LibraryTrackIconSizeTitle">Track Icon Size</system:String>
-
-    <system:String x:Key="LockKeysAnimatedDescription">Enable subtle animations for the lock key indicator</system:String>
-
-    <system:String x:Key="LockKeysAnimatedTitle">Indicator Animations</system:String>
-
-    <system:String x:Key="LockKeysBoldUIDescription">Emphasizes the flyout symbol and font</system:String>
-
-    <system:String x:Key="LockKeysBoldUITitle">Bold Symbol and Font</system:String>
-
-    <system:String x:Key="LockKeysCursorUIDescription">Choose which monitor to display the flyout.</system:String>
-
-    <system:String x:Key="LockKeysCursorUITitle">Preferred Target Display</system:String>
-
-    <system:String x:Key="LockKeysCustomizationTitle">Lock Keys Flyout</system:String>
-
-    <system:String x:Key="LockKeysDescription">Check your lock key status at a glance. Appears after pressing Caps Lock, Num Lock or Scroll Lock. Convenient for laptops/keyboards without lock key indicators.</system:String>
-
-    <system:String x:Key="LockKeysStayDurationDescription">(default: 2000 ms)</system:String>
-
-    <system:String x:Key="LockKeysStayDurationTitle">Lock Keys Stay Duration</system:String>
-
+    <system:String x:Key="Lib_Sort_Artist">Artis</system:String>
+    <system:String x:Key="Lib_Sort_Duration">Durasi</system:String>
+    <system:String x:Key="Lib_Sort_PlayCount">Paling sering diputar</system:String>
+    <system:String x:Key="Lib_Sort_Title">Judul (A-Z)</system:String>
+    <system:String x:Key="Lib_Title">Perpustakaan Musik</system:String>
+    <system:String x:Key="Lib_ToggleList">Tampilkan/sembunyikan daftar</system:String>
+    <system:String x:Key="Lib_ViewSettingsTooltip">Lihat pengaturan</system:String>
+    <system:String x:Key="LibraryAppearanceSectionTitle">Tampilan perpustakaan</system:String>
+    <system:String x:Key="LibraryGridSizeDescription">Sesuaikan ukuran album dan artis (default: 160px)</system:String>
+    <system:String x:Key="LibraryGridSizeTitle">Ukuran kisi</system:String>
+    <system:String x:Key="LibraryTrackIconSizeDescription">Sesuaikan ukuran ikon dalam daftar lagu (default: 40px)</system:String>
+    <system:String x:Key="LibraryTrackIconSizeTitle">Ukuran ikon trek</system:String>
+    <system:String x:Key="LockKeysAnimatedDescription">Aktifkan animasi halus untuk indikator tombol kunci</system:String>
+    <system:String x:Key="LockKeysAnimatedTitle">Animasi indikator</system:String>
+    <system:String x:Key="LockKeysBoldUIDescription">Tegaskan simbol dan font flyout</system:String>
+    <system:String x:Key="LockKeysBoldUITitle">Simbol dan font tebal</system:String>
+    <system:String x:Key="LockKeysCursorUIDescription">Pilih monitor tempat flyout ditampilkan.</system:String>
+    <system:String x:Key="LockKeysCursorUITitle">Layar tujuan yang disukai</system:String>
+    <system:String x:Key="LockKeysCustomizationTitle">Flyout tombol kunci</system:String>
+    <system:String x:Key="LockKeysDescription">Periksa status tombol kunci Anda dalam sekejap. Muncul setelah menekan Caps Lock, Num Lock, atau Scroll Lock.</system:String>
+    <system:String x:Key="LockKeysStayDurationDescription">(default: 2000 md)</system:String>
+    <system:String x:Key="LockKeysStayDurationTitle">Durasi tombol kunci</system:String>
     <system:String x:Key="LockWindow_CapsLock">Caps Lock</system:String>
-
     <system:String x:Key="LockWindow_Insert">Insert</system:String>
-
-    <system:String x:Key="LockWindow_InsertPressed">Insert Pressed</system:String>
-
-    <system:String x:Key="LockWindow_LockOff">off</system:String>
-
-    <system:String x:Key="LockWindow_LockOn">on</system:String>
-
+    <system:String x:Key="LockWindow_InsertPressed">Insert ditekan</system:String>
+    <system:String x:Key="LockWindow_LockOff">nonaktif</system:String>
+    <system:String x:Key="LockWindow_LockOn">aktif</system:String>
     <system:String x:Key="LockWindow_NumLock">Num Lock</system:String>
-
     <system:String x:Key="LockWindow_ScrollLock">Scroll Lock</system:String>
-
-    <system:String x:Key="MediaFlyoutAlwaysDisplay">Always Display</system:String>
-
-    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">The flyout stays open until you click the close button</system:String>
-
-    <system:String x:Key="MediaFlyoutDescription">When listening to media, press any media or volume key (play/pause, volume up/down, etc.) on your keyboard to display the flyout. Displays media info, along with playback controls and more.</system:String>
-
-    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Do not display the flyout when pressing volume up/down/mute</system:String>
-
-    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Exclude Volume Keys</system:String>
-
-    <system:String x:Key="MediaFlyoutTitle">Media Flyout</system:String>
-
-    <system:String x:Key="MillisecondsUnit">ms</system:String>
-
-    <system:String x:Key="MonitorWithCursor">Monitor with cursor</system:String>
-
-    <system:String x:Key="MonitorWithFocusedWindow">Monitor with focused window</system:String>
-
-    <system:String x:Key="NativeExperienceInfo">For the native Windows 11 experience, the settings should be kept at default.</system:String>
-
-    <system:String x:Key="NextUpCustomizationTitle">Next Up Flyout</system:String>
-
-    <system:String x:Key="NextUpDescription">A flyout shows what's next when a song/video ends. Only appears if the next item plays automatically, if next/previous is pressed manually, the main flyout appears instead.</system:String>
-
-    <system:String x:Key="NextUpStayDurationDescription">(default: 2000 ms)</system:String>
-
-    <system:String x:Key="NextUpStayDurationTitle">Next Up Stay Duration</system:String>
-
-    <system:String x:Key="NextUpWindow_UpNextText">Up next:</system:String>
-
-    <system:String x:Key="PauseOtherMediaDescription">When you play or focus on new media, other active sessions are automatically paused</system:String>
-
-    <system:String x:Key="PauseOtherMediaTitle">Pause Other Media Automatically</system:String>
-
-    <system:String x:Key="PixelsUnit">px</system:String>
-
-    <system:String x:Key="Player_NoTrack">No track playing</system:String>
-
-    <system:String x:Key="Player_SelectTrackMsg">Select a track from the library</system:String>
-
-    <system:String x:Key="Playlist_Title">Playlist</system:String>
-
+    <system:String x:Key="MediaFlyoutAlwaysDisplay">Selalu tampilkan</system:String>
+    <system:String x:Key="MediaFlyoutAlwaysDisplayDescription">Flyout tetap terbuka sampai Anda menekan tombol tutup</system:String>
+    <system:String x:Key="MediaFlyoutDescription">Saat mendengarkan media, tekan tombol media atau volume apa pun (putar/jeda, volume naik/turun, dll.) pada keyboard Anda untuk menampilkan flyout. Menampilkan info media, kontrol pemutaran, dan lainnya.</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeDescription">Jangan tampilkan flyout saat menekan volume naik/turun/bisu</system:String>
+    <system:String x:Key="MediaFlyoutExcludeVolumeTitle">Kecualikan tombol volume</system:String>
+    <system:String x:Key="MediaFlyoutTitle">Flyout media</system:String>
+    <system:String x:Key="MonitorWithCursor">Monitor dengan kursor</system:String>
+    <system:String x:Key="MonitorWithFocusedWindow">Monitor dengan jendela fokus</system:String>
+    <system:String x:Key="NativeExperienceInfo">Untuk pengalaman asli Windows 11, pengaturan ini sebaiknya tetap default.</system:String>
+    <system:String x:Key="NextUpCustomizationTitle">Flyout Lagu Berikutnya</system:String>
+    <system:String x:Key="NextUpDescription">Flyout menampilkan apa yang akan diputar selanjutnya saat lagu/video berakhir. Hanya muncul jika item berikutnya diputar otomatis.</system:String>
+    <system:String x:Key="NextUpStayDurationDescription">(default: 2000 md)</system:String>
+    <system:String x:Key="NextUpStayDurationTitle">Durasi Lagu Berikutnya</system:String>
+    <system:String x:Key="NextUpWindow_UpNextText">Berikutnya:</system:String>
+    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">Judul lagu</system:String>
+    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">Nama artis</system:String>
+    <system:String x:Key="PauseOtherMediaDescription">Saat media baru diputar atau difokuskan, sesi aktif lainnya dijeda secara otomatis</system:String>
+    <system:String x:Key="PauseOtherMediaTitle">Jeda media lain secara otomatis</system:String>
+    <system:String x:Key="Player_NoTrack">Tidak ada trek yang diputar</system:String>
+    <system:String x:Key="Player_SelectTrackMsg">Pilih trek dari perpustakaan</system:String>
+    <system:String x:Key="Playlist_ClearQueue">Bersihkan antrean</system:String>
+    <system:String x:Key="Playlist_EmptyDescription">Seret musik ke sini atau tambahkan dari perpustakaan.</system:String>
+    <system:String x:Key="Playlist_EmptyTitle">Antrean Anda kosong</system:String>
+    <system:String x:Key="Playlist_OpenLocation">Buka lokasi file</system:String>
+    <system:String x:Key="Playlist_PlayNext">Putar berikutnya</system:String>
+    <system:String x:Key="Playlist_RemoveFromQueue">Hapus dari antrean</system:String>
+    <system:String x:Key="Playlist_SearchPlaceholder">Cari di antrean...</system:String>
+    <system:String x:Key="Playlist_Title">Antrean</system:String>
+    <system:String x:Key="Playlist_ViewInfo">Lihat info</system:String>
+    <system:String x:Key="Playlist_SaveQueue">Simpan antrean</system:String>
+    <system:String x:Key="Playlist_LoadQueue">Muat antrean</system:String>
+    <system:String x:Key="Playlist_Undo">Urungkan</system:String>
+    <system:String x:Key="Playlist_Close">Sembunyikan</system:String>
     <system:String x:Key="PositionBottomCenter"> Bottom Center</system:String>
-
     <system:String x:Key="PositionBottomLeft"> Bottom Left</system:String>
-
     <system:String x:Key="PositionBottomRight"> Bottom Right</system:String>
-
-    <system:String x:Key="PositionLeft">Left</system:String>
-
-    <system:String x:Key="PositionRight">Right</system:String>
-
+    <system:String x:Key="PositionLeft">Kiri</system:String>
+    <system:String x:Key="PositionRight">Kanan</system:String>
     <system:String x:Key="PositionTopCenter"> Top Center</system:String>
-
     <system:String x:Key="PositionTopLeft"> Top Left</system:String>
-
     <system:String x:Key="PositionTopRight"> Top Right</system:String>
-
     <system:String x:Key="PremiumFeatureDescription">Your one-time contribution helps me keep FluentFlyout alive and updated. It instantly unlocks all premium customization features, forever.
 
 
@@ -461,281 +272,199 @@ or leave a review on Microsoft Store!</system:String>
 
 
 Note: As an open-source project, these features are also available for free via the manual installer on GitHub. The only trade-off is that updates and installation must be done manually.</system:String>
-
-    <system:String x:Key="PremiumFeatureTitle">Premium Feature</system:String>
-
-    <system:String x:Key="PremiumGitHubMessage">Premium features are unlocked for GitHub/self-compiled versions</system:String>
-
-    <system:String x:Key="PremiumLockedMessage">This feature is part of the premium package</system:String>
-
-    <system:String x:Key="PremiumPurchaseCancelled">Purchase cancelled.</system:String>
-
-    <system:String x:Key="PremiumPurchaseFailed">Purchase failed. Please try again.</system:String>
-
-    <system:String x:Key="PremiumPurchaseSuccess">Premium unlocked successfully!</system:String>
-
-    <system:String x:Key="PremiumUnlockedMessage">Premium features unlocked. Thank you for your support!</system:String>
-
-    <system:String x:Key="RepeatButtonDescription">Choose between repeat all or repeat one, increases flyout width</system:String>
-
-    <system:String x:Key="RepeatButtonTitle">Repeat Button*</system:String>
-
-    <system:String x:Key="SelectedMonitorTitle">Flyout Target Display</system:String>
-
-    <system:String x:Key="SettingsExportedSuccessfully">Settings exported successfully!</system:String>
-
-    <system:String x:Key="SettingsImportedSuccessfully">Settings imported successfully! The application will now restart to apply changes.</system:String>
-
-    <system:String x:Key="ShowMediaPlayerNameTitle">Show Media Player name</system:String>
-
-    <system:String x:Key="ShowSeekbarDescription">An interactable seekbar will automatically display if the player supports it</system:String>
-
-    <system:String x:Key="ShowSeekbarTitle">Show Seekbar*</system:String>
-
-    <system:String x:Key="ShowUpdateNotificationsTitle">Show notifications for new updates</system:String>
-
-    <system:String x:Key="ShuffleButtonDescription">Increases flyout width</system:String>
-
-    <system:String x:Key="ShuffleButtonTitle">Shuffle Button*</system:String>
-
-    <system:String x:Key="SponsorMeLink">Sponsor me</system:String>
-
-    <system:String x:Key="StartupAppsHyperlinkText">Startup Apps</system:String>
-
-    <system:String x:Key="StartupAppsSettingsInfo">If this setting does not work as expected, check</system:String>
-
-    <system:String x:Key="SystemConfigure">Configure</system:String>
-
-    <system:String x:Key="SystemMediaControlEnabledDescription">Show and control media from other apps (Spotify, YouTube, Chrome, etc.)</system:String>
-
-    <system:String x:Key="SystemMediaControlEnabledTitle">Control External Applications</system:String>
-
-    <system:String x:Key="SystemSettingsTitle">System</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">How loud audio must be for the bars to reach their maximum height</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">Audio Peak Threshold</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">How loud audio must be before the bars start moving</system:String>
-
-    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">Audio Sensitivity</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBarCountDescription">The amount of visualizer bars</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBarCountTitle">Bar Count</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBaselineDescription">Displays a thin line when audio levels are at zero</system:String>
-
-    <system:String x:Key="TaskbarVisualizerBaselineTitle">Show Baseline</system:String>
-
-    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">Bars that expand symmetrically from the center instead of rising from the bottom</system:String>
-
-    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">Centered Bars</system:String>
-
-    <system:String x:Key="TaskbarVisualizerClickableDescription">Clicking the visualizer will open its settings page</system:String>
-
-    <system:String x:Key="TaskbarVisualizerClickableTitle">Click to open Settings</system:String>
-
-    <system:String x:Key="TaskbarVisualizerDescription">A real-time audio visualizer on your taskbar. Designed to have minimal performance impact on modern systems.</system:String>
-
-    <system:String x:Key="TaskbarVisualizerEnabledDescription">Experimental: This feature will only work if the Taskbar Widget is enabled</system:String>
-
-    <system:String x:Key="TaskbarVisualizerEnabledTitle">Enable Taskbar Visualizer (Experimental)</system:String>
-
-    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">Change what the visualizer listens to by switching FluentFlyout's output device.</system:String>
-
-    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">Output Device</system:String>
-
-    <system:String x:Key="TaskbarVisualizerPositionTitle">Visualizer Position Relative to Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarVisualizerTitle">Taskbar Visualizer</system:String>
-
-    <system:String x:Key="TaskbarWidgetAnimatedDescription">Enable subtle animations for the widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetAnimatedTitle">Widget Animations</system:String>
-
-    <system:String x:Key="TaskbarWidgetAutoHideDescription">Hides the widget automatically when media is paused</system:String>
-
-    <system:String x:Key="TaskbarWidgetAutoHideTitle">Autohide Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Add background blur effect to the taskbar widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Background Blur</system:String>
-
-    <system:String x:Key="TaskbarWidgetClickableDescription">Jika flyout media dinyalakan, akan buka apabila anda klik widget pada taskbar</system:String>
-
-    <system:String x:Key="TaskbarWidgetClickableTitle">Klik untuk membuka Flyout media ketika sebuah media tersedia</system:String>
-
-    <system:String x:Key="TaskbarWidgetCloseableFlyoutDescription">Tutup flyout jika sudah siap membuka ketika mengklik widget bilah tugas</system:String>
-
-    <system:String x:Key="TaskbarWidgetCloseableFlyoutTitle">Tutup Flyout dalam Klik Detik</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsDescription">Show media control buttons on the widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsPositionDescription">Choose where to display the media control buttons</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsPositionTitle">Media Controls Position</system:String>
-
-    <system:String x:Key="TaskbarWidgetControlsTitle">Widget Media Controls</system:String>
-
-    <system:String x:Key="TaskbarWidgetCustomizationPerk">Taskbar Widget and Visualizer</system:String>
-
-    <system:String x:Key="TaskbarWidgetCustomizationTitle">Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetDescription">A compact, built-in widget that lives right on your Windows Taskbar for instant access to your media. Click the widget to expand the full Media Flyout.</system:String>
-
-    <system:String x:Key="TaskbarWidgetEnabledDescription">Show a compact media widget on the taskbar</system:String>
-
-    <system:String x:Key="TaskbarWidgetEnabledTitle">Enable Taskbar Widget</system:String>
-
-    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">Hides the entire widget when no media is available, instead of displaying a media icon</system:String>
-
-    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Hide Completely When No Media Is Present</system:String>
-
-    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Add extra padding (default: 0px)</system:String>
-
-    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Custom Padding</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingDescription">Turn this feature on if you have Windows Widgets enabled</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Adjust the padding around the widget to fit your taskbar style</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Widget Padding Settings</system:String>
-
-    <system:String x:Key="TaskbarWidgetPaddingTitle">Automatic Padding for Windows Widgets button</system:String>
-
-    <system:String x:Key="TaskbarWidgetPosition">Widget Position</system:String>
-
-    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Widget Target Display</system:String>
-
-    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Configure the options below if you experience visual issues.</system:String>
-
-    <system:String x:Key="TextBlockText1">Enable Media Flyout</system:String>
-
-    <system:String x:Key="TextBlockText2">Choose from a preset of modern background blur styles</system:String>
-
-    <system:String x:Key="TextBlockText3">Display a flyout when you press a media key</system:String>
-
-    <system:String x:Key="TitleText">FluentFlyout Settings</system:String>
-
-    <system:String x:Key="TranslatorsTitle">Translators</system:String>
-
-    <system:String x:Key="TrayIconLeftClickBehaviorDescription">Choose what happens when you left click the tray icon</system:String>
-
-    <system:String x:Key="TrayIconLeftClickBehaviorTitle">Tray Icon Left Click Behavior</system:String>
-
+    <system:String x:Key="PremiumFeatureTitle">Fitur Premium</system:String>
+    <system:String x:Key="PremiumGitHubMessage">Fitur premium terbuka untuk versi GitHub/bangun sendiri</system:String>
+    <system:String x:Key="PremiumLockedMessage">Fitur ini merupakan bagian dari paket premium</system:String>
+    <system:String x:Key="PremiumPurchaseCancelled">Pembelian dibatalkan.</system:String>
+    <system:String x:Key="PremiumPurchaseFailed">Pembelian gagal. Silakan coba lagi.</system:String>
+    <system:String x:Key="PremiumPurchaseSuccess">Premium berhasil dibuka!</system:String>
+    <system:String x:Key="PremiumUnlockedMessage">Fitur premium dibuka. Terima kasih atas dukungan Anda!</system:String>
+    <system:String x:Key="RepeatButtonDescription">Pilih antara ulangi semua atau ulangi satu; menambah lebar flyout</system:String>
+    <system:String x:Key="RepeatButtonTitle">Tombol Ulangi*</system:String>
+    <system:String x:Key="SelectedMonitorTitle">Monitor tujuan flyout</system:String>
+    <system:String x:Key="SettingsExportedSuccessfully">Pengaturan berhasil diekspor!</system:String>
+    <system:String x:Key="SettingsImportedSuccessfully">Pengaturan berhasil diimpor! Aplikasi akan dimulai ulang sekarang.</system:String>
+    <system:String x:Key="ShowMediaPlayerNameTitle">Tampilkan nama pemutar media</system:String>
+    <system:String x:Key="ShowSeekbarDescription">Bilah pencarian interaktif akan ditampilkan secara otomatis jika pemutar mendukungnya</system:String>
+    <system:String x:Key="ShowSeekbarTitle">Tampilkan bilah pencarian*</system:String>
+    <system:String x:Key="ShowUpdateNotificationsTitle">Tampilkan notifikasi untuk pembaruan baru</system:String>
+    <system:String x:Key="ShuffleButtonDescription">Menambah lebar flyout</system:String>
+    <system:String x:Key="ShuffleButtonTitle">Tombol Acak*</system:String>
+    <system:String x:Key="SponsorMeLink">Dukung saya</system:String>
+    <system:String x:Key="StartupAppsHyperlinkText">Aplikasi Startup</system:String>
+    <system:String x:Key="StartupAppsSettingsInfo">Jika pengaturan ini tidak bekerja seperti yang diharapkan, periksa</system:String>
+    <system:String x:Key="SystemConfigure">Konfigurasikan</system:String>
+    <system:String x:Key="SystemMediaControlEnabledDescription">Tampilkan dan kendalikan media dari aplikasi lain (Spotify, YouTube, Chrome, dll.)</system:String>
+    <system:String x:Key="SystemMediaControlEnabledTitle">Kendalikan aplikasi eksternal</system:String>
+    <system:String x:Key="SystemSettingsTitle">Sistem</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelDescription">Seberapa keras audio agar bilah mencapai tinggi maksimum</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioPeakLevelTitle">Ambang puncak audio</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityDescription">Seberapa keras audio sebelum bilah mulai bergerak</system:String>
+    <system:String x:Key="TaskbarVisualizerAudioSensitivityTitle">Sensitivitas audio</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountDescription">Jumlah bilah pada visualizer</system:String>
+    <system:String x:Key="TaskbarVisualizerBarCountTitle">Jumlah bilah</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineDescription">Tampilkan garis tipis saat level audio nol</system:String>
+    <system:String x:Key="TaskbarVisualizerBaselineTitle">Tampilkan garis dasar</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsDescription">Bilah memanjang simetris dari tengah alih-alih naik dari bawah</system:String>
+    <system:String x:Key="TaskbarVisualizerCenteredBarsTitle">Bilah terpusat</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableDescription">Mengklik visualizer akan membuka halaman pengaturannya</system:String>
+    <system:String x:Key="TaskbarVisualizerClickableTitle">Klik untuk membuka Pengaturan</system:String>
+    <system:String x:Key="TaskbarVisualizerDescription">Visualizer audio real-time di taskbar Anda. Dirancang dengan dampak performa minimum.</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledDescription">Eksperimental: fitur ini hanya berfungsi jika Widget Taskbar diaktifkan</system:String>
+    <system:String x:Key="TaskbarVisualizerEnabledTitle">Aktifkan visualizer (eksperimental)</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceDescription">Ubah apa yang didengar visualizer dengan mengganti perangkat output FluentFlyout.</system:String>
+    <system:String x:Key="TaskbarVisualizerOutputDeviceTitle">Perangkat output</system:String>
+    <system:String x:Key="TaskbarVisualizerPositionTitle">Posisi visualizer relatif terhadap Widget</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeDescription">Bagaimana saluran audio diproses untuk visualisasi</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeMono">Mono (rata-rata L+R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">Cermin stereo (L|R)</system:String>
+    <system:String x:Key="TaskbarVisualizerStereoModeTitle">Mode Stereo</system:String>
+    <system:String x:Key="TaskbarVisualizerTitle">Visualizer Taskbar</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualisasikan tingkat input dan sesuaikan titik potong secara real time</system:String>
+    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Monitor kalibrasi audio</system:String>
+    <system:String x:Key="TaskbarVisualizer_Max">Maksimum</system:String>
+    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Ambang maksimum (puncak)</system:String>
+    <system:String x:Key="TaskbarVisualizer_Silence">Diam</system:String>
+    <system:String x:Key="TaskbarVisualizer_StartPoint">Titik awal (sensitivitas)</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedDescription">Aktifkan animasi halus untuk widget</system:String>
+    <system:String x:Key="TaskbarWidgetAnimatedTitle">Animasi widget</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideDescription">Sembunyikan widget secara otomatis saat media dijeda</system:String>
+    <system:String x:Key="TaskbarWidgetAutoHideTitle">Sembunyikan widget otomatis</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurDescription">Tambahkan efek blur latar belakang ke widget taskbar</system:String>
+    <system:String x:Key="TaskbarWidgetBackgroundBlurTitle">Blur latar belakang</system:String>
+    <system:String x:Key="TaskbarWidgetControlsDescription">Tampilkan tombol kontrol media di widget</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionDescription">Pilih tempat menampilkan tombol kontrol media</system:String>
+    <system:String x:Key="TaskbarWidgetControlsPositionTitle">Posisi kontrol media</system:String>
+    <system:String x:Key="TaskbarWidgetControlsTitle">Kontrol media widget</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationPerk">Widget Taskbar dan Visualizer</system:String>
+    <system:String x:Key="TaskbarWidgetCustomizationTitle">Widget Taskbar</system:String>
+    <system:String x:Key="TaskbarWidgetDescription">Widget bawaan ringkas yang hidup di taskbar Windows Anda untuk akses instan ke media Anda. Klik widget untuk memperluas Flyout Media lengkap.</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledDescription">Tampilkan widget media ringkas di taskbar</system:String>
+    <system:String x:Key="TaskbarWidgetEnabledTitle">Aktifkan Widget Taskbar</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyDescription">Sembunyikan seluruh widget saat tidak ada media tersedia, alih-alih menampilkan ikon</system:String>
+    <system:String x:Key="TaskbarWidgetHideCompletelyTitle">Sembunyikan sepenuhnya saat tidak ada media</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingDescription">Tambahkan padding ekstra (default: 0px)</system:String>
+    <system:String x:Key="TaskbarWidgetManualPaddingTitle">Padding khusus</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingDescription">Aktifkan ini jika Widget Windows Anda aktif</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsDescription">Sesuaikan padding di sekitar widget agar cocok dengan gaya taskbar Anda</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingSettingsTitle">Pengaturan padding widget</system:String>
+    <system:String x:Key="TaskbarWidgetPaddingTitle">Padding otomatis untuk tombol Widget Windows</system:String>
+    <system:String x:Key="TaskbarWidgetPosition">Posisi widget</system:String>
+    <system:String x:Key="TaskbarWidgetSelectedMonitorTitle">Layar tujuan widget</system:String>
+    <system:String x:Key="TaskbarWidgetVisualIssuesWarning">Atur opsi di bawah ini jika Anda mengalami masalah visual.</system:String>
+    <system:String x:Key="TextBlockText1">Aktifkan Flyout Media</system:String>
+    <system:String x:Key="TextBlockText2">Pilih dari serangkaian gaya blur latar belakang modern</system:String>
+    <system:String x:Key="TextBlockText3">Tampilkan flyout saat menekan tombol media</system:String>
+    <system:String x:Key="TitleText">Pengaturan FluentFlyout</system:String>
+    <system:String x:Key="TranslatorsTitle">Penerjemah</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorDescription">Pilih apa yang terjadi saat mengklik kiri ikon tray</system:String>
+    <system:String x:Key="TrayIconLeftClickBehaviorTitle">Perilaku klik kiri ikon tray</system:String>
     <system:String x:Key="TrayIconLeftClickOption1"> Open Settings</system:String>
-
     <system:String x:Key="TrayIconLeftClickOption2"> Show Media Flyout</system:String>
-
-    <system:String x:Key="TrayIconSectionTitle">Tray Icon</system:String>
-
-    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repository</system:String>
-
-    <system:String x:Key="TrayIcon_QuitOption">Quit FluentFlyout</system:String>
-
-    <system:String x:Key="TrayIcon_ReportBugOption">Report bug</system:String>
-
-    <system:String x:Key="TrayIcon_SettingsOption">Settings</system:String>
-
-    <system:String x:Key="TrayIcon_ViewLogsOption">View logs</system:String>
-
-    <system:String x:Key="UnlockFullExperienceText">Unlock the full FluentFlyout experience:</system:String>
-
-    <system:String x:Key="UnlockPremiumButton">Unlock Premium</system:String>
-
-    <system:String x:Key="UnsupportedControlsWarning">*Some browsers/players do not support repeat, shuffle and seekbar control.</system:String>
-
-    <system:String x:Key="UpToDate">Up to date</system:String>
-
-    <system:String x:Key="UpdateAvailable">Update available</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationButton">Download Update</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationMessage">A new version ({0}) is available.</system:String>
-
-    <system:String x:Key="UpdateAvailableNotificationTitle">Update Available!</system:String>
-
-    <system:String x:Key="UpdateToastButton">View Updates</system:String>
-
-    <system:String x:Key="UpdateToastMessage">You are now on {0}.</system:String>
-
-    <system:String x:Key="UpdateToastTitle">FluentFlyout has been updated!</system:String>
-
-    <system:String x:Key="UpdatesSectionTitle">Updates</system:String>
-
-    <system:String x:Key="UseAlbumArtAccentColorDescription">Some UI elements will use the album art color instead of the system theme</system:String>
-
-    <system:String x:Key="UseAlbumArtAccentColorTitle">Use Album Art as Accent Color</system:String>
-
-    <system:String x:Key="Win11TrayIconDescription">Use a tray icon that matches Windows 11 (toggle to refresh theme)</system:String>
-
-    <system:String x:Key="Win11TrayIconTitle">Windows 11-like Tray Icon</system:String>
-
-
-
-    <!-- Missing translations -->
-
-    <system:String x:Key="Edit_LrcFilter">LRC Files (*.lrc)|*.lrc|Text Files (*.txt)|*.txt|All Files (*.*)|*.*</system:String>
-
-    <system:String x:Key="Error_FailedSetStartup">Failed to set startup</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_CalibrationDescription">Visualize the input level and adjust the cutoff points in real time</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_CalibrationTitle">Audio Calibration Monitor</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_Max">Maximum</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_PeakThreshold">Peak Threshold (Peak)</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_Silence">Silence</system:String>
-
-    <system:String x:Key="TaskbarVisualizer_StartPoint">Start Point (Sensitivity)</system:String>
-
-    <system:String x:Key="TurntableModeTitle">Turntable Mode</system:String>
-    <system:String x:Key="TurntableModeDescription">Display a rotating vinyl record with the cover art in the home tab</system:String>
-    <system:String x:Key="TurntableModeTooltip">Toggle Turntable Mode</system:String>
-
-    <!-- Auto-added missing translations -->
+    <system:String x:Key="TrayIconSectionTitle">Ikon tray</system:String>
+    <system:String x:Key="TrayIcon_GitHubRepositoryOption">Repositori</system:String>
+    <system:String x:Key="TrayIcon_QuitOption">Keluar dari FluentFlyout</system:String>
+    <system:String x:Key="TrayIcon_ReportBugOption">Laporkan bug</system:String>
+    <system:String x:Key="TrayIcon_SettingsOption">Pengaturan</system:String>
+    <system:String x:Key="TrayIcon_ViewLogsOption">Lihat log</system:String>
+    <system:String x:Key="TurntableModeDescription">Tampilkan piringan hitam berputar dengan sampul album di halaman beranda</system:String>
+    <system:String x:Key="TurntableModeTitle">Mode Turntable</system:String>
+    <system:String x:Key="TurntableModeTooltip">Alihkan Mode Turntable</system:String>
+    <system:String x:Key="UnlockFullExperienceText">Buka pengalaman penuh FluentFlyout:</system:String>
+    <system:String x:Key="UnlockPremiumButton">Buka Premium</system:String>
+    <system:String x:Key="UnsupportedControlsWarning">*Beberapa browser/pemutar tidak mendukung kontrol ulangi, acak, dan bilah pencarian.</system:String>
+    <system:String x:Key="UpToDate">Terbaru</system:String>
+    <system:String x:Key="UpdateAvailable">Pembaruan tersedia</system:String>
+    <system:String x:Key="UpdateAvailableNotificationButton">Unduh pembaruan</system:String>
+    <system:String x:Key="UpdateAvailableNotificationMessage">Versi baru ({0}) tersedia.</system:String>
+    <system:String x:Key="UpdateAvailableNotificationTitle">Pembaruan tersedia!</system:String>
+    <system:String x:Key="UpdateToastButton">Lihat pembaruan</system:String>
+    <system:String x:Key="UpdateToastMessage">Anda sekarang menggunakan versi {0}.</system:String>
+    <system:String x:Key="UpdateToastTitle">FluentFlyout telah diperbarui!</system:String>
+    <system:String x:Key="UpdatesSectionTitle">Pembaruan</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorDescription">Beberapa elemen UI akan menggunakan warna sampul album alih-alih tema sistem</system:String>
+    <system:String x:Key="UseAlbumArtAccentColorTitle">Gunakan sampul album sebagai warna aksen</system:String>
+    <system:String x:Key="UseCustomAccentColorDescription">Menggunakan warna aksen statis saat tidak ada musik yang diputar atau saat fitur dinonaktifkan</system:String>
+    <system:String x:Key="UseCustomAccentColorTitle">Gunakan warna aksen kustom</system:String>
+    <system:String x:Key="CustomAccentColorHexTitle">Warna aksen statis (HEX)</system:String>
+    <system:String x:Key="ViewLogsDescription">Buka folder yang berisi file log aplikasi</system:String>
+    <system:String x:Key="Win11TrayIconDescription">Gunakan ikon tray yang cocok dengan Windows 11 (alih untuk menyegarkan tema)</system:String>
+    <system:String x:Key="Win11TrayIconTitle">Ikon tray gaya Windows 11</system:String>
+    <system:String x:Key="ManageLibrary_AddFolder">Tambahkan folder</system:String>
+    <system:String x:Key="ManageLibrary_ExcludeFolder">Kecualikan folder</system:String>
+    <system:String x:Key="ManageLibrary_ExcludeFile">Kecualikan file</system:String>
+    <system:String x:Key="ManageLibrary_Close">Tutup</system:String>
+    <system:String x:Key="ManageLibrary_Title">Kelola perpustakaan</system:String>
+    <system:String x:Key="ManageLibrary_TabFolders">Folder yang dipantau</system:String>
+    <system:String x:Key="ManageLibrary_TabExclusions">Pengecualian</system:String>
+    <system:String x:Key="ManageLibrary_DeleteFolder">Hapus folder</system:String>
+    <system:String x:Key="ManageLibrary_DeleteExclusion">Hapus pengecualian</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundStyleTitle">Gaya visual latar belakang</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundStyleDescription">Pilih bagaimana sampul musik saat ini (atau gradasi cadangannya) diproses untuk menghasilkan latar belakang visual. Pengaturan ini memengaruhi flyout utama, HomePage, dan TaskbarVisualizerControl.</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundBlurOption1Desc">Tanpa blur latar belakang. Warna dasar pemutar akan ditampilkan.</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundBlurOption2Desc">Kilau radial yang meniru cahaya dari sampul album.</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundBlurOption3Desc">Gradasi cahaya lembut yang naik dari bagian bawah.</system:String>
+    <system:String x:Key="MediaFlyout_BackgroundBlurOption4Desc">Blur merata di seluruh permukaan jendela.</system:String>
+    <system:String x:Key="MediaFlyout_AcrylicWindowTitle">Jendela akrilik</system:String>
+    <system:String x:Key="MediaFlyout_AcrylicWindowDescription">Mengatur transparansi bawaan kontainer flyout. Pengaturan ini hanya memengaruhi jendela nyata seperti pemutar mengambang, Next Up, dan Lock Keys.</system:String>
+    <system:String x:Key="MediaFlyout_AcrylicPerk">Kontainer flyout transparan</system:String>
+    <system:String x:Key="MediaFlyout_AcrylicPerkDescription">Saat diaktifkan, Windows menerapkan Acrylic pada bingkai jendela asli. Saat dinonaktifkan, kontainer kembali ke Mica. HomePage dan TaskbarVisualizerControl tidak berubah oleh pengaturan ini.</system:String>
+    <system:String x:Key="Lib_LoadingLibrary">Memuat perpustakaan...</system:String>
+    <system:String x:Key="ColorPicker_SelectedColor">Warna terpilih</system:String>
+    <system:String x:Key="ColorPicker_QuickColors">Warna cepat</system:String>
+    <system:String x:Key="ColorPicker_Cancel">Batal</system:String>
+    <system:String x:Key="ColorPicker_Confirm">Konfirmasi</system:String>
+    <system:String x:Key="Playlist_LoadTitle">Muat daftar putar</system:String>
+    <system:String x:Key="Playlist_Filter">Berkas daftar putar (*.m3u;*.m3u8;*.json)|*.m3u;*.m3u8;*.json|Semua berkas (*.*)|*.*</system:String>
+    <system:String x:Key="Playlist_ErrorLoading">Kesalahan saat memuat daftar</system:String>
+    <system:String x:Key="Playlist_SaveTitle">Simpan daftar putar</system:String>
+    <system:String x:Key="Playlist_FilterSave">Berkas daftar putar (*.m3u;*.json)|*.m3u;*.json|Daftar M3U (*.m3u)|*.m3u|Daftar JSON (*.json)|*.json</system:String>
+    <system:String x:Key="Playlist_ErrorSaving">Kesalahan saat menyimpan daftar</system:String>
+    <system:String x:Key="Playlist_EmptyMessage">Daftar putar kosong dan tidak dapat disimpan.</system:String>
+    <system:String x:Key="Settings_LoadConfigTitle">Muat konfigurasi</system:String>
+    <system:String x:Key="Settings_LoadConfigFilter">File XML (*.xml)|*.xml|Semua file (*.*)|*.*</system:String>
+    <system:String x:Key="TrackEdit_ErrorLoadFile">Gagal memuat file yang dipilih.</system:String>
+    <system:String x:Key="TrackEdit_ErrorAnalyze">Gagal menganalisis file audio.</system:String>
+    <system:String x:Key="TrackEdit_ErrorUnexpected">Terjadi kesalahan tak terduga</system:String>
+    <system:String x:Key="Color_Red">Merah</system:String>
+    <system:String x:Key="Color_Orange">Oranye</system:String>
+    <system:String x:Key="Color_Yellow">Kuning</system:String>
+    <system:String x:Key="Color_Green">Hijau</system:String>
+    <system:String x:Key="Color_Teal">Toska</system:String>
+    <system:String x:Key="Color_Blue">Biru</system:String>
+    <system:String x:Key="Color_Purple">Ungu</system:String>
+    <system:String x:Key="Color_Pink">Merah muda</system:String>
+    <system:String x:Key="Color_Grey">Abu-abu</system:String>
     <system:String x:Key="AnimationSpeed_05x">0.5x</system:String>
     <system:String x:Key="AnimationSpeed_15x">1.5x</system:String>
     <system:String x:Key="AnimationSpeed_1x">1x</system:String>
     <system:String x:Key="AnimationSpeed_2x">2x</system:String>
     <system:String x:Key="AnimationSpeed_3x">3x</system:String>
-    <system:String x:Key="Edit_AutoSyncAnalysisError">Tidak dapat menganalisis file audio.</system:String>
-    <system:String x:Key="Edit_AutoSyncNoTimestampsMsg">Lirik tidak memiliki tanda waktu untuk disinkronkan.</system:String>
-    <system:String x:Key="Edit_AutoSyncNoTimestampsTitle">Tidak Ada Tanda Waktu</system:String>
-    <system:String x:Key="Edit_AutoSyncSuccessMsg">Lirik digeser sebesar {0:F1} detik agar sesuai dengan puncak audio.</system:String>
-    <system:String x:Key="Edit_AutoSyncSuccessTitle">Disinkronkan</system:String>
-    <system:String x:Key="Edit_AutoSyncTip">Auto-Sync: Analisis audio untuk menyelaraskan tanda waktu pertama</system:String>
-    <system:String x:Key="Edit_ShiftLyricsTip">Geser semua tanda waktu ke depan atau ke belakang</system:String>
-    <system:String x:Key="Edit_ShiftLyricsTitle">Sinkronkan Lirik</system:String>
+    <system:String x:Key="AppLanguageDescriptionLink">Weblate</system:String>
+    <system:String x:Key="Edit_ErrorTitle">Kesalahan</system:String>
+    <system:String x:Key="Edit_GenrePlaceholder">Pop, rock, dll.</system:String>
     <system:String x:Key="Edit_ShiftLyrics_Backward">-0.5s</system:String>
     <system:String x:Key="Edit_ShiftLyrics_Forward">+0.5s</system:String>
-    <system:String x:Key="General_NewLabel">BARU</system:String>
-    <system:String x:Key="General_Open">Buka</system:String>
+    <system:String x:Key="General_No">No</system:String>
     <system:String x:Key="General_Separator">-</system:String>
-    <system:String x:Key="Home_SyncButton">Sinkronkan</system:String>
-    <system:String x:Key="Lib_CornerRadiusDescription">Sesuaikan radius sudut untuk sampul dan kartu</system:String>
-    <system:String x:Key="Lib_CornerRadiusTitle">Radius Sudut</system:String>
-    <system:String x:Key="Lib_PreviewDescription">Beginilah tampilan perpustakaan Anda</system:String>
-    <system:String x:Key="Lib_PreviewTitle">Pratinjau</system:String>
-    <system:String x:Key="Lib_ResetLayoutTooltip">Atur ulang desain</system:String>
-    <system:String x:Key="Lib_SizeLarge">Besar</system:String>
-    <system:String x:Key="Lib_SizeSmall">Kecil</system:String>
-    <system:String x:Key="NextUpWindow_ArtistNamePlaceholder">Nama Artis</system:String>
-    <system:String x:Key="NextUpWindow_SongTitlePlaceholder">Judul Lagu</system:String>
-    <system:String x:Key="Playlist_ClearQueue">Bersihkan antrean</system:String>
-    <system:String x:Key="Playlist_EmptyDescription">Seret musik ke sini atau tambahkan dari perpustakaan.</system:String>
-    <system:String x:Key="Playlist_EmptyTitle">Antrean Anda kosong</system:String>
-    <system:String x:Key="Playlist_OpenLocation">Buka lokasi file</system:String>
-    <system:String x:Key="Playlist_PlayNext">Putar berikutnya</system:String>
-    <system:String x:Key="Playlist_RemoveFromQueue">Hapus dari antrean</system:String>
-    <system:String x:Key="Playlist_SearchPlaceholder">Cari di antrean...</system:String>
-    <system:String x:Key="Playlist_ViewInfo">Lihat info</system:String>
-    <system:String x:Key="TaskbarVisualizerStereoModeDescription">Bagaimana saluran audio diproses untuk visualisasi</system:String>
-    <system:String x:Key="TaskbarVisualizerStereoModeMono">Mono (rata-rata L+R)</system:String>
-    <system:String x:Key="TaskbarVisualizerStereoModeStereoMirror">Stereo Mirror (L|R)</system:String>
-    <system:String x:Key="TaskbarVisualizerStereoModeTitle">Mode Stereo</system:String>
-    <system:String x:Key="ViewLogsDescription">Buka folder yang berisi file log aplikasi</system:String>
+    <system:String x:Key="MillisecondsUnit">ms</system:String>
+    <system:String x:Key="PixelsUnit">px</system:String>
+    <system:String x:Key="App_ProductName">FluentFlyout</system:String>
+    <system:String x:Key="License_Processing">Memproses...</system:String>
+    <system:String x:Key="License_Success">Berhasil</system:String>
+    <system:String x:Key="License_PurchaseFailed">Pembelian gagal</system:String>
+    <system:String x:Key="License_Error">Kesalahan</system:String>
+    <system:String x:Key="Queue_ChangesSaved">Antrean diperbarui</system:String>
+    <system:String x:Key="Queue_PlaylistLoaded">Daftar putar dimuat</system:String>
+    <system:String x:Key="Queue_Cleared">Antrean dibersihkan</system:String>
+    <system:String x:Key="Queue_TrackRemoved">Lagu dihapus dari antrean</system:String>
+    <system:String x:Key="Queue_TracksRemoved">Lagu-lagu dihapus dari antrean</system:String>
+    <system:String x:Key="Track_UnknownAlbum">Album tidak dikenal</system:String>
+    <system:String x:Key="Track_UnknownArtist">Artis tidak dikenal</system:String>
+    <system:String x:Key="NowPlaying_NoTrack">Tidak ada lagu yang diputar</system:String>
+    <system:String x:Key="NowPlaying_SelectTrack">Pilih lagu dari perpustakaan</system:String>
+    <system:String x:Key="Playlist_SummarySingleFormat">{0} lagu - {1}</system:String>
+    <system:String x:Key="Playlist_SummaryPluralFormat">{0} lagu - {1}</system:String>
+    <system:String x:Key="Playlist_DurationHoursMinutesFormat">{0}j {1}m</system:String>
+    <system:String x:Key="Playlist_DurationMinutesSecondsFormat">{0}:{1:D2} mnt</system:String>
 </ResourceDictionary>

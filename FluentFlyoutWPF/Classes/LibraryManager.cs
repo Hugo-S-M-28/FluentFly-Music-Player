@@ -36,6 +36,10 @@ public class LibraryManager : IDisposable
 
     private readonly Dictionary<string, List<string>> _albumArtCache = new();
     private readonly string[] _supportedExtensions = AudioReaderFactory.GetSupportedExtensions();
+    private readonly HashSet<string> _supportedExtensionsSet = new(
+        AudioReaderFactory.GetSupportedExtensions().Select(ext => ext.ToLowerInvariant()),
+        StringComparer.OrdinalIgnoreCase
+    );
     private static string ArtCachePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FluentFlyout", "ArtCache");
 
     private static string LibraryFilePath => Path.Combine(
@@ -43,6 +47,8 @@ public class LibraryManager : IDisposable
         "FluentFlyout",
         "library.json"
     );
+
+    private sealed record FileEntry(string FullPath, long LastWriteTimeUtcTicks);
 
     private enum PendingLibraryChangeKind
     {
@@ -212,6 +218,80 @@ public class LibraryManager : IDisposable
         }
     }
 
+    private List<string> GetNormalizedExclusions()
+    {
+        var exclusions = SettingsManager.Current.ExcludedLibraryPaths;
+        if (exclusions == null || exclusions.Count == 0) return new List<string>();
+
+        var list = new List<string>();
+        foreach (var exclusion in exclusions)
+        {
+            if (string.IsNullOrWhiteSpace(exclusion)) continue;
+            try
+            {
+                list.Add(Path.GetFullPath(exclusion).Replace('\\', '/'));
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn(ex, $"Failed to normalize exclusion path: {exclusion}");
+            }
+        }
+        return list;
+    }
+
+    private List<string> GetNormalizedMonitoredFolders()
+    {
+        var folders = SettingsManager.Current.MusicLibraryFolders;
+        if (folders == null || folders.Count == 0) return new List<string>();
+
+        var list = new List<string>();
+        foreach (var folder in folders)
+        {
+            if (string.IsNullOrWhiteSpace(folder)) continue;
+            try
+            {
+                list.Add(Path.GetFullPath(folder).Replace('\\', '/'));
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn(ex, $"Failed to normalize monitored folder: {folder}");
+            }
+        }
+        return list;
+    }
+
+    private bool IsPathExcluded(string path, List<string> normalizedExclusions)
+    {
+        if (normalizedExclusions == null || normalizedExclusions.Count == 0) return false;
+
+        string normalizedPath = path.Replace('\\', '/');
+        foreach (var exclusion in normalizedExclusions)
+        {
+            if (normalizedPath.Equals(exclusion, StringComparison.OrdinalIgnoreCase) ||
+                normalizedPath.StartsWith(exclusion + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsInMonitoredFolders(string path, List<string> normalizedFolders)
+    {
+        if (normalizedFolders == null || normalizedFolders.Count == 0) return false;
+
+        string normalizedPath = path.Replace('\\', '/');
+        foreach (var folder in normalizedFolders)
+        {
+            if (normalizedPath.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase) ||
+                normalizedPath.Equals(folder, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public async Task ScanLibraryAsync()
     {
         if (_isScanning) return;
@@ -231,36 +311,34 @@ public class LibraryManager : IDisposable
                 return;
             }
 
-            var filesInLibrary = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var folderList = folders.ToList();
             var tracksToUpsert = new List<TrackModel>();
+            var normalizedExclusions = GetNormalizedExclusions();
 
             // Enumerate files safely on a background thread first
-            var filesToProcess = new List<string>();
+            var filesToProcess = new List<FileEntry>();
             await Task.Run(() =>
             {
                 foreach (var folder in folderList)
                 {
                     if (Directory.Exists(folder))
                     {
-                        filesToProcess.AddRange(SafeEnumerateFiles(folder));
+                        filesToProcess.AddRange(SafeEnumerateFiles(folder, normalizedExclusions));
                     }
                 }
             });
 
+            // Convert to hash set without lock contention in parallel loop
+            var filesInLibrary = filesToProcess.Select(e => e.FullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             // Process metadata extraction in parallel
             await Task.Run(() =>
             {
-                Parallel.ForEach(filesToProcess, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, filePath =>
+                Parallel.ForEach(filesToProcess, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, entry =>
                 {
-                    lock (filesInLibrary)
+                    if (NeedsMetadataRefresh(entry.FullPath, entry.LastWriteTimeUtcTicks))
                     {
-                        filesInLibrary.Add(filePath);
-                    }
-
-                    if (NeedsMetadataRefresh(filePath))
-                    {
-                        var track = ExtractMetadata(filePath);
+                        var track = ExtractMetadata(entry.FullPath);
                         if (track != null)
                         {
                             lock (tracksToUpsert)
@@ -284,29 +362,43 @@ public class LibraryManager : IDisposable
         }
     }
 
-    private IEnumerable<string> SafeEnumerateFiles(string path)
+    private IEnumerable<FileEntry> SafeEnumerateFiles(string path, List<string> normalizedExclusions)
     {
-        var files = new List<string>();
-        SafeEnumerateFilesInternal(path, files);
+        var files = new List<FileEntry>();
+        try
+        {
+            var dirInfo = new DirectoryInfo(path);
+            if (dirInfo.Exists && !IsPathExcluded(dirInfo.FullName, normalizedExclusions))
+            {
+                SafeEnumerateFilesInternal(dirInfo, files, normalizedExclusions);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, $"Failed to initialize file enumeration for: {path}");
+        }
         return files;
     }
 
-    private void SafeEnumerateFilesInternal(string path, List<string> result)
+    private void SafeEnumerateFilesInternal(DirectoryInfo dirInfo, List<FileEntry> result, List<string> normalizedExclusions)
     {
         try
         {
-            foreach (var file in Directory.EnumerateFiles(path))
+            foreach (var file in dirInfo.EnumerateFiles())
             {
-                var ext = Path.GetExtension(file);
-                if (!string.IsNullOrEmpty(ext) && _supportedExtensions.Contains(ext.ToLowerInvariant()) && !IsPathExcluded(file))
+                var ext = file.Extension;
+                if (!string.IsNullOrEmpty(ext) && _supportedExtensionsSet.Contains(ext) && !IsPathExcluded(file.FullName, normalizedExclusions))
                 {
-                    result.Add(file);
+                    result.Add(new FileEntry(file.FullName, file.LastWriteTimeUtc.Ticks));
                 }
             }
 
-            foreach (var dir in Directory.EnumerateDirectories(path))
+            foreach (var subDir in dirInfo.EnumerateDirectories())
             {
-                SafeEnumerateFilesInternal(dir, result);
+                if (!IsPathExcluded(subDir.FullName, normalizedExclusions))
+                {
+                    SafeEnumerateFilesInternal(subDir, result, normalizedExclusions);
+                }
             }
         }
         catch (UnauthorizedAccessException)
@@ -323,7 +415,7 @@ public class LibraryManager : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.Warn(ex, $"Error traversing directory: {path}");
+            Logger.Warn(ex, $"Error traversing directory: {dirInfo.FullName}");
         }
     }
 
@@ -434,25 +526,13 @@ public class LibraryManager : IDisposable
                 wasPlaying = MusicPlayerService.Instance.IsPlaying;
                 lastPosition = MusicPlayerService.Instance.CurrentPosition;
                 MusicPlayerService.Instance.Stop();
-                // Give the system a moment to release the file handle
-                // Increased delay for .m4a and .flac files which often use MediaFoundation
-                await Task.Delay(500);
+                await WaitForFileAvailabilityAsync(track.FilePath);
             }
 
-            await Task.Run(() =>
+            await SaveTagFileWithRetryAsync(track.FilePath, file =>
             {
-                // Ensure file is not read-only
-                var attributes = File.GetAttributes(track.FilePath);
-                if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                {
-                    File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
-                }
-
-                var file = TagLib.File.Create(track.FilePath);
-                try
-                {
                 file.Tag.Title = newTitle;
-                
+
                 // Merge main artist and collaborators for the Performers tag
                 var performersList = new List<string> { newArtist };
                 if (!string.IsNullOrWhiteSpace(newCollaborators))
@@ -463,7 +543,7 @@ public class LibraryManager : IDisposable
                     performersList.AddRange(extraArtists);
                 }
                 file.Tag.Performers = performersList.ToArray();
-                
+
                 file.Tag.Album = newAlbum;
                 file.Tag.AlbumArtists = new[] { newArtist };
                 file.Tag.Genres = new[] { newGenre };
@@ -491,43 +571,6 @@ public class LibraryManager : IDisposable
                         }
                     };
                 }
-
-                // Retry loop for saving tags in case of transient locks
-                int attempts = 0;
-                while (true)
-                {
-                    try
-                    {
-                        file.Save();
-                        break;
-                    }
-                    catch (Exception ex) when (attempts < 5 && (ex is UnauthorizedAccessException || ex is IOException))
-                    {
-                        attempts++;
-                        file.Dispose();
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        System.Threading.Thread.Sleep(500 * attempts);
-                        
-                        // Re-open and re-apply tags for next attempt
-                        file = TagLib.File.Create(track.FilePath);
-                        file.Tag.Title = newTitle;
-                        file.Tag.Performers = performersList.ToArray();
-                        file.Tag.Album = newAlbum;
-                        file.Tag.AlbumArtists = new[] { newArtist };
-                        file.Tag.Genres = new[] { newGenre };
-                        file.Tag.Track = (uint)Math.Max(0, newTrackNumber);
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
-                }
-                finally
-                {
-                    file?.Dispose();
-                }
             });
 
             // Update model in memory
@@ -543,6 +586,7 @@ public class LibraryManager : IDisposable
             // Update album art cache if changed
             if (!string.IsNullOrEmpty(newAlbumArtPath) && File.Exists(newAlbumArtPath))
             {
+                string? oldAlbumArtPath = track.AlbumArtPath;
                 var artData = File.ReadAllBytes(newAlbumArtPath);
                 string hash = GetHash(artData);
                 string cacheFile = Path.Combine(ArtCachePath, hash + ".jpg");
@@ -554,8 +598,12 @@ public class LibraryManager : IDisposable
 
                 track.AlbumArtPath = cacheFile;
 
-                // Invalidate the image cache for this path so the UI picks up the new art
-                PathToImageConverter.ClearCache();
+                // Invalidate only affected cached images instead of clearing the full image cache.
+                if (!string.IsNullOrWhiteSpace(oldAlbumArtPath))
+                {
+                    PathToImageConverter.InvalidatePath(oldAlbumArtPath);
+                }
+                PathToImageConverter.InvalidatePath(cacheFile);
             }
 
             // Re-save library and notify UI
@@ -592,52 +640,13 @@ public class LibraryManager : IDisposable
                 wasPlaying = MusicPlayerService.Instance.IsPlaying;
                 lastPosition = MusicPlayerService.Instance.CurrentPosition;
                 MusicPlayerService.Instance.Stop();
-                await Task.Delay(500);
+                await WaitForFileAvailabilityAsync(track.FilePath);
             }
 
             // 1. Save to internal tags
-            await Task.Run(() =>
+            await SaveTagFileWithRetryAsync(track.FilePath, file =>
             {
-                // Ensure file is not read-only
-                var attributes = File.GetAttributes(track.FilePath);
-                if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                {
-                    File.SetAttributes(track.FilePath, attributes & ~FileAttributes.ReadOnly);
-                }
-
-                var file = TagLib.File.Create(track.FilePath);
-                try
-                {
-                    file.Tag.Lyrics = lyricsText;
-                
-                int attempts = 0;
-                while (true)
-                {
-                    try
-                    {
-                        file.Save();
-                        break;
-                    }
-                    catch (Exception ex) when (attempts < 5 && (ex is UnauthorizedAccessException || ex is IOException))
-                    {
-                        attempts++;
-                        file.Dispose();
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        System.Threading.Thread.Sleep(500 * attempts);
-                        file = TagLib.File.Create(track.FilePath);
-                        file.Tag.Lyrics = lyricsText;
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
-                }
-                finally
-                {
-                    file?.Dispose();
-                }
+                file.Tag.Lyrics = lyricsText;
             });
 
             // 2. Save to external .lrc if it contains timestamps
@@ -702,7 +711,7 @@ public class LibraryManager : IDisposable
 
     public void RebuildAlbumsAndArtists()
     {
-        RefreshDerivedCollectionsAsync().GetAwaiter().GetResult();
+        _ = RefreshDerivedCollectionsAsync();
     }
 
     private async Task RefreshDerivedCollectionsAsync()
@@ -905,7 +914,7 @@ public class LibraryManager : IDisposable
             "artist" => Tracks.OrderBy(t => t.Artist).ThenBy(t => t.Album).ThenBy(t => t.TrackNumber),
             "album" => Tracks.OrderBy(t => t.Album).ThenBy(t => t.TrackNumber),
             "duration" => Tracks.OrderBy(t => t.Duration),
-            "dateadded" => Tracks.OrderBy(t => t.FilePath), // Approximation
+            "dateadded" => Tracks.OrderBy(t => t.FileModifiedUtcTicks),
             _ => Tracks.OrderBy(t => t.Title)
         };
 
@@ -950,43 +959,19 @@ public class LibraryManager : IDisposable
 
     public bool IsPathExcluded(string path)
     {
-        var exclusions = SettingsManager.Current.ExcludedLibraryPaths;
-        if (exclusions == null || exclusions.Count == 0) return false;
-
-        string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
-        foreach (var exclusion in exclusions)
-        {
-            string normalizedExclusion = Path.GetFullPath(exclusion).Replace('\\', '/');
-            if (normalizedPath.Equals(normalizedExclusion, StringComparison.OrdinalIgnoreCase) ||
-                normalizedPath.StartsWith(normalizedExclusion + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-        return false;
+        return IsPathExcluded(Path.GetFullPath(path), GetNormalizedExclusions());
     }
 
     private bool IsInMonitoredFolders(string path)
     {
-        var folders = SettingsManager.Current.MusicLibraryFolders;
-        if (folders == null || folders.Count == 0) return false;
-
-        string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
-        foreach (var folder in folders)
-        {
-            string normalizedFolder = Path.GetFullPath(folder).Replace('\\', '/');
-            if (normalizedPath.StartsWith(normalizedFolder + "/", StringComparison.OrdinalIgnoreCase) ||
-                normalizedPath.Equals(normalizedFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-        return false;
+        return IsInMonitoredFolders(Path.GetFullPath(path), GetNormalizedMonitoredFolders());
     }
 
     public void CleanAndRefreshLibrary()
     {
-        var tracksToRemove = Tracks.Where(t => !File.Exists(t.FilePath) || IsPathExcluded(t.FilePath) || !IsInMonitoredFolders(t.FilePath)).ToList();
+        var exclusions = GetNormalizedExclusions();
+        var folders = GetNormalizedMonitoredFolders();
+        var tracksToRemove = Tracks.Where(t => !File.Exists(t.FilePath) || IsPathExcluded(t.FilePath, exclusions) || !IsInMonitoredFolders(t.FilePath, folders)).ToList();
         if (tracksToRemove.Count > 0)
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -1008,6 +993,14 @@ public class LibraryManager : IDisposable
             return true;
 
         return existingTrack.FileModifiedUtcTicks != File.GetLastWriteTimeUtc(filePath).Ticks;
+    }
+
+    private bool NeedsMetadataRefresh(string filePath, long currentFileTicks)
+    {
+        if (!_trackIndex.TryGetValue(filePath, out var existingTrack))
+            return true;
+
+        return existingTrack.FileModifiedUtcTicks != currentFileTicks;
     }
 
     private async Task ProcessPendingChangesAsync()
@@ -1201,7 +1194,58 @@ public class LibraryManager : IDisposable
         if (string.IsNullOrWhiteSpace(path))
             return false;
 
-        return _supportedExtensions.Contains(Path.GetExtension(path).ToLowerInvariant());
+        var ext = Path.GetExtension(path);
+        return !string.IsNullOrEmpty(ext) && _supportedExtensionsSet.Contains(ext);
+    }
+
+    private static async Task SaveTagFileWithRetryAsync(string filePath, Action<TagLib.File> applyChanges, int maxAttempts = 5)
+    {
+        // Ensure file is not read-only before starting retries.
+        var attributes = File.GetAttributes(filePath);
+        if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+        {
+            File.SetAttributes(filePath, attributes & ~FileAttributes.ReadOnly);
+        }
+
+        for (int attempt = 1; ; attempt++)
+        {
+            TagLib.File? file = null;
+            try
+            {
+                file = TagLib.File.Create(filePath);
+                applyChanges(file);
+                file.Save();
+                return;
+            }
+            catch (Exception ex) when (attempt < maxAttempts && (ex is UnauthorizedAccessException || ex is IOException))
+            {
+                await Task.Delay(250 * attempt);
+            }
+            finally
+            {
+                file?.Dispose();
+            }
+        }
+    }
+
+    private static async Task WaitForFileAvailabilityAsync(string filePath, int maxAttempts = 20, int delayMilliseconds = 100)
+    {
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts - 1)
+            {
+                await Task.Delay(delayMilliseconds);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts - 1)
+            {
+                await Task.Delay(delayMilliseconds);
+            }
+        }
     }
 
     public void Dispose()

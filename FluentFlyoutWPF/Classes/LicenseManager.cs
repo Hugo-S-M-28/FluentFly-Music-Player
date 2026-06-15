@@ -344,7 +344,7 @@ public class LicenseManager
             if (sender is Wpf.Ui.Controls.Button button)
             {
                 button.IsEnabled = false;
-                button.Content = "Processing...";
+                button.Content = LocalizationManager.GetString("License_Processing");
             }
 
             (bool success, string result) = await Instance.PurchasePremiumAsync();
@@ -355,9 +355,9 @@ public class LicenseManager
 
                 MessageBox messageBox = new()
                 {
-                    Title = "Success",
-                    Content = Application.Current.TryFindResource("PremiumPurchaseSuccess").ToString(),
-                    CloseButtonText = "OK",
+                    Title = LocalizationManager.GetString("License_Success"),
+                    Content = LocalizationManager.GetString("PremiumPurchaseSuccess"),
+                    CloseButtonText = LocalizationManager.GetString("General_Ok"),
                 };
 
                 await messageBox.ShowDialogAsync();
@@ -366,9 +366,9 @@ public class LicenseManager
             {
                 MessageBox messageBox = new()
                 {
-                    Title = "Purchase Failed",
-                    Content = $"{Application.Current.TryFindResource("PremiumPurchaseFailed")} ({result})",
-                    CloseButtonText = "OK",
+                    Title = LocalizationManager.GetString("License_PurchaseFailed"),
+                    Content = $"{LocalizationManager.GetString("PremiumPurchaseFailed")} ({result})",
+                    CloseButtonText = LocalizationManager.GetString("General_Ok"),
                 };
 
                 await messageBox.ShowDialogAsync();
@@ -378,9 +378,9 @@ public class LicenseManager
         {
             MessageBox messageBox = new()
             {
-                Title = "Error",
-                Content = $"An error occurred: {ex.Message}",
-                CloseButtonText = "OK",
+                Title = LocalizationManager.GetString("License_Error"),
+                Content = string.Format(LocalizationManager.GetString("General_UnexpectedError"), ex.Message),
+                CloseButtonText = LocalizationManager.GetString("General_Ok"),
             };
 
             await messageBox.ShowDialogAsync();
@@ -390,7 +390,7 @@ public class LicenseManager
             if (sender is Wpf.Ui.Controls.Button button)
             {
                 button.IsEnabled = true;
-                button.Content = Application.Current.TryFindResource("UnlockPremiumButton").ToString();
+                button.Content = LocalizationManager.GetString("UnlockPremiumButton");
             }
         }
     }

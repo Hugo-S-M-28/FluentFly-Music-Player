@@ -49,30 +49,39 @@ public partial class MainWindowViewModel : ObservableObject
     private bool isSeekingFromShell;
 
     [RelayCommand]
-    private void PlayPause()
+    private async Task PlayPause()
     {
-        if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.TogglePlayPause();
             return;
         }
 
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null && !ExternalMediaService.Instance.IsInternalSession(session))
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            FluentFlyout.Classes.NativeMethods.keybd_event(0xB3, 0, 0, IntPtr.Zero); // Media Play/Pause key
+            var session = resolved.ExternalSession;
+            var status = session.ControlSession.GetPlaybackInfo().PlaybackStatus;
+            if (status == global::Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            {
+                await session.ControlSession.TryPauseAsync();
+            }
+            else
+            {
+                await session.ControlSession.TryPlayAsync();
+            }
         }
     }
 
     [RelayCommand]
     private async Task SkipNext()
     {
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null && !ExternalMediaService.Instance.IsInternalSession(session))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            await session.ControlSession.TrySkipNextAsync();
+            await resolved.ExternalSession.ControlSession.TrySkipNextAsync();
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.PlayNext();
         }
@@ -81,12 +90,12 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task SkipPrevious()
     {
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null && !ExternalMediaService.Instance.IsInternalSession(session))
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
-            await session.ControlSession.TrySkipPreviousAsync();
+            await resolved.ExternalSession.ControlSession.TrySkipPreviousAsync();
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.PlayPrevious();
         }
@@ -95,9 +104,10 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ToggleRepeat()
     {
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null)
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
+            var session = resolved.ExternalSession;
             var playbackInfo = session.ControlSession.GetPlaybackInfo();
             if (playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.None)
             {
@@ -112,7 +122,7 @@ public partial class MainWindowViewModel : ObservableObject
                 await session.ControlSession.TryChangeAutoRepeatModeAsync(global::Windows.Media.MediaPlaybackAutoRepeatMode.None);
             }
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             var current = MusicPlayerService.Instance.RepeatMode;
             MusicPlayerService.Instance.RepeatMode = current switch
@@ -128,9 +138,10 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ToggleShuffle()
     {
-        var session = ExternalMediaService.Instance.GetPreferredSession();
-        if (session != null)
+        var resolved = PlaybackSourceResolver.Resolve();
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
+            var session = resolved.ExternalSession;
             if (session.ControlSession.GetPlaybackInfo().IsShuffleActive == true)
             {
                 await session.ControlSession.TryChangeShuffleActiveAsync(false);
@@ -140,7 +151,7 @@ public partial class MainWindowViewModel : ObservableObject
                 await session.ControlSession.TryChangeShuffleActiveAsync(true);
             }
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
         }
@@ -226,13 +237,15 @@ public partial class MainWindowViewModel : ObservableObject
     public async Task CommitSeekFromShellAsync(double seconds)
     {
         var seekPosition = TimeSpan.FromSeconds(seconds);
+        var resolved = PlaybackSourceResolver.Resolve();
 
-        if (ExternalMediaService.Instance.GetPreferredSession() is { } session)
+        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
+            var session = resolved.ExternalSession;
             long ticks = seekPosition.Ticks > 0 ? seekPosition.Ticks : 1;
             await session.ControlSession.TryChangePlaybackPositionAsync(ticks);
         }
-        else if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
+        else if (resolved.Kind == PlaybackSourceKind.Internal)
         {
             MusicPlayerService.Instance.Seek(seekPosition);
         }

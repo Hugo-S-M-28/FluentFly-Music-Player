@@ -1,26 +1,29 @@
 using System;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FluentFlyout.Classes;
 
 namespace FluentFlyoutWPF.Models;
 
 public partial class TrackModel : ObservableObject
 {
     private string _searchIndex = string.Empty;
+    private string _defaultArtist;
+    private string _defaultAlbum;
 
     [ObservableProperty]
     private string title = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullArtistDisplay))]
-    private string artist = "Unknown Artist";
-    
+    private string artist;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullArtistDisplay))]
     private string collaborators = string.Empty;
 
     [ObservableProperty]
-    private string album = "Unknown Album";
+    private string album;
 
     [ObservableProperty]
     private TimeSpan duration;
@@ -33,8 +36,7 @@ public partial class TrackModel : ObservableObject
 
     [ObservableProperty]
     private BitmapImage? albumArt;
-    
-    // For storing the raw cover data or generic representation if needed
+
     public byte[]? AlbumArtData { get; set; }
 
     [ObservableProperty]
@@ -52,20 +54,30 @@ public partial class TrackModel : ObservableObject
     [ObservableProperty]
     private bool hasLyrics;
 
-    partial void OnLyricsChanged(string value)
-    {
-        HasLyrics = !string.IsNullOrWhiteSpace(value);
-    }
-
     [ObservableProperty]
     private int playCount;
 
     [ObservableProperty]
     private long fileModifiedUtcTicks;
 
+    public TrackModel()
+    {
+        _defaultArtist = LocalizationManager.GetString("Track_UnknownArtist");
+        _defaultAlbum = LocalizationManager.GetString("Track_UnknownAlbum");
+        artist = _defaultArtist;
+        album = _defaultAlbum;
+        LocalizationManager.LocalizationChanged += HandleLocalizationChanged;
+        RefreshSearchIndex();
+    }
+
     public string FullArtistDisplay => string.IsNullOrWhiteSpace(Collaborators) ? Artist : $"{Artist} (feat. {Collaborators})";
 
     public string SearchIndex => _searchIndex;
+
+    partial void OnLyricsChanged(string value)
+    {
+        HasLyrics = !string.IsNullOrWhiteSpace(value);
+    }
 
     public void RefreshSearchIndex()
     {
@@ -77,14 +89,34 @@ public partial class TrackModel : ObservableObject
     partial void OnArtistChanged(string value) => RefreshSearchIndex();
     partial void OnCollaboratorsChanged(string value) => RefreshSearchIndex();
     partial void OnAlbumChanged(string value) => RefreshSearchIndex();
+
+    private void HandleLocalizationChanged(object? sender, EventArgs e)
+    {
+        var nextDefaultArtist = LocalizationManager.GetString("Track_UnknownArtist");
+        var nextDefaultAlbum = LocalizationManager.GetString("Track_UnknownAlbum");
+
+        if (Artist == _defaultArtist)
+        {
+            Artist = nextDefaultArtist;
+        }
+
+        if (Album == _defaultAlbum)
+        {
+            Album = nextDefaultAlbum;
+        }
+
+        _defaultArtist = nextDefaultArtist;
+        _defaultAlbum = nextDefaultAlbum;
+    }
 }
 
 public partial class LibraryArtist : ObservableObject
 {
     private string _searchIndex = string.Empty;
+    private string _defaultName;
 
     [ObservableProperty]
-    private string name = "Unknown Artist";
+    private string name;
 
     public System.Collections.Generic.List<TrackModel> Songs { get; set; } = new();
 
@@ -97,6 +129,14 @@ public partial class LibraryArtist : ObservableObject
     [ObservableProperty]
     private bool hasLyrics;
 
+    public LibraryArtist()
+    {
+        _defaultName = LocalizationManager.GetString("Track_UnknownArtist");
+        name = _defaultName;
+        LocalizationManager.LocalizationChanged += HandleLocalizationChanged;
+        RefreshSearchIndex();
+    }
+
     public string SearchIndex => _searchIndex;
 
     public void RefreshSearchIndex()
@@ -105,17 +145,30 @@ public partial class LibraryArtist : ObservableObject
     }
 
     partial void OnNameChanged(string value) => RefreshSearchIndex();
+
+    private void HandleLocalizationChanged(object? sender, EventArgs e)
+    {
+        var nextDefaultName = LocalizationManager.GetString("Track_UnknownArtist");
+        if (Name == _defaultName)
+        {
+            Name = nextDefaultName;
+        }
+
+        _defaultName = nextDefaultName;
+    }
 }
 
 public partial class LibraryAlbum : ObservableObject
 {
     private string _searchIndex = string.Empty;
+    private string _defaultTitle;
+    private string _defaultArtist;
 
     [ObservableProperty]
-    private string title = "Unknown Album";
+    private string title;
 
     [ObservableProperty]
-    private string artist = "Unknown Artist";
+    private string artist;
 
     public System.Collections.Generic.List<TrackModel> Songs { get; set; } = new();
 
@@ -128,6 +181,16 @@ public partial class LibraryAlbum : ObservableObject
     [ObservableProperty]
     private bool hasLyrics;
 
+    public LibraryAlbum()
+    {
+        _defaultTitle = LocalizationManager.GetString("Track_UnknownAlbum");
+        _defaultArtist = LocalizationManager.GetString("Track_UnknownArtist");
+        title = _defaultTitle;
+        artist = _defaultArtist;
+        LocalizationManager.LocalizationChanged += HandleLocalizationChanged;
+        RefreshSearchIndex();
+    }
+
     public string SearchIndex => _searchIndex;
 
     public void RefreshSearchIndex()
@@ -137,4 +200,23 @@ public partial class LibraryAlbum : ObservableObject
 
     partial void OnTitleChanged(string value) => RefreshSearchIndex();
     partial void OnArtistChanged(string value) => RefreshSearchIndex();
+
+    private void HandleLocalizationChanged(object? sender, EventArgs e)
+    {
+        var nextDefaultTitle = LocalizationManager.GetString("Track_UnknownAlbum");
+        var nextDefaultArtist = LocalizationManager.GetString("Track_UnknownArtist");
+
+        if (Title == _defaultTitle)
+        {
+            Title = nextDefaultTitle;
+        }
+
+        if (Artist == _defaultArtist)
+        {
+            Artist = nextDefaultArtist;
+        }
+
+        _defaultTitle = nextDefaultTitle;
+        _defaultArtist = nextDefaultArtist;
+    }
 }

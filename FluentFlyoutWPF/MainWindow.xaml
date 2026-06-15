@@ -155,8 +155,10 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition x:Name="BodyContentColumn"
+                                    Width="*"/>
+                            <ColumnDefinition x:Name="BodyControlsColumn"
+                                    Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Name="SongInfoStackPanel"
@@ -164,6 +166,7 @@
                                     Grid.Column="0"
                                     Margin="12,0,0,0"
                                     Orientation="Vertical"
+                                    HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"
                                     ToolTipService.InitialShowDelay="800"
                                     ToolTipService.Placement="Top"
@@ -172,12 +175,18 @@
                                        Text="{Binding NowPlaying.Title}"
                                        FontSize="14"
                                        FontWeight="Medium"
+                                       LineHeight="18"
+                                       LineStackingStrategy="BlockLineHeight"
+                                       MaxHeight="54"
+                                       TextWrapping="Wrap"
                                        TextTrimming="CharacterEllipsis"/>
                             <TextBlock Name="SongArtist"
                                        Text="{Binding NowPlaying.Artist}"
                                        FontSize="14"
                                        FontWeight="Medium"
-                                       Opacity="0.5"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Margin="0,2,0,0"
+                                       TextWrapping="NoWrap"
                                        TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
 
@@ -266,6 +275,7 @@
                                        Width="14"
                                        Height="14"
                                        Source="{Binding MediaIdIcon}"
+                                       Opacity="0.7"
                                        Visibility="{Binding MediaIdIcon, Converter={StaticResource NullToCollapsedConverter}}"/>
                                 <TextBlock Name="MediaId"
                                            VerticalAlignment="Center"
@@ -273,7 +283,7 @@
                                            Width="50"
                                            Margin="6,0,0,0"
                                            FontWeight="Regular"
-                                           Opacity="0.25"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Text="{Binding MediaIdText}"
                                            TextWrapping="Wrap"
                                            TextTrimming="CharacterEllipsis"/>
@@ -291,7 +301,7 @@
                            Visibility="{Binding IsSeekbarVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}">
                     <TextBlock Name="SeekbarCurrentDuration"
                                Text="{Binding NowPlaying.CurrentTime}"
-                               Opacity="0.6"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                FontSize="11"
                                FontWeight="Medium"
                                DockPanel.Dock="Left"
@@ -302,7 +312,7 @@
                                Height="18"/>
                     <TextBlock Name="SeekbarMaxDuration"
                                Text="{Binding NowPlaying.TotalTime}"
-                               Opacity="0.6"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                FontSize="11"
                                FontWeight="Medium"
                                DockPanel.Dock="Right"
@@ -331,7 +341,7 @@
                          LeftClick="nIcon_LeftClick"
                          FocusOnLeftClick="False"
                          MenuOnRightClick="True"
-                         TooltipText="FluentFlyout"
+                         TooltipText="{DynamicResource App_ProductName}"
                          Icon="/Resources/FluentFlyout2.ico"
                          Margin="0,127,0,114"
                          Visibility="Collapsed">
@@ -339,7 +349,7 @@
                 <ContextMenu>
                     <ui:MenuItem x:Name="NotifyIconSettings"
                                  Header="{DynamicResource TrayIcon_SettingsOption}"
-                                 Command="{Binding OpenSettingsCommand}">
+                                 Click="openSettings">
                         <ui:MenuItem.Icon>
                             <ui:SymbolIcon Symbol="Settings20"/>
                         </ui:MenuItem.Icon>
@@ -349,21 +359,21 @@
 
                     <ui:MenuItem x:Name="NotifyIconRepository"
                                  Header="{DynamicResource TrayIcon_GitHubRepositoryOption}"
-                                 Command="{Binding OpenRepositoryCommand}">
+                                 Click="openRepository">
                         <ui:MenuItem.Icon>
                             <ui:SymbolIcon Symbol="DocumentChevronDouble20"/>
                         </ui:MenuItem.Icon>
                     </ui:MenuItem>
                     <ui:MenuItem x:Name="NotifyIconViewLogs"
                                  Header="{DynamicResource TrayIcon_ViewLogsOption}"
-                                 Command="{Binding OpenLogsFolderCommand}">
+                                 Click="openLogsFolder">
                         <ui:MenuItem.Icon>
                             <ui:SymbolIcon Symbol="FolderOpen20"/>
                         </ui:MenuItem.Icon>
                     </ui:MenuItem>
                     <ui:MenuItem x:Name="NotifyIconReportBug"
                                  Header="{DynamicResource TrayIcon_ReportBugOption}"
-                                 Command="{Binding ReportBugCommand}">
+                                 Click="reportBug">
                         <ui:MenuItem.Icon>
                             <ui:SymbolIcon Symbol="Bug20"/>
                         </ui:MenuItem.Icon>
@@ -373,7 +383,7 @@
 
                     <ui:MenuItem x:Name="NotifyIconQuit"
                                  Header="{DynamicResource TrayIcon_QuitOption}"
-                                 Command="{Binding QuitApplicationCommand}">
+                                 Click="NotifyIconQuit_Click">
                         <ui:MenuItem.Icon>
                             <ui:SymbolIcon Symbol="ArrowExit20"/>
                         </ui:MenuItem.Icon>

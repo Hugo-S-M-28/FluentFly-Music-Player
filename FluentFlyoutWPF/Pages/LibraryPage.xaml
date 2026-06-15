@@ -170,7 +170,7 @@
                                   Opacity="0.6"
                                   FontSize="12"/>
                     <ui:DropDownButton x:Name="SortButton"
-                                       Content="{DynamicResource Lib_Sort_Title}"
+                                       Content="{Binding CurrentSortLabel}"
                                        Margin="0,0,4,0">
                         <ui:DropDownButton.Flyout>
                             <ContextMenu>
@@ -255,8 +255,8 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <Slider Minimum="120"
-                                                            Maximum="280"
+                                                    <Slider Minimum="100"
+                                                            Maximum="250"
                                                             Value="{Binding Settings.LibraryGridItemSize, Mode=TwoWay}"
                                                             TickFrequency="10"
                                                             IsSnapToTickEnabled="True"
@@ -288,13 +288,45 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Slider Minimum="32"
-                                                            Maximum="72"
+                                                            Maximum="96"
                                                             Value="{Binding Settings.LibraryTrackIconSize, Mode=TwoWay}"
                                                             TickFrequency="4"
                                                             IsSnapToTickEnabled="True"
                                                             VerticalAlignment="Center"/>
                                                     <TextBlock Grid.Column="1"
                                                                Text="{Binding Settings.LibraryTrackIconSize}"
+                                                               Margin="8,0,0,0"
+                                                               Width="24"
+                                                               FontSize="11"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </ControlTemplate>
+                                </MenuItem.Template>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Lib_CornerRadiusTitle}">
+                                <MenuItem.Template>
+                                    <ControlTemplate TargetType="MenuItem">
+                                        <Border Background="Transparent">
+                                            <StackPanel Margin="12,8">
+                                                <TextBlock Text="{DynamicResource Lib_CornerRadiusDescription}"
+                                                           FontSize="11"
+                                                           Opacity="0.6"
+                                                           Margin="0,0,0,4"/>
+                                                <Grid Width="180">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Slider Minimum="0"
+                                                            Maximum="32"
+                                                            Value="{Binding Settings.LibraryItemCornerRadius, Mode=TwoWay}"
+                                                            TickFrequency="2"
+                                                            IsSnapToTickEnabled="True"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Settings.LibraryItemCornerRadius}"
                                                                Margin="8,0,0,0"
                                                                Width="24"
                                                                FontSize="11"
@@ -439,7 +471,7 @@
                         <Style TargetType="ListViewItem">
                             <!-- Double-click plays the track (DataContext is the TrackModel) -->
                             <EventSetter Event="MouseDoubleClick"
-                                    Handler="TrackItem_MouseDoubleClick"/>
+                                         Handler="TrackItem_MouseDoubleClick"/>
                             <Setter Property="ContextMenu"
                                     Value="{StaticResource TrackItemContextMenu}"/>
                             <!-- Bind Tag to PageRoot's DataContext (the ViewModel) -->
@@ -459,7 +491,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
                                         <Border x:Name="ItemBorder"
-                                                CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                 Background="Transparent"
                                                 Padding="{TemplateBinding Padding}">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -496,7 +528,7 @@
                                         Width="{Binding DataContext.Settings.LibraryTrackIconSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                         Height="{Binding DataContext.Settings.LibraryTrackIconSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
                                         Margin="0,0,12,0"
-                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="8"
@@ -504,13 +536,13 @@
                                                           ShadowDepth="2"
                                                           Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                             ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="MusicNote124"
                                                            Opacity="0.3"
                                                            FontSize="20"/>
-                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                     RenderOptions.BitmapScalingMode="HighQuality">
                                                 <Border.Background>
                                                     <ImageBrush ImageSource="{Binding AlbumArtPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=120, Mode=OneWay}"
@@ -596,7 +628,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                 Background="Transparent"
                                                 x:Name="ContainerBorder">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -639,7 +671,7 @@
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
                                         Height="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                         ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
                                     <Border.Effect>
@@ -648,13 +680,13 @@
                                                           ShadowDepth="2"
                                                           Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                             ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="Album24"
                                                            Opacity="0.1"
                                                            FontSize="48"/>
-                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                     RenderOptions.CachingHint="Cache">
                                                 <Border.Background>
@@ -732,7 +764,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                 Background="Transparent"
                                                 x:Name="ContainerBorder">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -775,7 +807,7 @@
                                 <Border x:Name="ArtBorder"
                                         Grid.Row="0"
                                         Height="{Binding DataContext.Settings.LibraryGridItemSize, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
-                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                        CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                         ClipToBounds="True"
                                         Background="{DynamicResource ControlFillColorDefaultBrush}">
                                     <Border.Effect>
@@ -784,13 +816,13 @@
                                                           ShadowDepth="2"
                                                           Direction="270"/>
                                     </Border.Effect>
-                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                    <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                             ClipToBounds="True">
                                         <Grid>
                                             <ui:SymbolIcon Symbol="Person24"
                                                            Opacity="0.1"
                                                            FontSize="48"/>
-                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                            <Border CornerRadius="{Binding DataContext.Settings.LibraryItemCornerRadius, RelativeSource={RelativeSource AncestorType={x:Type Page}}, Converter={StaticResource DoubleToCornerRadiusConverter}}"
                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                     RenderOptions.CachingHint="Cache">
                                                 <Border.Background>
@@ -863,26 +895,6 @@
                                       VerticalAlignment="Stretch"
                                       Visibility="{Binding Settings.LibraryPlaylistVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
                                       CloseCommand="{Binding HidePlaylistCommand}"/>
-
-            <Border Grid.ColumnSpan="3"
-                    Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-                    Opacity="0.85"
-                    Visibility="{Binding IsLibraryLoading, Converter={StaticResource BoolToVisibleCollapsedConverter}}"
-                    Panel.ZIndex="50">
-                <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <ui:ProgressRing IsIndeterminate="True"
-                                     Width="42"
-                                     Height="42"
-                                     Margin="0,0,0,12"/>
-                    <TextBlock Text="{DynamicResource Lib_Title}"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="Cargando biblioteca..."
-                               Opacity="0.7"
-                               HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
         </Grid>
     </Grid>
 </Page>

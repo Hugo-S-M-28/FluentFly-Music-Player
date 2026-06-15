@@ -22,11 +22,6 @@
         <Setter Property="Height" Value="42"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Appearance" Value="Transparent"/>
-        <Style.Triggers>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Foreground" Value="{Binding PressedForeground, RelativeSource={RelativeSource Self}}" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <Style x:Key="PlayButtonStyle"
@@ -49,9 +44,6 @@
                     </Setter.Value>
                 </Setter>
             </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Foreground" Value="{Binding PressedForeground, RelativeSource={RelativeSource Self}}" />
-            </Trigger>
         </Style.Triggers>
     </Style>
 
@@ -65,11 +57,6 @@
         <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="8"/>
-        <Style.Triggers>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Foreground" Value="{Binding PressedForeground, RelativeSource={RelativeSource Self}}" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <Style x:Key="IconToggleButtonStyle"
@@ -90,12 +77,20 @@
         <Setter Property="Width" Value="32"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Appearance" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Focusable" Value="False"/>
         <Style.Triggers>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Foreground" Value="{Binding PressedForeground, RelativeSource={RelativeSource Self}}" />
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -106,6 +101,7 @@
         <Setter Property="Height" Value="36"/>
         <Setter Property="Width" Value="36"/>
         <Setter Property="Appearance" Value="Primary"/>
+        <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <Style x:Key="PlayerFlyoutCloseButtonStyle"

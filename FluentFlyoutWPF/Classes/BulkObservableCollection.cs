@@ -28,6 +28,8 @@ public class BulkObservableCollection<T> : ObservableCollection<T>
         finally
         {
             _isNotificationSuspended = false;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
@@ -49,6 +51,8 @@ public class BulkObservableCollection<T> : ObservableCollection<T>
         finally
         {
             _isNotificationSuspended = false;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }

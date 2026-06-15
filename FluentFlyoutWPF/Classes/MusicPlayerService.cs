@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Media;
 using Windows.Storage.Streams;
 using System.Threading.Tasks;
@@ -21,7 +21,17 @@ public enum RepeatMode
     All
 }
 
-public class MusicPlayerService : INotifyPropertyChanged, IDisposable
+public enum QueueUndoActionKind
+{
+    None,
+    QueueUpdated,
+    PlaylistLoaded,
+    QueueCleared,
+    TrackRemoved,
+    TracksRemoved,
+}
+
+public class MusicPlayerService : ObservableObject, IDisposable
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     private static MusicPlayerService? _instance;
@@ -47,6 +57,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     private SampleAggregator? _sampleAggregator;
     private DispatcherTimer? _positionTimer;
     private readonly object _seekLock = new();
+    private CancellationTokenSource? _saveVolumeCts;
 
     private readonly Random _random = new();
     private volatile bool _manualStop = false;
@@ -71,12 +82,11 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     private int _undoCurrentQueueIndex = -1;
     private bool _undoIsShuffleEnabled;
     private bool _canUndo;
-    private string _undoActionName = "";
+    private QueueUndoActionKind _undoActionKind = QueueUndoActionKind.None;
 
     public bool CanUndo => _canUndo;
-    public string UndoActionName => _undoActionName;
+    public QueueUndoActionKind UndoActionKind => _undoActionKind;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler? TrackEnded;
     public event EventHandler? TrackChanged;
     public event EventHandler? QueueChanged;
@@ -172,7 +182,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             AppVolumeService.Instance.SetVolume(_volume);
 
             SettingsManager.Current.Volume = _volume;
-            SettingsManager.SaveSettings();
+            QueueVolumeSettingsSave();
         }
     }
 
@@ -227,17 +237,17 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     // Undo Support
     // ═══════════════════════════════════════════
 
-    public void SaveUndoState(string actionName)
+    public void SaveUndoState(QueueUndoActionKind actionKind)
     {
         _undoOriginalQueue = new List<TrackModel>(_originalQueue);
         _undoShuffledQueue = new List<TrackModel>(_shuffledQueue);
         _undoCurrentQueueIndex = _currentQueueIndex;
         _undoIsShuffleEnabled = _isShuffleEnabled;
-        _undoActionName = actionName;
+        _undoActionKind = actionKind;
         _canUndo = true;
         
         OnPropertyChanged(nameof(CanUndo));
-        OnPropertyChanged(nameof(UndoActionName));
+        OnPropertyChanged(nameof(UndoActionKind));
     }
 
     public void Undo()
@@ -249,6 +259,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         _currentQueueIndex = _undoCurrentQueueIndex;
         _isShuffleEnabled = _undoIsShuffleEnabled;
         _canUndo = false;
+        _undoActionKind = QueueUndoActionKind.None;
 
         var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
         if (CurrentTrack == null && _currentQueueIndex >= 0 && _currentQueueIndex < queue.Count)
@@ -262,6 +273,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         }
 
         OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(UndoActionKind));
     }
 
     // ═══════════════════════════════════════════
@@ -273,7 +285,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         var tracksList = tracks.ToList();
         if (tracksList.Count == 0) return;
 
-        SaveUndoState(tracksList.Count == 1 ? "Canción eliminada de la cola" : "Canciones eliminadas de la cola");
+        SaveUndoState(tracksList.Count == 1 ? QueueUndoActionKind.TrackRemoved : QueueUndoActionKind.TracksRemoved);
 
         var currentTrackRef = CurrentTrack;
         bool isCurrentTrackRemoved = false;
@@ -456,7 +468,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
             if (importedTracks.Count > 0)
             {
-                SaveUndoState("Lista de reproducción cargada");
+                SaveUndoState(QueueUndoActionKind.PlaylistLoaded);
                 
                 _originalQueue = new List<TrackModel>(importedTracks);
                 if (_isShuffleEnabled)
@@ -573,9 +585,36 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
                 _volume = vol;
                 OnPropertyChanged(nameof(Volume));
                 SettingsManager.Current.Volume = _volume;
-                SettingsManager.SaveSettings();
+                QueueVolumeSettingsSave();
             }
         };
+    }
+
+    private void QueueVolumeSettingsSave(int delayMilliseconds = 250)
+    {
+        _saveVolumeCts?.Cancel();
+        _saveVolumeCts?.Dispose();
+        _saveVolumeCts = new CancellationTokenSource();
+        var token = _saveVolumeCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delayMilliseconds, token);
+                if (!token.IsCancellationRequested)
+                {
+                    SettingsManager.SaveSettings();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed to save debounced volume setting");
+            }
+        }, token);
     }
 
     private void UpdateSmtcShuffleRepeat()
@@ -632,7 +671,8 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
-        if (IsPlaying && _audioStream != null)
+        var stream = _audioStream;
+        if (IsPlaying && stream != null)
         {
             var nowUtc = DateTime.UtcNow;
             OnPropertyChanged(nameof(CurrentPosition));
@@ -648,7 +688,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
 
             // Stall detection should tolerate decoder startup/buffering and only
             // treat a lack of forward progress as an error after a real timeout.
-            if (_audioStream.Position == _lastPosition && IsPlaying)
+            if (stream.Position == _lastPosition && IsPlaying)
             {
                 _stallCount++;
                 bool startupGraceElapsed = _playbackActivatedUtc != DateTime.MinValue &&
@@ -666,7 +706,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
             }
             else
             {
-                _lastPosition = _audioStream.Position;
+                _lastPosition = stream.Position;
                 _stallCount = 0;
                 _lastPlaybackProgressUtc = nowUtc;
             }
@@ -889,7 +929,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     public void RemoveFromQueue(TrackModel track)
     {
         if (track == null) return;
-        SaveUndoState("Pista eliminada de la cola");
+        SaveUndoState(QueueUndoActionKind.TrackRemoved);
 
         var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
         int removeIndex = queue.IndexOf(track);
@@ -944,7 +984,7 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
     /// </summary>
     public void ClearQueuePreservingCurrent()
     {
-        SaveUndoState("Cola de reproducción limpiada");
+        SaveUndoState(QueueUndoActionKind.QueueCleared);
         if (CurrentTrack != null)
         {
             var current = CurrentTrack;
@@ -1464,16 +1504,20 @@ public class MusicPlayerService : INotifyPropertyChanged, IDisposable
         return result;
     }
 
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     public void Dispose()
     {
+        _saveVolumeCts?.Cancel();
+        _saveVolumeCts?.Dispose();
         _positionTimer?.Stop();
         StopInternal();
         _positionTimer = null;
+        lock (_instanceLock)
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+        }
         GC.SuppressFinalize(this);
     }
 }

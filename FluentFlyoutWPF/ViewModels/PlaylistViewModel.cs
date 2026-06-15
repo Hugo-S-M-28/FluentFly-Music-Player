@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
+using FluentFlyoutWPF.Classes;
 using FluentFlyoutWPF.Classes.Services;
 using FluentFlyoutWPF.Classes.Utils;
 using FluentFlyoutWPF.Models;
@@ -41,10 +43,7 @@ public partial class PlaylistViewModel : ObservableObject
     private bool canUndo;
 
     [ObservableProperty]
-    private string undoActionName = string.Empty;
-
-    [ObservableProperty]
-    private string undoBannerText = "Cambios en la cola";
+    private string undoBannerText = string.Empty;
 
     [ObservableProperty]
     private bool isUndoBannerVisible;
@@ -66,6 +65,9 @@ public partial class PlaylistViewModel : ObservableObject
 
         PlaylistView = CollectionViewSource.GetDefaultView(PlaylistItems);
         PlaylistView.Filter = FilterPlaylist;
+
+        UndoBannerText = LocalizationManager.GetString("Queue_ChangesSaved");
+        LocalizationManager.LocalizationChanged += HandleLocalizationChanged;
     }
 
     partial void OnSearchTextChanged(string value)
@@ -161,13 +163,11 @@ public partial class PlaylistViewModel : ObservableObject
     public void UpdateUndoState()
     {
         CanUndo = _playbackService.CanUndo;
-        UndoActionName = _playbackService.UndoActionName;
+        var undoActionKind = _playbackService.UndoActionKind;
 
         if (CanUndo)
         {
-            UndoBannerText = string.IsNullOrWhiteSpace(UndoActionName)
-                ? "Cambios en la cola"
-                : UndoActionName;
+            UndoBannerText = LocalizeUndoAction(undoActionKind);
             IsUndoBannerVisible = true;
 
             _undoBannerTimer?.Stop();
@@ -201,11 +201,20 @@ public partial class PlaylistViewModel : ObservableObject
 
         var totalDuration = TimeSpan.FromSeconds(totalSecs);
         string durationStr = totalDuration.TotalHours >= 1
-            ? $"{(int)totalDuration.TotalHours}h {totalDuration.Minutes}m"
-            : $"{totalDuration.Minutes}:{totalDuration.Seconds:D2} min";
+                ? string.Format(
+                LocalizationManager.GetString("Playlist_DurationHoursMinutesFormat"),
+                (int)totalDuration.TotalHours,
+                totalDuration.Minutes)
+            : string.Format(
+                LocalizationManager.GetString("Playlist_DurationMinutesSecondsFormat"),
+                totalDuration.Minutes,
+                totalDuration.Seconds);
 
-        string songWord = count == 1 ? "cancion" : "canciones";
-        QueueSummaryText = $"{count} {songWord} - {durationStr}";
+        string summaryFormat = count == 1
+            ? LocalizationManager.GetString("Playlist_SummarySingleFormat")
+            : LocalizationManager.GetString("Playlist_SummaryPluralFormat");
+
+        QueueSummaryText = string.Format(summaryFormat, count, durationStr);
     }
 
     private bool FilterPlaylist(object item)
@@ -283,8 +292,8 @@ public partial class PlaylistViewModel : ObservableObject
     public async Task LoadPlaylistAsync()
     {
         var filePath = _fileDialogService.OpenFile(
-            "Cargar Lista de ReproducciÃ³n",
-            "Archivos de Lista de ReproducciÃ³n (*.m3u;*.m3u8;*.json)|*.m3u;*.m3u8;*.json|Todos los archivos (*.*)|*.*");
+            LocalizationManager.GetString("Playlist_LoadTitle"),
+            LocalizationManager.GetString("Playlist_Filter"));
 
         if (!string.IsNullOrEmpty(filePath))
         {
@@ -294,7 +303,8 @@ public partial class PlaylistViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync("Error", $"Error al cargar la lista: {ex.Message}");
+                var errorTitle = LocalizationManager.GetString("Playlist_ErrorLoading");
+                await _dialogService.ShowErrorAsync(errorTitle, $"{errorTitle}: {ex.Message}");
             }
         }
     }
@@ -304,14 +314,16 @@ public partial class PlaylistViewModel : ObservableObject
     {
         if (PlaylistItems.Count == 0)
         {
-            await _dialogService.ShowMessageAsync("Guardar Lista", "La lista de reproducciÃ³n estÃ¡ vacÃ­a y no se puede guardar.");
+            await _dialogService.ShowMessageAsync(
+                LocalizationManager.GetString("Playlist_EmptyTitle"),
+                LocalizationManager.GetString("Playlist_EmptyMessage"));
             return;
         }
 
         var filePath = _fileDialogService.SaveFile(
-            "Guardar Lista de ReproducciÃ³n",
-            "Archivos de Lista de ReproducciÃ³n (*.m3u;*.json)|*.m3u;*.json|Lista M3U (*.m3u)|*.m3u|Lista JSON (*.json)|*.json",
-            "lista");
+            LocalizationManager.GetString("Playlist_SaveTitle"),
+            LocalizationManager.GetString("Playlist_FilterSave"),
+            LocalizationManager.GetString("Playlist_SaveTitle"));
 
         if (!string.IsNullOrEmpty(filePath))
         {
@@ -321,7 +333,8 @@ public partial class PlaylistViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync("Error", $"Error al guardar la lista: {ex.Message}");
+                var errorTitle = LocalizationManager.GetString("Playlist_ErrorSaving");
+                await _dialogService.ShowErrorAsync(errorTitle, $"{errorTitle}: {ex.Message}");
             }
         }
     }
@@ -408,5 +421,31 @@ public partial class PlaylistViewModel : ObservableObject
         {
             _windowService.ShowEditTrack(track);
         }
+    }
+
+    private void HandleLocalizationChanged(object? sender, EventArgs e)
+    {
+        if (!CanUndo)
+        {
+            UndoBannerText = LocalizationManager.GetString("Queue_ChangesSaved");
+        }
+        else
+        {
+            UndoBannerText = LocalizeUndoAction(_playbackService.UndoActionKind);
+        }
+
+        UpdateQueueSummary();
+    }
+
+    private static string LocalizeUndoAction(QueueUndoActionKind actionKind)
+    {
+        return actionKind switch
+        {
+            QueueUndoActionKind.PlaylistLoaded => LocalizationManager.GetString("Queue_PlaylistLoaded"),
+            QueueUndoActionKind.QueueCleared => LocalizationManager.GetString("Queue_Cleared"),
+            QueueUndoActionKind.TrackRemoved => LocalizationManager.GetString("Queue_TrackRemoved"),
+            QueueUndoActionKind.TracksRemoved => LocalizationManager.GetString("Queue_TracksRemoved"),
+            _ => LocalizationManager.GetString("Queue_ChangesSaved"),
+        };
     }
 }

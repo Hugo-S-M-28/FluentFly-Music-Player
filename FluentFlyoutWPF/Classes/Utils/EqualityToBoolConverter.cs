@@ -22,6 +22,13 @@ public class EqualityToBoolConverter : IValueConverter
             {
                 return intVal;
             }
+
+            Type actualTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+            if (actualTargetType.IsEnum && Enum.TryParse(actualTargetType, parameter.ToString(), out object? enumValue))
+            {
+                return enumValue;
+            }
+
             return parameter;
         }
         return Binding.DoNothing;

@@ -13,7 +13,7 @@ public interface IPlaybackService : INotifyPropertyChanged
     TrackModel? CurrentTrack { get; }
     int CurrentQueueIndex { get; }
     bool CanUndo { get; }
-    string UndoActionName { get; }
+    QueueUndoActionKind UndoActionKind { get; }
     bool IsShuffleEnabled { get; set; }
 
     void AddToQueue(TrackModel track);
