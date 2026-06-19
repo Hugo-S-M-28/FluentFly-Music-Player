@@ -147,8 +147,7 @@
                 </Grid>
 
                 <StackPanel Opacity="{Binding IsPremiumUnlocked, Converter={StaticResource BoolToFullHalfOpacityConverter}}">
-                    <ui:CardControl Grid.Row="2"
-                                    Icon="{ui:SymbolIcon TextboxAlignBottom24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon TextboxAlignBottom24}"
                                     Margin="0,0,0,24">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -166,15 +165,13 @@
                         <controls:ToggleSwitch IsChecked="{Binding TaskbarWidgetEnabled, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"/>
                     </ui:CardControl>
-                    <ui:InfoBar Grid.Row="3"
-                                Title="{DynamicResource TaskbarWidgetVisualIssuesWarning}"
+                    <ui:InfoBar Title="{DynamicResource TaskbarWidgetVisualIssuesWarning}"
                                 IsOpen="True"
                                 Severity="Informational"
                                 IsClosable="False"
                                 Margin="0,0,0,3"/>
 
-                    <ui:CardControl Grid.Row="4"
-                                    Icon="{ui:SymbolIcon ArrowMove24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon ArrowMove24}"
                                     Margin="0,0,0,3">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -184,7 +181,7 @@
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ComboBox SelectedIndex="{Binding TaskbarWidgetPosition}"
+                        <ComboBox SelectedIndex="{Binding TaskbarWidgetPosition, Mode=TwoWay}"
                                   IsEnabled="{Binding IsPremiumUnlocked}"
                                   Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
                             <ComboBoxItem Content="{DynamicResource PositionBottomLeft}"/>
@@ -192,8 +189,7 @@
                             <ComboBoxItem Content="{DynamicResource PositionBottomRight}"/>
                         </ComboBox>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="5"
-                                    Icon="{ui:SymbolIcon ProjectionScreen24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon ProjectionScreen24}"
                                     Margin="0,0,0,3">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -213,8 +209,7 @@
                     </ui:CardControl>
 
                     <!-- Padding settings -->
-                    <ui:CardExpander Grid.Row="6"
-                                     Icon="{ui:SymbolIcon Wrench24}"
+                    <ui:CardExpander Icon="{ui:SymbolIcon Wrench24}"
                                      ContentPadding="6"
                                      Margin="0,0,0,12">
                         <ui:CardExpander.Header>
@@ -229,8 +224,7 @@
                             </StackPanel>
                         </ui:CardExpander.Header>
                         <StackPanel>
-                            <ui:CardControl Grid.Row="5"
-                                            Icon="{ui:SymbolIcon PaddingRight24}"
+                            <ui:CardControl Icon="{ui:SymbolIcon PaddingRight24}"
                                             Margin="0,0,0,3">
                                 <ui:CardControl.Header>
                                     <StackPanel Orientation="Vertical">
@@ -303,8 +297,7 @@
                         </StackPanel>
                     </ui:CardExpander>
 
-                    <ui:CardControl Grid.Row="9"
-                                    Icon="{ui:SymbolIcon ColorBackground24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon ColorBackground24}"
                                     Margin="0,0,0,3">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -320,8 +313,7 @@
                         <controls:ToggleSwitch IsChecked="{Binding TaskbarWidgetBackgroundBlur, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"/>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="10"
-                                    Icon="{ui:SymbolIcon EyeOff24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon EyeOff24}"
                                     Margin="0,0,0,3">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -337,8 +329,7 @@
                         <controls:ToggleSwitch IsChecked="{Binding TaskbarWidgetHideCompletely, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"/>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="11"
-                                    Icon="{ui:SymbolIcon EyeLines24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon EyeLines24}"
                                     Margin="0,0,0,12">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -354,8 +345,7 @@
                         <controls:ToggleSwitch IsChecked="{Binding TaskbarWidgetAutoHide, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"/>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="12"
-                                    Icon="{ui:SymbolIcon VideoPlayPause24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon VideoPlayPause24}"
                                     Margin="0,0,0,3">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -371,8 +361,7 @@
                         <controls:ToggleSwitch IsChecked="{Binding TaskbarWidgetControlsEnabled, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"/>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="13"
-                                    Icon="{ui:SymbolIcon ArrowMove24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon ArrowMove24}"
                                     Margin="0,0,0,12">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">
@@ -385,15 +374,14 @@
                                            Opacity="0.5"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ComboBox SelectedIndex="{Binding TaskbarWidgetControlsPosition}"
+                        <ComboBox SelectedIndex="{Binding TaskbarWidgetControlsPosition, Mode=TwoWay}"
                                   IsEnabled="{Binding IsPremiumUnlocked}"
                                   Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
                             <ComboBoxItem Content="{DynamicResource PositionLeft}"/>
                             <ComboBoxItem Content="{DynamicResource PositionRight}"/>
                         </ComboBox>
                     </ui:CardControl>
-                    <ui:CardControl Grid.Row="14"
-                                    Icon="{ui:SymbolIcon Wand24}"
+                    <ui:CardControl Icon="{ui:SymbolIcon Wand24}"
                                     Margin="0,0,0,76">
                         <ui:CardControl.Header>
                             <StackPanel Orientation="Vertical">

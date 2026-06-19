@@ -101,9 +101,12 @@ public partial class HomePage : Page
         var mode = MusicPlayerService.Instance.RepeatMode;
         
         var dominantBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && dominantBrush != null;
+        bool isDark = ThemeResourceHelper.IsDarkTheme();
+        bool useAccent = AccentColorResolver.ShouldUseAccent(dominantBrush);
         
-        var accentBrush = useAccent ? dominantBrush! : (Brush)Application.Current.TryFindResource("AccentFillColorDefaultBrush") ?? Brushes.DeepSkyBlue;
+        var accentBrush = useAccent 
+            ? AccentColorResolver.ResolveReadableAccentBrush(dominantBrush, isDark) 
+            : (Brush)Application.Current.TryFindResource("AccentFillColorDefaultBrush") ?? Brushes.DeepSkyBlue;
         var defaultBrush = Brushes.White;
 
         _viewModel.ApplyRepeatShuffleForegrounds(accentBrush, defaultBrush);
@@ -111,34 +114,38 @@ public partial class HomePage : Page
 
     private void ApplyAccentColor(SolidColorBrush? brush)
     {
-        bool useAccent = SettingsManager.Current.UseAlbumArtAsAccentColor && brush != null;
+        bool isDark = ThemeResourceHelper.IsDarkTheme();
+        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
+        var activeBrush = useAccent ? AccentColorResolver.ResolveReadableAccentBrush(brush, isDark) : null;
 
         Action action = () =>
         {
-            if (useAccent && brush != null)
+            if (useAccent && activeBrush != null)
             {
-                // Play/Pause Button
-                PlayPauseButton.Background = brush;
+                var rawAccent = AccentColorResolver.ResolveAccentBrush(brush);
+                // Play/Pause Button background gets raw accent, foreground gets contrast brush
+                PlayPauseButton.Background = rawAccent;
+                PlayPauseButton.Foreground = ThemeResourceHelper.GetContrastBrush(rawAccent.Color);
                 
                 // Icons
-                PreviousIcon.Foreground = brush;
-                NextIcon.Foreground = brush;
+                PreviousIcon.Foreground = activeBrush;
+                NextIcon.Foreground = activeBrush;
                 
                 // Seekbar
-                SeekSlider.Foreground = VolumeSlider.Foreground = brush;
+                SeekSlider.Foreground = VolumeSlider.Foreground = activeBrush;
 
                 // Shadow/Glow (inside template)
                 var shadow = FindVisualChild<DropShadowEffect>(MainContentControl, "AlbumArtShadow");
                 if (shadow != null)
                 {
-                    shadow.Color = brush.Color;
+                    shadow.Color = activeBrush.Color;
                     shadow.Opacity = 0.5;
                     shadow.BlurRadius = 60;
                     shadow.ShadowDepth = 0;
                 }
                 
                 // Subtle backgrounds for other controls
-                var subtleBrush = brush.Clone();
+                var subtleBrush = activeBrush.Clone();
                 subtleBrush.Opacity = 0.15;
                 subtleBrush.Freeze();
                 ShuffleButton.Background = RepeatButton.Background = subtleBrush;
@@ -147,9 +154,11 @@ public partial class HomePage : Page
             {
                 // Reset
                 PlayPauseButton.ClearValue(BackgroundProperty);
+                PlayPauseButton.ClearValue(ForegroundProperty);
                 PreviousIcon.ClearValue(ForegroundProperty);
                 NextIcon.ClearValue(ForegroundProperty);
                 SeekSlider.ClearValue(ForegroundProperty);
+                VolumeSlider.ClearValue(ForegroundProperty);
                 ShuffleButton.ClearValue(BackgroundProperty);
                 RepeatButton.ClearValue(BackgroundProperty);
 
@@ -198,21 +207,100 @@ public partial class HomePage : Page
         
         bool isPlaylistVisible = _viewModel.IsPlaylistVisible;
         double lyricsWidthRatio = isPlaylistVisible ? 1.5 : 2.0;
+        bool isCompact = ActualWidth < 768;
 
-        HomeCoverHostColumn.Width = new GridLength(1, GridUnitType.Star);
-        HomeLyricsHostColumn.Width = new GridLength(lyricsWidthRatio, GridUnitType.Star);
-        HomePlaylistHostColumn.Width = isPlaylistVisible
-            ? new GridLength(380, GridUnitType.Pixel)
-            : new GridLength(0, GridUnitType.Pixel);
-
-        Grid.SetColumn(MainContentControl, 0);
-        Grid.SetColumnSpan(MainContentControl, isPlaylistVisible ? 2 : 3);
-        MainContentControl.Margin = isPlaylistVisible ? new Thickness(0, 0, 16, 0) : new Thickness(0);
-
-        if (FindVisualChild<Grid>(MainContentControl, "NowPlayingLayoutGrid") is { ColumnDefinitions.Count: >= 2 } nowPlayingGrid)
+        if (isCompact)
         {
-            nowPlayingGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
-            nowPlayingGrid.ColumnDefinitions[1].Width = new GridLength(lyricsWidthRatio, GridUnitType.Star);
+            HomeCoverHostColumn.Width = new GridLength(1, GridUnitType.Star);
+            HomeLyricsHostColumn.Width = new GridLength(0, GridUnitType.Pixel);
+            HomePlaylistHostColumn.Width = isPlaylistVisible
+                ? new GridLength(1, GridUnitType.Star)
+                : new GridLength(0, GridUnitType.Pixel);
+
+            Grid.SetColumn(MainContentControl, 0);
+            Grid.SetColumnSpan(MainContentControl, isPlaylistVisible ? 1 : 3);
+            MainContentControl.Margin = new Thickness(0);
+        }
+        else
+        {
+            HomeCoverHostColumn.Width = new GridLength(1, GridUnitType.Star);
+            HomeLyricsHostColumn.Width = new GridLength(lyricsWidthRatio, GridUnitType.Star);
+            HomePlaylistHostColumn.Width = isPlaylistVisible
+                ? new GridLength(380, GridUnitType.Pixel)
+                : new GridLength(0, GridUnitType.Pixel);
+
+            Grid.SetColumn(MainContentControl, 0);
+            Grid.SetColumnSpan(MainContentControl, isPlaylistVisible ? 2 : 3);
+            MainContentControl.Margin = isPlaylistVisible ? new Thickness(0, 0, 16, 0) : new Thickness(0);
+        }
+
+        if (FindVisualChild<Grid>(MainContentControl, "NowPlayingLayoutGrid") is Grid nowPlayingGrid)
+        {
+            var coverSection = FindVisualChild<StackPanel>(nowPlayingGrid, "NowPlayingCoverSection");
+            var lyricsPanel = FindVisualChild<Border>(nowPlayingGrid, "NowPlayingLyricsPanel");
+
+            if (isCompact)
+            {
+                if (nowPlayingGrid.RowDefinitions.Count >= 2)
+                {
+                    nowPlayingGrid.RowDefinitions[0].Height = GridLength.Auto;
+                    nowPlayingGrid.RowDefinitions[1].Height = new GridLength(1, GridUnitType.Star);
+                }
+                if (nowPlayingGrid.ColumnDefinitions.Count >= 2)
+                {
+                    nowPlayingGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                    nowPlayingGrid.ColumnDefinitions[1].Width = new GridLength(0, GridUnitType.Pixel);
+                }
+
+                if (coverSection != null)
+                {
+                    Grid.SetRow(coverSection, 0);
+                    Grid.SetColumn(coverSection, 0);
+                    Grid.SetColumnSpan(coverSection, 2);
+                    coverSection.Margin = new Thickness(12, 8, 12, 12);
+                }
+
+                if (lyricsPanel != null)
+                {
+                    Grid.SetRow(lyricsPanel, 1);
+                    Grid.SetColumn(lyricsPanel, 0);
+                    Grid.SetColumnSpan(lyricsPanel, 2);
+                    lyricsPanel.Margin = new Thickness(0, 8, 0, 0);
+                    lyricsPanel.Padding = new Thickness(16);
+                    lyricsPanel.MinHeight = 0;
+                }
+            }
+            else
+            {
+                if (nowPlayingGrid.RowDefinitions.Count >= 2)
+                {
+                    nowPlayingGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
+                    nowPlayingGrid.RowDefinitions[1].Height = new GridLength(0, GridUnitType.Pixel);
+                }
+                if (nowPlayingGrid.ColumnDefinitions.Count >= 2)
+                {
+                    nowPlayingGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                    nowPlayingGrid.ColumnDefinitions[1].Width = new GridLength(lyricsWidthRatio, GridUnitType.Star);
+                }
+
+                if (coverSection != null)
+                {
+                    Grid.SetRow(coverSection, 0);
+                    Grid.SetColumn(coverSection, 0);
+                    Grid.SetColumnSpan(coverSection, 1);
+                    coverSection.Margin = new Thickness(16, 16, 24, 16);
+                }
+
+                if (lyricsPanel != null)
+                {
+                    Grid.SetRow(lyricsPanel, 0);
+                    Grid.SetColumn(lyricsPanel, 1);
+                    Grid.SetColumnSpan(lyricsPanel, 1);
+                    lyricsPanel.Margin = new Thickness(0);
+                    lyricsPanel.Padding = new Thickness(28);
+                    lyricsPanel.MinHeight = 420;
+                }
+            }
         }
     }
 

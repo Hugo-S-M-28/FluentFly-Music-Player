@@ -1,4 +1,5 @@
 <Window
+    x:Name="TaskbarWindowRoot"
     x:Class="FluentFlyout.Windows.TaskbarWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -39,8 +40,10 @@
         Background="Transparent">
         <controls:TaskbarVisualizerControl
             x:Name="TaskbarVisualizer"
-            Margin="0,1,0,0"/>
+            Margin="0,1,0,0"
+            BackdropImage="{Binding NowPlaying.BackdropImage, ElementName=TaskbarWindowRoot}"/>
         <controls:TaskbarWidgetControl
-            x:Name="Widget"/>
+            x:Name="Widget"
+            BackdropImage="{Binding NowPlaying.BackdropImage, ElementName=TaskbarWindowRoot}"/>
     </Canvas>
 </Window>

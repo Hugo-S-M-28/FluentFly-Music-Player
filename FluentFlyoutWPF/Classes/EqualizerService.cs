@@ -71,6 +71,7 @@ public class EqualizerService : INotifyPropertyChanged
     private bool _isEnabled;
     private string _activePresetName = "Normal";
     private bool _isApplyingPreset;
+    private System.Windows.Threading.DispatcherTimer? _debounceTimer;
 
     /// <summary>
     /// The 10 frequency bands of the equalizer (31Hz to 16kHz).
@@ -96,6 +97,7 @@ public class EqualizerService : INotifyPropertyChanged
                 SettingsManager.Current.EqualizerEnabled = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnabled)));
                 Logger.Info($"Equalizer {(value ? "enabled" : "disabled")}");
+                PersistCurrentGains();
             }
         }
     }
@@ -125,9 +127,24 @@ public class EqualizerService : INotifyPropertyChanged
         _activePresetName = SettingsManager.Current.ActiveEqPresetName;
     }
 
+    private void InitDebounceTimer()
+    {
+        _debounceTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _debounceTimer.Tick += (s, e) =>
+        {
+            _debounceTimer.Stop();
+            PersistCurrentGains();
+        };
+    }
+
     private EqualizerService()
     {
         LoadFromSettings();
+        InitDebounceTimer();
+
         // Initialize 10 standard EQ bands
         Bands = new EqualizerBand[]
         {
@@ -195,26 +212,31 @@ public class EqualizerService : INotifyPropertyChanged
     {
         if (e.PropertyName == nameof(EqualizerBand.Gain) && !_isApplyingPreset)
         {
-            var savedGains = SettingsManager.Current.EqualizerGains;
-            if (savedGains == null || savedGains.Length != Bands.Length)
-            {
-                SettingsManager.Current.EqualizerGains = new float[Bands.Length];
-                savedGains = SettingsManager.Current.EqualizerGains;
-            }
-
-            for (int i = 0; i < Bands.Length; i++)
-            {
-                savedGains[i] = Bands[i].Gain;
-            }
-
-            // Force update to trigger auto-save in UserSettings
-            SettingsManager.Current.NotifyPropertyChanged(nameof(UserSettings.EqualizerGains));
-            
             if (ActivePresetName != "Custom")
             {
                 ActivePresetName = "Custom";
             }
+
+            _debounceTimer?.Stop();
+            _debounceTimer?.Start();
         }
+    }
+
+    public void PersistCurrentGains()
+    {
+        _debounceTimer?.Stop();
+
+        var savedGains = new float[Bands.Length];
+
+        for (int i = 0; i < Bands.Length; i++)
+        {
+            savedGains[i] = Bands[i].Gain;
+        }
+
+        SettingsManager.Current.EqualizerGains = savedGains;
+        SettingsManager.Current.ActiveEqPresetName = ActivePresetName;
+        SettingsManager.Current.EqualizerEnabled = IsEnabled;
+        SettingsManager.SaveSettings();
     }
 
     /// <summary>
@@ -234,6 +256,7 @@ public class EqualizerService : INotifyPropertyChanged
 
         ActivePresetName = presetName;
         Logger.Info($"Applied EQ preset: {presetName}");
+        PersistCurrentGains();
     }
 
     /// <summary>
@@ -241,11 +264,15 @@ public class EqualizerService : INotifyPropertyChanged
     /// </summary>
     public void Reset()
     {
+        _isApplyingPreset = true;
         foreach (var band in Bands)
         {
             band.Gain = 0;
         }
+        _isApplyingPreset = false;
         ActivePresetName = "Normal";
+        SettingsManager.Current.ActiveEqPresetName = ActivePresetName;
+        PersistCurrentGains();
     }
 
     /// <summary>
@@ -253,6 +280,7 @@ public class EqualizerService : INotifyPropertyChanged
     /// </summary>
     public void Dispose()
     {
+        _debounceTimer?.Stop();
         foreach (var band in Bands)
         {
             band.PropertyChanged -= OnBandPropertyChanged;

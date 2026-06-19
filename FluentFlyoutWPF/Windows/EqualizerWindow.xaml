@@ -18,6 +18,103 @@
     Background="{DynamicResource ApplicationBackgroundBrush}"
     d:DataContext="{d:DesignInstance viewModels:EqualizerViewModel}">
 
+    <ui:FluentWindow.Resources>
+        <Style x:Key="EqualizerPresetButtonStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource SurfaceStrokeColorDefaultBrush}"/>
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Padding"
+                    Value="16"/>
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Focusable="False"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                    Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                    Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                    Value="False">
+                                <Setter TargetName="border"
+                                        Property="Opacity"
+                                        Value="0.56"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Appearance}"
+                        Value="Primary">
+                    <Setter Property="Background"
+                            Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                    <Setter Property="Foreground"
+                            Value="White"/>
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Appearance}"
+                                Value="Primary"/>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}"
+                                Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background"
+                            Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource AccentFillColorSecondaryBrush}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Appearance}"
+                                Value="Primary"/>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsPressed}"
+                                Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background"
+                            Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
+                    <Setter Property="BorderBrush"
+                            Value="{DynamicResource AccentFillColorTertiaryBrush}"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <ui:TitleBar Title="{DynamicResource Eq_Title}"
                      VerticalAlignment="Top"/>
@@ -113,23 +210,24 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type viewModels:EqualizerPresetViewModel}">
-                                <ui:Button Margin="4"
-                                           Padding="16"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"
-                                           HorizontalContentAlignment="Left"
-                                           Appearance="{Binding Appearance}"
-                                           Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                           CommandParameter="{Binding Name}">
-                                    <StackPanel HorizontalAlignment="Left">
-                                        <ui:SymbolIcon Symbol="{Binding IconSymbol}"
-                                                       FontSize="26"
-                                                       Margin="0,0,0,10"/>
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontSize="15"
-                                                   FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ui:Button>
+                                <Grid>
+                                    <Button Margin="4"
+                                            Style="{StaticResource EqualizerPresetButtonStyle}"
+                                            Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding Name}">
+                                        <StackPanel HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                            <ui:SymbolIcon Symbol="{Binding IconSymbol}"
+                                                           FontSize="26"
+                                                           HorizontalAlignment="Center"
+                                                           Margin="0,0,0,10"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="15"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

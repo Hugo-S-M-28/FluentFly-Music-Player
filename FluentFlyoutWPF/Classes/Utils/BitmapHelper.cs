@@ -93,10 +93,11 @@ internal static class BitmapHelper
     private static readonly LruCache<int, BitmapImage> _thumbnailCache = new(_cacheEntryLimit);
 
     // cached bitmapImage hashes and their dominant colors
-    private static readonly LruCache<int, List<SolidColorBrush>> _dominantColorsCache = new(_cacheEntryLimit);
+    private static readonly LruCache<string, List<SolidColorBrush>> _dominantColorsCache = new(_cacheEntryLimit);
 
     private static int _currentHashCode = 0;
     private static readonly AsyncLocal<int> _currentHashCodeContext = new();
+    private static volatile bool _hasAlbumArt;
 
     // current or latest dominant colors
     private static List<SolidColorBrush>? _currentDominantColors;
@@ -107,8 +108,20 @@ internal static class BitmapHelper
         get => _currentDominantColors ??= [];
     }
 
+    public static void SetSavedDominantColors(List<SolidColorBrush> colors)
+    {
+        _currentDominantColors = colors;
+    }
+
     public static bool HasAlbumArt
-        => (_currentHashCodeContext.Value != 0 ? _currentHashCodeContext.Value : _currentHashCode) != 0;
+    {
+        get => _hasAlbumArt;
+    }
+
+    public static void SetHasAlbumArt(bool hasAlbumArt)
+    {
+        _hasAlbumArt = hasAlbumArt;
+    }
 
     public static int GetStableThumbnailHash(IRandomAccessStreamReference thumbnail)
         => GetStableThumbnailHashAsync(thumbnail).GetAwaiter().GetResult();
@@ -132,12 +145,49 @@ internal static class BitmapHelper
         }
     }
 
+    public static int GetBitmapContentHash(BitmapSource? image)
+    {
+        if (image == null)
+            return 0;
+
+        try
+        {
+            var formattedBitmap = new FormatConvertedBitmap();
+            formattedBitmap.BeginInit();
+            formattedBitmap.Source = image;
+            formattedBitmap.DestinationFormat = PixelFormats.Bgra32;
+            formattedBitmap.EndInit();
+            formattedBitmap.Freeze();
+
+            int width = formattedBitmap.PixelWidth;
+            int height = formattedBitmap.PixelHeight;
+            int stride = width * 4;
+            byte[] pixels = new byte[height * stride];
+            formattedBitmap.CopyPixels(pixels, stride, 0);
+
+            using SHA256 sha256 = SHA256.Create();
+            byte[] widthBytes = BitConverter.GetBytes(width);
+            byte[] heightBytes = BitConverter.GetBytes(height);
+            sha256.TransformBlock(widthBytes, 0, widthBytes.Length, null, 0);
+            sha256.TransformBlock(heightBytes, 0, heightBytes.Length, null, 0);
+            sha256.TransformFinalBlock(pixels, 0, pixels.Length);
+
+            return BitConverter.ToInt32(sha256.Hash!, 0);
+        }
+        catch (Exception ex)
+        {
+            Logger.Info(ex, "Failed to compute bitmap content hash; falling back to object hash");
+            return image.GetHashCode();
+        }
+    }
+
     internal static void SetCurrentBitmap(BitmapImage? image)
     {
         if (image == null)
         {
             _currentHashCode = 0;
             _currentHashCodeContext.Value = 0;
+            _hasAlbumArt = false;
             return;
         }
 
@@ -146,6 +196,7 @@ internal static class BitmapHelper
         _thumbnailCache.Set(hashCode, image);
         _currentHashCode = hashCode;
         _currentHashCodeContext.Value = hashCode;
+        _hasAlbumArt = true;
     }
 
     internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference? thumbnail, int maxThumbnailSize = _maxThumbnailSize)
@@ -165,6 +216,7 @@ internal static class BitmapHelper
         {
             _currentHashCode = hashCode;
             _currentHashCodeContext.Value = hashCode;
+            _hasAlbumArt = true;
             return cachedImage;
         }
         await using (var imageStream = await OpenThumbnailReadStreamAsync(thumbnail).ConfigureAwait(false))
@@ -184,6 +236,7 @@ internal static class BitmapHelper
 
             _currentHashCode = hashCode;
             _currentHashCodeContext.Value = hashCode;
+            _hasAlbumArt = true;
             return image;
         }
     }
@@ -231,33 +284,45 @@ internal static class BitmapHelper
             return [];
         }
 
-        // start timing
+        if (_dominantColorsCache.TryGetValue(hashCode.ToString(), out var cachedColors) && cachedColors != null)
+        {
+            _currentDominantColors = cachedColors;
+            return _currentDominantColors;
+        }
+
+        // convert BitmapImage to BGRA byte array
+        if (!_thumbnailCache.TryGetValue(hashCode, out var sourceBitmap) || sourceBitmap == null)
+        {
+            Logger.Warn($"Thumbnail cache miss while extracting dominant colors");
+            return _currentDominantColors ?? [];
+        }
+
+        var result = GetDominantColors(sourceBitmap, colorCount, hashCode.ToString(), maxIterations);
+        _currentDominantColors = result;
+        return result;
+    }
+
+    public static List<SolidColorBrush> GetDominantColors(BitmapSource image, int colorCount, string cacheKey, int maxIterations = 15)
+    {
+        if (image == null) return [];
+
+        if (_dominantColorsCache.TryGetValue(cacheKey, out var cachedColors) && cachedColors != null)
+        {
+            return cachedColors;
+        }
+
 #if DEBUG
         Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
 
         try
         {
-            // check if we've already calculated colors for this thumbnail by checking
-            // the current hash with cache (dumb method because we're assuming it's always the latest)
-            if (_dominantColorsCache.TryGetValue(hashCode, out var cachedColors) && cachedColors != null)
-            {
-                _currentDominantColors = cachedColors;
-                return _currentDominantColors;
-            }
-
-            // convert BitmapImage to BGRA byte array
-            if (!_thumbnailCache.TryGetValue(hashCode, out var sourceBitmap) || sourceBitmap == null)
-            {
-                Logger.Warn($"Thumbnail cache miss while extracting dominant colors");
-                return _currentDominantColors ?? [];
-            }
-
             var formattedBitmap = new FormatConvertedBitmap();
             formattedBitmap.BeginInit();
-            formattedBitmap.Source = sourceBitmap;
+            formattedBitmap.Source = image;
             formattedBitmap.DestinationFormat = PixelFormats.Bgra32;
             formattedBitmap.EndInit();
+            formattedBitmap.Freeze();
 
             int width = formattedBitmap.PixelWidth;
             int height = formattedBitmap.PixelHeight;
@@ -267,11 +332,15 @@ internal static class BitmapHelper
             formattedBitmap.CopyPixels(pixels, stride, 0);
 
             bool darkTheme = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
-            var samples = BuildDeterministicSamples(pixels, width, height);
+            var samples = BuildDeterministicSamples(pixels, width, height, allowLowChroma: false);
             if (samples.Count == 0)
             {
-                _currentDominantColors = [];
-                return _currentDominantColors;
+                samples = BuildDeterministicSamples(pixels, width, height, allowLowChroma: true);
+            }
+
+            if (samples.Count == 0)
+            {
+                return [];
             }
 
             List<Color> result = colorCount == 1
@@ -288,20 +357,17 @@ internal static class BitmapHelper
                 return brush;
             }).ToList();
 
-            _currentDominantColors = brushes;
-
-            // save brushes to cache with current hash as key
-            _dominantColorsCache.Set(hashCode, _currentDominantColors);
+            _dominantColorsCache.Set(cacheKey, brushes);
 
 #if DEBUG
-        stopwatch.Stop();
-        Logger.Debug($"Dominant color extraction took {stopwatch.Elapsed.TotalMilliseconds} ms");
+            stopwatch.Stop();
+            Logger.Debug($"Dominant color extraction for key {cacheKey} took {stopwatch.Elapsed.TotalMilliseconds} ms");
 #endif
-            return _currentDominantColors;
+            return brushes;
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Error extracting dominant colors");
+            Logger.Error(ex, $"Error extracting dominant colors for key {cacheKey}");
             return [];
         }
     }
@@ -318,7 +384,7 @@ internal static class BitmapHelper
         return ExtractRepresentativeColor(colorSamples);
     }
 
-    private static List<ColorSample> BuildDeterministicSamples(byte[] pixels, int width, int height)
+    private static List<ColorSample> BuildDeterministicSamples(byte[] pixels, int width, int height, bool allowLowChroma = false)
     {
         var samples = new List<ColorSample>(Math.Min(width * height, 4096));
         int stepX = Math.Max(1, width / 48);
@@ -341,7 +407,7 @@ internal static class BitmapHelper
                     continue;
 
                 var metrics = AnalyzeColor(r, g, b);
-                if (metrics.Chroma < 0.08f)
+                if (!allowLowChroma && metrics.Chroma < 0.08f)
                     continue;
 
                 double distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
@@ -528,5 +594,62 @@ internal static class BitmapHelper
         float max = MathF.Max(r, MathF.Max(g, b));
         float min = MathF.Min(r, MathF.Min(g, b));
         return (max - min, (max + min) / 2f);
+    }
+
+    public static bool IsReliableAlbumArt(BitmapSource? image)
+    {
+        if (image == null)
+            return false;
+
+        if (image.PixelWidth < 48 || image.PixelHeight < 48)
+            return false;
+
+        if (image.PixelWidth == 0 || image.PixelHeight == 0)
+            return false;
+
+        return true;
+    }
+
+    public static bool IsNearlyFlat(byte[] pixels, int width, int height)
+    {
+        int stepX = Math.Max(1, width / 8);
+        int stepY = Math.Max(1, height / 8);
+
+        byte minR = 255, maxR = 0;
+        byte minG = 255, maxG = 0;
+        byte minB = 255, maxB = 0;
+        bool hasPixels = false;
+
+        for (int y = 0; y < height; y += stepY)
+        {
+            for (int x = 0; x < width; x += stepX)
+            {
+                int pixelIndex = ((y * width) + x) * 4;
+                if (pixelIndex + 3 >= pixels.Length)
+                    continue;
+
+                byte b = pixels[pixelIndex];
+                byte g = pixels[pixelIndex + 1];
+                byte r = pixels[pixelIndex + 2];
+                byte a = pixels[pixelIndex + 3];
+
+                if (a < 160)
+                    continue;
+
+                hasPixels = true;
+                if (r < minR) minR = r;
+                if (r > maxR) maxR = r;
+                if (g < minG) minG = g;
+                if (g > maxG) maxG = g;
+                if (b < minB) minB = b;
+                if (b > maxB) maxB = b;
+            }
+        }
+
+        if (!hasPixels)
+            return true;
+
+        int threshold = 8;
+        return (maxR - minR <= threshold) && (maxG - minG <= threshold) && (maxB - minB <= threshold);
     }
 }

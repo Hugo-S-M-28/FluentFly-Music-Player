@@ -10,7 +10,7 @@
 <System:String x:Key="AcrylicBlurOpacityDescription">Ajuste la intensidad de transparencia del contenedor acrílico del flyout y ventanas relacionadas (predeterminado: 175)</System:String>
 <System:String x:Key="AcrylicBlurOpacityPerk">Opacidad de desenfoque acrílico</System:String>
 <System:String x:Key="AcrylicBlurOpacityTitle">Opacidad de Desenfoque Acrílico</System:String>
-<System:String x:Key="AcrylicWindowDescription">Aplica transparencia acrílica nativa al contenedor del flyout. Si se desactiva, la ventana vuelve a usar Mica. No cambia el estilo visual del fondo.</System:String>
+<System:String x:Key="AcrylicWindowDescription">Aplica transparencia acrílica nativa al contenedor del flyout. El estilo visual de fondo sigue generando la carátula o degradado debajo; al desactivar Acrylic, la ventana vuelve a Mica.</System:String>
 <System:String x:Key="AcrylicWindowTitle">Ventana Acrílica</System:String>
 <System:String x:Key="AdvancedSettingsTitle">Ajustes Avanzados</System:String>
 <System:String x:Key="AllFuturePremiumFeatures">Todas las futuras funciones Premium</System:String>
@@ -232,6 +232,7 @@ o deja una reseña en la Microsoft Store!</System:String>
 <System:String x:Key="NextUpStayDurationDescription">(predeterminado: 2000 ms)</System:String>
 <System:String x:Key="NextUpStayDurationTitle">Duración de Siguiente</System:String>
 <System:String x:Key="NextUpWindow_UpNextText">A continuación:</System:String>
+<System:String x:Key="NextUpWindow_NowPlayingText">Ahora suena:</System:String>
 <System:String x:Key="NextUpWindow_SongTitlePlaceholder">Título de la canción</System:String>
 <System:String x:Key="NextUpWindow_ArtistNamePlaceholder">Nombre del artista</System:String>
 <System:String x:Key="PauseOtherMediaDescription">Al reproducir o enfocar nuevos medios, otras sesiones activas se pausan automáticamente</System:String>
@@ -391,15 +392,15 @@ Nota: Como proyecto de código abierto, estas funciones también están disponib
     <System:String x:Key="ManageLibrary_DeleteFolder">Eliminar Carpeta</System:String>
     <System:String x:Key="ManageLibrary_DeleteExclusion">Eliminar Exclusión</System:String>
     <System:String x:Key="MediaFlyout_BackgroundStyleTitle">Estilo Visual del Fondo</System:String>
-    <System:String x:Key="MediaFlyout_BackgroundStyleDescription">Elige cómo se procesará la carátula de la música actual (o su degradado de fallback) para generar el fondo visual. Este ajuste afecta la vista del Flyout principal, la HomePage y el TaskbarVisualizerControl.</System:String>
+    <System:String x:Key="MediaFlyout_BackgroundStyleDescription">Elige cómo se procesará la carátula de la música actual (o su degradado de fallback) para generar el fondo visual. Este ajuste afecta la vista del Flyout principal, la HomePage, el TaskbarWidgetControl y el TaskbarVisualizerControl.</System:String>
     <System:String x:Key="MediaFlyout_BackgroundBlurOption1Desc">Sin fondo blur. Se muestra el color base del reproductor.</System:String>
     <System:String x:Key="MediaFlyout_BackgroundBlurOption2Desc">Destello radial que emula la luz trasera de la carátula.</System:String>
     <System:String x:Key="MediaFlyout_BackgroundBlurOption3Desc">Degradado de luz suave ascendente desde la parte inferior.</System:String>
     <System:String x:Key="MediaFlyout_BackgroundBlurOption4Desc">Desenfoque uniforme en toda la superficie de la ventana.</System:String>
     <System:String x:Key="MediaFlyout_AcrylicWindowTitle">Ventana Acrílica</System:String>
-    <System:String x:Key="MediaFlyout_AcrylicWindowDescription">Configura la transparencia nativa del contenedor del flyout. Este ajuste solo afecta ventanas reales como el reproductor flotante, Next Up y Lock Keys.</System:String>
+    <System:String x:Key="MediaFlyout_AcrylicWindowDescription">Configura la capa nativa Acrylic/Mica del contenedor. Trabaja junto al estilo visual de fondo: Acrylic deja ver el fondo procesado con la opacidad elegida; Mica usa el material base del sistema.</System:String>
     <System:String x:Key="MediaFlyout_AcrylicPerk">Contenedor translúcido del flyout</System:String>
-    <System:String x:Key="MediaFlyout_AcrylicPerkDescription">Cuando se activa, Windows aplica Acrylic al marco real de la ventana. Si se desactiva, el contenedor vuelve a Mica. HomePage y TaskbarVisualizerControl no cambian con este ajuste.</System:String>
+    <System:String x:Key="MediaFlyout_AcrylicPerkDescription">Cuando se activa, Windows aplica Acrylic al contenedor real del flyout y mezcla la transparencia con el estilo visual de fondo seleccionado. La opacidad define cuánto se percibe esa capa acrílica. Si se desactiva, el contenedor vuelve a Mica; HomePage, TaskbarWidgetControl y TaskbarVisualizerControl conservan y refrescan su propio fondo dinámico.</System:String>
     <System:String x:Key="Lib_LoadingLibrary">Cargando biblioteca...</System:String>
     <System:String x:Key="ColorPicker_SelectedColor">Color seleccionado</System:String>
     <System:String x:Key="ColorPicker_QuickColors">Colores rápidos</System:String>

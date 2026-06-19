@@ -92,7 +92,9 @@ public class MusicPlayerService : ObservableObject, IDisposable
     public event EventHandler? QueueChanged;
     public event EventHandler<string>? PlaybackError;
     public event EventHandler<float[]>? FftDataAvailable;
+    public event EventHandler<UpcomingTrackEventArgs>? UpcomingTrackDue;
 
+    private string _lastFiredUpcomingTrackKey = "";
 
     public LyricLine? CurrentLyricLine
     {
@@ -118,6 +120,7 @@ public class MusicPlayerService : ObservableObject, IDisposable
             if (_currentTrack != value)
             {
                 _currentTrack = value;
+                _lastFiredUpcomingTrackKey = ""; // Reset upcoming tracking key
                 if (value != null && value.AlbumArt == null)
                 {
                     value.AlbumArt = LibraryManager.Instance.GetAlbumArt(value, 400);
@@ -197,6 +200,7 @@ public class MusicPlayerService : ObservableObject, IDisposable
             if (_isShuffleEnabled != value)
             {
                 _isShuffleEnabled = value;
+                _lastFiredUpcomingTrackKey = ""; // Reset upcoming tracking key
                 if (value)
                 {
                     CreateShuffledQueue();
@@ -224,6 +228,7 @@ public class MusicPlayerService : ObservableObject, IDisposable
             if (_repeatMode != value)
             {
                 _repeatMode = value;
+                _lastFiredUpcomingTrackKey = ""; // Reset upcoming tracking key
                 OnPropertyChanged(nameof(RepeatMode));
                 UpdateSmtcShuffleRepeat();
             }
@@ -537,6 +542,9 @@ public class MusicPlayerService : ObservableObject, IDisposable
         };
         _positionTimer.Tick += PositionTimer_Tick;
 
+        // Reset upcoming tracking key on queue changes
+        QueueChanged += (s, e) => _lastFiredUpcomingTrackKey = "";
+
         // Restore volume from settings
         _volume = SettingsManager.Current.Volume;
 
@@ -685,6 +693,9 @@ public class MusicPlayerService : ObservableObject, IDisposable
             {
                 SmtcService.Instance.UpdateTimeline(CurrentPosition, TotalDuration);
             }
+
+            // Check if upcoming track is due (anticipation flyout)
+            CheckUpcomingTrackDue();
 
             // Stall detection should tolerate decoder startup/buffering and only
             // treat a lack of forward progress as an error after a real timeout.
@@ -1244,6 +1255,7 @@ public class MusicPlayerService : ObservableObject, IDisposable
     {
         IsPlaying = false;
         _positionTimer?.Stop();
+        _lastFiredUpcomingTrackKey = ""; // Reset upcoming tracking key
 
         if (_waveOut != null)
         {
@@ -1519,5 +1531,79 @@ public class MusicPlayerService : ObservableObject, IDisposable
             }
         }
         GC.SuppressFinalize(this);
+    }
+
+    public TrackModel? GetNextTrackPreview()
+    {
+        var queue = _isShuffleEnabled ? _shuffledQueue : _originalQueue;
+        if (queue.Count == 0)
+        {
+            return null;
+        }
+
+        if (_repeatMode == RepeatMode.One)
+        {
+            // For RepeatMode.One, we don't show next up by default to avoid announcing the same track
+            return null;
+        }
+
+        int nextIndex = _currentQueueIndex + 1;
+        if (nextIndex >= queue.Count)
+        {
+            if (_repeatMode == RepeatMode.All)
+            {
+                nextIndex = 0;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        if (nextIndex >= 0 && nextIndex < queue.Count)
+        {
+            return queue[nextIndex];
+        }
+
+        return null;
+    }
+
+    private void CheckUpcomingTrackDue()
+    {
+        if (!IsPlaying || _audioStream == null) return;
+
+        var total = TotalDuration;
+        var current = CurrentPosition;
+        if (total.TotalSeconds <= 0) return;
+
+        var remaining = total - current;
+        if (remaining.TotalSeconds <= 3.0 && remaining.TotalSeconds > 0)
+        {
+            var currentTrack = CurrentTrack;
+            var upcomingTrack = GetNextTrackPreview();
+            if (currentTrack != null && upcomingTrack != null)
+            {
+                string triggerKey = $"{currentTrack.FilePath}|{upcomingTrack.FilePath}";
+                if (_lastFiredUpcomingTrackKey != triggerKey)
+                {
+                    _lastFiredUpcomingTrackKey = triggerKey;
+                    UpcomingTrackDue?.Invoke(this, new UpcomingTrackEventArgs(currentTrack, upcomingTrack, remaining));
+                }
+            }
+        }
+    }
+}
+
+public class UpcomingTrackEventArgs : EventArgs
+{
+    public TrackModel? CurrentTrack { get; }
+    public TrackModel? UpcomingTrack { get; }
+    public TimeSpan RemainingTime { get; }
+
+    public UpcomingTrackEventArgs(TrackModel? currentTrack, TrackModel? upcomingTrack, TimeSpan remainingTime)
+    {
+        CurrentTrack = currentTrack;
+        UpcomingTrack = upcomingTrack;
+        RemainingTime = remainingTime;
     }
 }

@@ -3,6 +3,7 @@
 
 using FluentFlyoutWPF.ViewModels;
 using System.IO;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace FluentFlyout.Classes.Settings;
@@ -134,6 +135,24 @@ public class SettingsManager
                 {
                     XmlSerializer xmlSerializer = new(typeof(UserSettings));
                     xmlSerializer.Serialize(writer, _current);
+                }
+
+                // Validate the temp file is valid XML before replacing the production file
+                var tempFileInfo = new FileInfo(tempPath);
+                if (tempFileInfo.Length == 0)
+                {
+                    Logger.Error("Temp settings file is empty, aborting save to protect existing settings");
+                    return;
+                }
+
+                try
+                {
+                    XDocument.Load(tempPath);
+                }
+                catch (Exception xmlEx)
+                {
+                    Logger.Error(xmlEx, "Temp settings file is not valid XML, aborting save to protect existing settings");
+                    return;
                 }
 
                 if (File.Exists(filePath))

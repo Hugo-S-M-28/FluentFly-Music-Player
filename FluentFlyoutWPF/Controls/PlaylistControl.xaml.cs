@@ -37,6 +37,7 @@ public partial class PlaylistControl : UserControl
     }
 }
 
+
 public class IsCurrentTrackConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -50,32 +51,6 @@ public class IsCurrentTrackConverter : IMultiValueConverter
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class ItemToIndexConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-    {
-        if (value is ListViewItem item)
-        {
-            var listView = ItemsControl.ItemsControlFromItemContainer(item) as ListView;
-            if (listView != null)
-            {
-                int index = listView.ItemContainerGenerator.IndexFromContainer(item);
-                if (index >= 0)
-                {
-                    return $"{index + 1}.";
-                }
-            }
-        }
-
-        return string.Empty;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
         throw new NotImplementedException();
     }

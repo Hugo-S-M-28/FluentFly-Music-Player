@@ -10,9 +10,11 @@ using Windows.Media.Control;
 using WindowsMediaController;
 using static WindowsMediaController.MediaManager;
 
+using FluentFlyoutWPF.Classes.Services;
+
 namespace FluentFlyoutWPF.Classes;
 
-public class ExternalMediaService : IDisposable
+public class ExternalMediaService : IExternalMediaService
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     private static ExternalMediaService? _instance;

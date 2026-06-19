@@ -25,4 +25,9 @@ public sealed class LibraryService : ILibraryService
     {
         return Manager.ScanLibraryAsync();
     }
+
+    public System.Windows.Media.Imaging.BitmapImage? GetAlbumArt(TrackModel track, int size)
+    {
+        return Manager.GetAlbumArt(track, size);
+    }
 }

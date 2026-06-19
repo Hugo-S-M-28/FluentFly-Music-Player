@@ -21,10 +21,6 @@
             <classes:PathToImageConverter x:Key="PathToImageConverter"/>
             <local:IsCurrentTrackConverter x:Key="IsCurrentTrackConverter"
                                            xmlns:local="clr-namespace:FluentFlyoutWPF.Controls"/>
-            <local:ItemToIndexConverter x:Key="ItemToIndexConverter"
-                                        xmlns:local="clr-namespace:FluentFlyoutWPF.Controls"/>
-
-            <!-- Drop indicator line shown between items during drag -->
             <Style x:Key="DropIndicatorStyle"
                    TargetType="Border">
                 <Setter Property="Height"
@@ -176,18 +172,15 @@
                       ScrollViewer.CanContentScroll="True"
                       VirtualizingPanel.IsVirtualizing="True"
                       VirtualizingPanel.ScrollUnit="Pixel"
-                      VirtualizingPanel.VirtualizationMode="Recycling">
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      HorizontalContentAlignment="Stretch"
+                      VerticalContentAlignment="Center">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding"
                                 Value="8,5"/>
-                        <Setter Property="HorizontalContentAlignment"
-                                Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment"
-                                Value="Center"/>
                         <Setter Property="ContextMenu"
                                 Value="{StaticResource PlaylistContextMenu}"/>
-                        <!-- Bind Tag to RootCard's DataContext (the PlaylistViewModel) -->
                         <Setter Property="Tag"
                                 Value="{Binding DataContext, ElementName=RootCard}"/>
                     </Style>
@@ -219,15 +212,16 @@
                                            Cursor="SizeAll"
                                            Visibility="{Binding ElementName=RootControl, Path=ActualWidth, Converter={StaticResource ResponsiveCompactVisibilityConverter}}"/>
 
-                            <!-- Track Number -->
+                            <!-- Track Number — binds to TrackModel.DisplayIndex (1-based, set by SyncQueue).
+                                 Immune to VirtualizationMode=Recycling scroll bugs. -->
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Converter={StaticResource ItemToIndexConverter}}"
                                        FontSize="13"
                                        Opacity="0.4"
                                        VerticalAlignment="Center"
                                        Margin="0,0,10,0"
                                        Width="22"
                                        TextAlignment="Right"
+                                       Text="{Binding DisplayIndex, StringFormat={}{0}.}"
                                        Visibility="{Binding ElementName=RootControl, Path=ActualWidth, Converter={StaticResource ResponsiveCompactVisibilityConverter}}"/>
 
                             <!-- Album art -->

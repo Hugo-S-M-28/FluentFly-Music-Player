@@ -45,6 +45,22 @@
                                 <CubicEase EasingMode="EaseOut"/>
                             </DoubleAnimation.EasingFunction>
                         </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="WindowScale"
+                                         Storyboard.TargetProperty="ScaleX"
+                                         Duration="0:0:0.3"
+                                         To="1.0">
+                            <DoubleAnimation.EasingFunction>
+                                <QuarticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="WindowScale"
+                                         Storyboard.TargetProperty="ScaleY"
+                                         Duration="0:0:0.3"
+                                         To="1.0">
+                            <DoubleAnimation.EasingFunction>
+                                <QuarticEase EasingMode="EaseOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
                     </Storyboard>
                 </BeginStoryboard>
             </EventTrigger.Actions>
@@ -53,7 +69,15 @@
 
     <Grid DataContext="{Binding Settings}"
           Margin="12,0,12,0"
-          ColumnDefinitions="Auto, Auto, *">
+          ColumnDefinitions="Auto, Auto, *"
+          RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform x:Name="WindowScale"
+                                ScaleX="0.95"
+                                ScaleY="0.95"/>
+            </TransformGroup>
+        </Grid.RenderTransform>
         <StackPanel Orientation="Horizontal"
                     VerticalAlignment="Center">
             <ui:SymbolIcon x:Name="NextUpIcon"

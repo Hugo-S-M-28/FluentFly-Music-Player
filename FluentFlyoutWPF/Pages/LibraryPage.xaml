@@ -477,10 +477,6 @@
                             <!-- Bind Tag to PageRoot's DataContext (the ViewModel) -->
                             <Setter Property="Tag"
                                     Value="{Binding DataContext, ElementName=PageRoot}"/>
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment"
-                                    Value="Center"/>
                             <Setter Property="Padding"
                                     Value="12,8"/>
                             <Setter Property="Margin"
@@ -617,10 +613,6 @@
                           Padding="0,0,0,20">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment"
-                                    Value="Stretch"/>
                             <Setter Property="Padding"
                                     Value="4"/>
                             <Setter Property="Margin"
@@ -649,7 +641,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ui:VirtualizingWrapPanel Orientation="Horizontal"
+                            <ui:VirtualizingWrapPanel Orientation="Vertical"
                                                       IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
@@ -753,10 +745,6 @@
                           Padding="0,0,0,20">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment"
-                                    Value="Stretch"/>
                             <Setter Property="Padding"
                                     Value="4"/>
                             <Setter Property="Margin"
@@ -785,7 +773,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ui:VirtualizingWrapPanel Orientation="Horizontal"
+                            <ui:VirtualizingWrapPanel Orientation="Vertical"
                                                       IsItemsHost="True"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>

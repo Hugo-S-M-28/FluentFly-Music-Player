@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows;
 using Windows.Media;
 using Windows.Storage.Streams;
 using FluentFlyoutWPF.Models;
@@ -14,6 +15,7 @@ public class SmtcService
     private static readonly object _instanceLock = new();
 
     private SystemMediaTransportControls? _smtc;
+    private bool _initialized;
 
     public event EventHandler? PlayRequested;
     public event EventHandler? PauseRequested;
@@ -38,30 +40,72 @@ public class SmtcService
 
     private SmtcService()
     {
+        // SMTC initialization is deferred: it must be invoked explicitly with a valid
+        // HWND via Initialize(IntPtr hwnd) once the main window has been shown.
+    }
+
+    /// <summary>
+    /// Initializes the System Media Transport Controls and associates them with the
+    /// given window handle. Safe to call multiple times; subsequent calls are no-ops.
+    /// Must be called from the UI thread after the owning window has a valid HWND.
+    /// </summary>
+    public static void Initialize(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return;
+
+        // Ensure the singleton exists on the UI thread (events are subscribed on the
+        // SMTC instance, so the same dispatcher must own it).
+        var app = Application.Current;
+        if (app == null) return;
+        if (!app.Dispatcher.CheckAccess())
+        {
+            app.Dispatcher.Invoke(() => Initialize(hwnd));
+            return;
+        }
+
+        if (_instance == null)
+        {
+            lock (_instanceLock)
+            {
+                _instance ??= new SmtcService();
+            }
+        }
+        var service = _instance!;
+        if (service._initialized) return;
+
         try
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                _smtc = SystemMediaTransportControls.GetForCurrentView();
-                if (_smtc != null)
-                {
-                    _smtc.IsEnabled = true;
-                    _smtc.IsPlayEnabled = true;
-                    _smtc.IsPauseEnabled = true;
-                    _smtc.IsNextEnabled = true;
-                    _smtc.IsPreviousEnabled = true;
-                    _smtc.IsStopEnabled = true;
+            service._smtc = SystemMediaTransportControls.GetForCurrentView();
+            if (service._smtc == null) return;
 
-                    _smtc.ButtonPressed += Smtc_ButtonPressed;
-                    _smtc.PlaybackPositionChangeRequested += Smtc_PlaybackPositionChangeRequested;
-                    _smtc.ShuffleEnabledChangeRequested += Smtc_ShuffleEnabledChangeRequested;
-                    _smtc.AutoRepeatModeChangeRequested += Smtc_AutoRepeatModeChangeRequested;
-                }
-            });
+            // GetForCurrentView() returns a CoreWindow-backed SMTC that requires an
+            // explicit HWND association in desktop (WPF) hosts. Without this call the
+            // API throws 0x80070578 (Invalid window handle) the first time the
+            // controls are touched.
+            WinRT.Interop.InitializeWithWindow.Initialize(service._smtc, hwnd);
+
+            service._smtc.IsEnabled = true;
+            service._smtc.IsPlayEnabled = true;
+            service._smtc.IsPauseEnabled = true;
+            service._smtc.IsNextEnabled = true;
+            service._smtc.IsPreviousEnabled = true;
+            service._smtc.IsStopEnabled = true;
+
+            service._smtc.ButtonPressed += service.Smtc_ButtonPressed;
+            service._smtc.PlaybackPositionChangeRequested += service.Smtc_PlaybackPositionChangeRequested;
+            service._smtc.ShuffleEnabledChangeRequested += service.Smtc_ShuffleEnabledChangeRequested;
+            service._smtc.AutoRepeatModeChangeRequested += service.Smtc_AutoRepeatModeChangeRequested;
+
+            service._initialized = true;
+            Logger.Info("SMTC initialized successfully");
         }
         catch (Exception ex)
         {
-            Logger.Warn(ex, "Failed to initialize SMTC. Expected in non-interactive sessions.");
+            // Any failure here (missing UWP context, no HWND, COM interop) leaves SMTC
+            // disabled. The rest of the app keeps working — the public methods below
+            // no-op when _smtc is null.
+            service._smtc = null;
+            Logger.Warn(ex, "Failed to initialize SMTC; system media controls will be disabled.");
         }
     }
 

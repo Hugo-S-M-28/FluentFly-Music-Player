@@ -7,6 +7,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:controls="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
       xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+      xmlns:classes="clr-namespace:FluentFlyout.Classes"
       mc:Ignorable="d"
       d:DesignHeight="1600"
       d:DesignWidth="800"
@@ -31,10 +32,6 @@
                     Value="12"/>
             <Setter Property="Margin"
                     Value="6"/>
-            <Setter Property="HorizontalContentAlignment"
-                    Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment"
-                    Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -587,7 +584,21 @@
                                     </StackPanel>
                                 </ui:CardControl.Header>
                                 <controls:ToggleSwitch x:Name="AcrylicWindowSwitch"
-                                                       IsChecked="{Binding MediaFlyoutAcrylicWindowEnabled, Mode=TwoWay}"/>
+                                                       IsChecked="{Binding MediaFlyoutAcrylicWindowEnabled, Mode=TwoWay}"
+                                                       IsEnabled="{x:Static classes:WindowBlurHelper.IsAcrylicSupported}">
+                                    <controls:ToggleSwitch.Style>
+                                        <Style TargetType="controls:ToggleSwitch"
+                                               BasedOn="{StaticResource {x:Type controls:ToggleSwitch}}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled"
+                                                         Value="False">
+                                                    <Setter Property="ToolTip"
+                                                            Value="Acrylic no está disponible en esta versión/configuración de Windows; se usará Mica."/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </controls:ToggleSwitch.Style>
+                                </controls:ToggleSwitch>
                             </ui:CardControl>
 
                             <ui:CardControl Icon="{ui:SymbolIcon PaintBucket24}"

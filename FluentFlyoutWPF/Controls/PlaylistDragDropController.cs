@@ -222,7 +222,14 @@ internal sealed class PlaylistDragDropController
                 return match;
             }
 
-            current = VisualTreeHelper.GetParent(current);
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                current = VisualTreeHelper.GetParent(current);
+            }
+            else
+            {
+                current = LogicalTreeHelper.GetParent(current);
+            }
         }
 
         return null;

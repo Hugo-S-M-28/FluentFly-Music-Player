@@ -1,7 +1,7 @@
 using FluentFlyout.Classes.Settings;
+using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF.Classes.Utils;
 using FluentFlyoutWPF.ViewModels;
-using System.Reflection;
 using System.Windows.Media;
 using Xunit;
 
@@ -236,14 +236,6 @@ public class AccentColorResolverTests
 
     private static void SetBitmapHelperHasAlbumArt(bool hasAlbumArt)
     {
-        var bitmapHelperType = typeof(SettingsManager).Assembly.GetType("FluentFlyout.Classes.Utils.BitmapHelper", throwOnError: true)!;
-        var currentHashCodeField = bitmapHelperType.GetField("_currentHashCode", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var currentHashCodeContextField = bitmapHelperType.GetField("_currentHashCodeContext", BindingFlags.NonPublic | BindingFlags.Static)!;
-
-        currentHashCodeField.SetValue(null, hasAlbumArt ? 1 : 0);
-
-        var asyncLocal = currentHashCodeContextField.GetValue(null)!;
-        var valueProperty = asyncLocal.GetType().GetProperty("Value")!;
-        valueProperty.SetValue(asyncLocal, hasAlbumArt ? 1 : 0);
+        BitmapHelper.SetHasAlbumArt(hasAlbumArt);
     }
 }

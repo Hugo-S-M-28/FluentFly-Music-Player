@@ -60,6 +60,15 @@ public partial class TrackModel : ObservableObject
     [ObservableProperty]
     private long fileModifiedUtcTicks;
 
+    /// <summary>
+    /// 1-based display position in the playback queue, set by PlaylistViewModel.SyncQueue().
+    /// Bound directly in PlaylistControl to avoid WPF container-level index bugs
+    /// (AlternationIndex / IndexFromContainer fail under VirtualizationMode=Recycling).
+    /// </summary>
+    [ObservableProperty]
+    private int displayIndex;
+
+
     public TrackModel()
     {
         _defaultArtist = LocalizationManager.GetString("Track_UnknownArtist");

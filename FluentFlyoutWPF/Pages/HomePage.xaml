@@ -38,7 +38,7 @@
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="RootLayoutGrid"
-          Margin="24"
+          Margin="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsivePageMarginConverter}}"
           VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,13 +49,15 @@
         <!-- Background Blur Image -->
         <Image x:Name="BackgroundBlurImage"
                Grid.RowSpan="3"
-               Source="{Binding BackdropImage}"
                Stretch="UniformToFill"
                Opacity="0.4"
                IsHitTestVisible="False"
                HorizontalAlignment="Stretch"
                VerticalAlignment="Stretch"
-               RenderTransformOrigin="0.5,0.5">
+               RenderTransformOrigin="0.5,0.5"
+               behaviors:MediaBackdropBehavior.Source="{Binding BackdropImage}"
+               behaviors:MediaBackdropBehavior.Preset="{Binding Settings.MediaFlyoutBackgroundBlur}"
+               behaviors:MediaBackdropBehavior.Surface="Home">
             <Image.Effect>
                 <BlurEffect Radius="100"/>
             </Image.Effect>
@@ -353,12 +355,12 @@
                                                            FontSize="20"
                                                            Margin="0,0,12,0"/>
                                         </StackPanel>
-                                        <ui:Button HorizontalAlignment="Right"
-                                                   Style="{StaticResource LyricsIconButtonStyle}"
-                                                   Command="{Binding EditLyricsCommand}"
-                                                   ToolTip="{DynamicResource Edit_WindowTitle}">
+                                        <Button HorizontalAlignment="Right"
+                                                Style="{StaticResource LyricsIconButtonStyle}"
+                                                Command="{Binding EditLyricsCommand}"
+                                                ToolTip="{DynamicResource Edit_WindowTitle}">
                                             <ui:SymbolIcon Symbol="Edit24"/>
-                                        </ui:Button>
+                                        </Button>
                                     </Grid>
                                     <ListBox x:Name="LyricsList"
                                              ScrollViewer.CanContentScroll="True"
@@ -384,8 +386,6 @@
                                                         Value="0"/>
                                                 <Setter Property="Padding"
                                                         Value="0,16"/>
-                                                <Setter Property="HorizontalContentAlignment"
-                                                        Value="Stretch"/>
                                                 <Setter Property="Opacity"
                                                         Value="0.4"/>
                                                 <Setter Property="RenderTransformOrigin"
@@ -643,12 +643,12 @@
                                                        FontSize="20"
                                                        Margin="0,0,12,0"/>
                                     </StackPanel>
-                                    <ui:Button HorizontalAlignment="Right"
-                                               Style="{StaticResource LyricsIconButtonStyle}"
-                                               Command="{Binding EditLyricsCommand}"
-                                               ToolTip="{DynamicResource Edit_WindowTitle}">
+                                    <Button HorizontalAlignment="Right"
+                                            Style="{StaticResource LyricsIconButtonStyle}"
+                                            Command="{Binding EditLyricsCommand}"
+                                            ToolTip="{DynamicResource Edit_WindowTitle}">
                                         <ui:SymbolIcon Symbol="Edit24"/>
-                                    </ui:Button>
+                                    </Button>
                                 </Grid>
                                 <ListBox x:Name="FullLyricsList"
                                          ScrollViewer.CanContentScroll="True"
@@ -669,8 +669,6 @@
                                         <Style TargetType="ListBoxItem">
                                             <Setter Property="Opacity"
                                                     Value="0.4"/>
-                                            <Setter Property="HorizontalContentAlignment"
-                                                    Value="Stretch"/>
                                             <Setter Property="RenderTransformOrigin"
                                                     Value="0.5,0.5"/>
                                             <Setter Property="RenderTransform">

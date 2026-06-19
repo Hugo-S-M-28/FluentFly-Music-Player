@@ -16,7 +16,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>Resources\FluentFlyout2.ico</ApplicationIcon>
-    <Version>1.1.0</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
@@ -94,18 +94,9 @@
   <ItemGroup>
     <Resource Include="Resources\TrayIcons\FluentFlyoutWhite.png" />
   </ItemGroup>
-  <!-- Localization files -->
-  <!-- Style files -->
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Target Name="CleanupTemporaryTargetAssembly">
     <Message Text="Remove the temporary project and target assembly" Condition="'$(MSBuildTargetsVerbose)' == 'true'" />
-    <!--
-      Visual Studio and the WPF designer can keep the temporary local-type
-      reference assembly loaded for a short time. When that happens, the
-      default WinFX cleanup target fails the whole build while deleting an
-      intermediate-only dll from obj. We keep the cleanup attempt, but downgrade
-      the lock to a warning so the modern music player can still build.
-    -->
     <Delete Files="@(AssemblyForLocalTypeReference)" Condition="Exists('%(Fullpath)')" ContinueOnError="WarnAndContinue" />
   </Target>
 </Project>

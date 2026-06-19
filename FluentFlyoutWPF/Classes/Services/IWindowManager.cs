@@ -15,6 +15,6 @@ public interface IWindowManager
     void ShowManageLibrary();
     TaskbarWindow ShowTaskbarWindow();
     TaskbarWindow RecreateTaskbarWindow();
-    NextUpWindow ShowNextUp(string title, string artist, BitmapImage thumbnail);
+    NextUpWindow ShowNextUp(string title, string artist, BitmapImage? thumbnail, NextUpDisplayMode displayMode = NextUpDisplayMode.UpNext, bool autoClose = true);
     LockWindow GetOrCreateLockWindow();
 }

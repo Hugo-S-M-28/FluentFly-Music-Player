@@ -146,12 +146,12 @@ public class WindowManager : IWindowManager
         });
     }
 
-    public NextUpWindow ShowNextUp(string title, string artist, BitmapImage thumbnail)
+    public NextUpWindow ShowNextUp(string title, string artist, BitmapImage? thumbnail, NextUpDisplayMode displayMode = NextUpDisplayMode.UpNext, bool autoClose = true)
     {
         return Application.Current.Dispatcher.Invoke(() =>
         {
             var settingsViewModel = _services.GetRequiredService<SettingsShellViewModel>();
-            return new NextUpWindow(settingsViewModel, title, artist, thumbnail);
+            return new NextUpWindow(settingsViewModel, title, artist, thumbnail, displayMode, autoClose);
         });
     }
 

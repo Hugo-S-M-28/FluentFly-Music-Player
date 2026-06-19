@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using FluentFlyout.Classes;
 using FluentFlyout.Classes.Settings;
@@ -10,6 +7,7 @@ using FluentFlyoutWPF.Classes;
 using FluentFlyoutWPF.Models;
 using FluentFlyoutWPF.Classes.Utils;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.Messaging;
@@ -351,7 +349,7 @@ public partial class UserSettings : ObservableObject
                 LockKeysDuration = result switch
                 {
                     > 10000 => 10000,
-                    < 0 => 0,
+                    < 250 => 250,
                     _ => result
                 };
             }
@@ -809,6 +807,8 @@ public partial class UserSettings : ObservableObject
     [XmlIgnore]
     private bool _initializing = true;
     [XmlIgnore]
+    internal bool SuppressAutoSave { get; set; }
+    [XmlIgnore]
     private PlaybackMode _playbackSourceMode = PlaybackMode.InternalPlayer;
     [XmlIgnore]
     private bool _playbackSourceModeLoadedFromXml;
@@ -904,15 +904,57 @@ public partial class UserSettings : ObservableObject
         TurntableModeEnabled = true;
     }
 
+
     /// <summary>
     /// Called after deserialization to finalize initialization
     /// </summary>
     internal void CompleteInitialization()
     {
-        EnsureDefaultLibraryFolders();
-        RemoveDuplicateLibraryEntries();
-        InitializePlaybackSourceMode();
-        _initializing = false;
+        try
+        {
+            EnsureDefaultLibraryFolders();
+            RemoveDuplicateLibraryEntries();
+            InitializePlaybackSourceMode();
+            NormalizeTrayIconSettings();
+            SubscribeToCollectionChanges();
+        }
+        catch (Exception ex)
+        {
+            NLog.LogManager.GetCurrentClassLogger().Error(ex, "Error during settings initialization, proceeding with partial init");
+        }
+        finally
+        {
+            _initializing = false;
+        }
+    }
+
+    private void SubscribeToCollectionChanges()
+    {
+        MusicLibraryFolders.CollectionChanged -= MusicLibraryFolders_CollectionChanged;
+        ExcludedLibraryPaths.CollectionChanged -= ExcludedLibraryPaths_CollectionChanged;
+
+        MusicLibraryFolders.CollectionChanged += MusicLibraryFolders_CollectionChanged;
+        ExcludedLibraryPaths.CollectionChanged += ExcludedLibraryPaths_CollectionChanged;
+    }
+
+    private void MusicLibraryFolders_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        PersistCollectionChange(nameof(MusicLibraryFolders));
+    }
+
+    private void ExcludedLibraryPaths_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        PersistCollectionChange(nameof(ExcludedLibraryPaths));
+    }
+
+    private void PersistCollectionChange(string propertyName)
+    {
+        if (_initializing)
+        {
+            return;
+        }
+
+        OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
     }
 
     public bool ShouldSerializeLegacyInternalPlayerEnabled() => false;
@@ -934,6 +976,14 @@ public partial class UserSettings : ObservableObject
             (false, true) => PlaybackMode.ExternalMediaControl,
             _ => PlaybackMode.InternalPlayer
         };
+    }
+
+    private void NormalizeTrayIconSettings()
+    {
+        if (NIconSymbol && NIconHide)
+        {
+            NIconHide = false;
+        }
     }
 
     private void EnsureDefaultLibraryFolders()
@@ -1015,13 +1065,30 @@ public partial class UserSettings : ObservableObject
     partial void OnNIconSymbolChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
+
+        if (newValue && NIconHide)
+        {
+            NIconHide = false;
+        }
+
         ThemeManager.UpdateTrayIcon();
     }
 
     partial void OnAcrylicBlurOpacityChanged(uint oldValue, uint newValue)
     {
-        if (oldValue == newValue || _initializing) return;
-        WindowBlurHelper.AdjustBlurOpacityForAllWindows(newValue);
+        if (_initializing) return;
+        uint clamped = Math.Min(newValue, 255u);
+        if (clamped != newValue)
+        {
+            AcrylicBlurOpacity = clamped;
+            return;
+        }
+        if (oldValue == clamped) return;
+
+        if (IsPremiumUnlocked)
+        {
+            WindowBlurHelper.AdjustBlurOpacityForAllWindows(clamped);
+        }
     }
 
     partial void OnMediaFlyoutAcrylicWindowEnabledChanged(bool oldValue, bool newValue)
@@ -1037,6 +1104,12 @@ public partial class UserSettings : ObservableObject
     }
 
     partial void OnLockKeysAcrylicWindowEnabledChanged(bool oldValue, bool newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        WindowBlurHelper.RefreshAllWindowBackdrops();
+    }
+
+    partial void OnMediaFlyoutBackgroundBlurChanged(int oldValue, int newValue)
     {
         if (oldValue == newValue || _initializing) return;
         WindowBlurHelper.RefreshAllWindowBackdrops();
@@ -1060,6 +1133,12 @@ public partial class UserSettings : ObservableObject
 
     // Update taskbar when relevant settings change
     partial void OnTaskbarWidgetPositionChanged(int oldValue, int newValue)
+    {
+        if (oldValue == newValue || _initializing) return;
+        UpdateTaskbar();
+    }
+
+    partial void OnTaskbarWidgetPaddingChanged(bool oldValue, bool newValue)
     {
         if (oldValue == newValue || _initializing) return;
         UpdateTaskbar();
@@ -1280,6 +1359,7 @@ public partial class UserSettings : ObservableObject
 
         // Don't save during initialization or for ignored properties
         if (!_initializing && 
+            !SuppressAutoSave &&
             e.PropertyName != nameof(IsPremiumUnlocked) && 
             e.PropertyName != nameof(IsDurationEditable) &&
             e.PropertyName != nameof(Volume) && // Saved separately with debounce by MusicPlayerService

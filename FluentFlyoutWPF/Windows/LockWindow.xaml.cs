@@ -34,19 +34,11 @@ public partial class LockWindow : MicaWindow
         cts = new CancellationTokenSource();
     }
 
-    private void setStatus(string key, bool isOn)
+    private void setStatus(string text, bool isOn)
     {
         Dispatcher.Invoke(() =>
         {
-            if (key == "Insert")
-            {
-                // not sure how to properly check if overwrite or insert as every program has different behavior
-                //if (isOn) LockTextBlock.Text = "Insert mode";
-                //else LockTextBlock.Text = "Overwrite mode";
-                LockTextBlock.Text = FindResource("LockWindow_InsertPressed").ToString();
-                isOn = true;
-            }
-            else LockTextBlock.Text = key + " " + (isOn ? FindResource("LockWindow_LockOn").ToString() : FindResource("LockWindow_LockOff").ToString());
+            LockTextBlock.Text = text;
 
             LockTextBlock.FontWeight = SettingsManager.Current.LockKeysBoldUi ? FontWeights.Medium : FontWeights.Normal;
 
@@ -114,7 +106,7 @@ public partial class LockWindow : MicaWindow
         });
     }
 
-    public async Task ShowLockFlyoutAsync(string? key, bool isOn)
+    public async Task ShowLockFlyoutAsync(string? key, bool isOn, bool useFinalText = false)
     {
         if (string.IsNullOrEmpty(key)) return;
 
@@ -132,12 +124,19 @@ public partial class LockWindow : MicaWindow
                 Width = 160; // default width
             }
 
-            setStatus(key, isOn);
+            string statusText = useFinalText
+                ? key
+                : key + " " + (isOn ? FindResource("LockWindow_LockOn").ToString() : FindResource("LockWindow_LockOff").ToString());
+            setStatus(statusText, isOn);
 
             if (_isHiding)
             {
                 _isHiding = false;
                 _openedMonitor = GetPreferredTargetDisplay();
+                if (!IsVisible)
+                {
+                    Show();
+                }
                 FlyoutAnimationService.OpenAnimation(this, true, _openedMonitor);
             }
             cts?.Cancel();

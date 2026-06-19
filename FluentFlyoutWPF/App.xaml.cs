@@ -85,6 +85,9 @@ public partial class App : Application
         services.AddSingleton<IWindowManager, WindowManager>();
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<IAppShellService, AppShellService>();
+        services.AddSingleton<IExternalMediaService>(_ => FluentFlyoutWPF.Classes.ExternalMediaService.Instance);
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IPlaybackSourceResolver, PlaybackSourceResolverService>();
 
         services.AddSingleton<SettingsShellViewModel>();
         services.AddSingleton<LibraryViewModel>();
@@ -93,6 +96,8 @@ public partial class App : Application
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<EqualizerViewModel>();
         services.AddTransient<ManageLibraryViewModel>();
+        services.AddTransient<TaskbarWidgetViewModel>();
+        services.AddTransient<TaskbarVisualizerViewModel>();
 
         services.AddSingleton<MainWindow>();
         services.AddTransient<SettingsWindow>();

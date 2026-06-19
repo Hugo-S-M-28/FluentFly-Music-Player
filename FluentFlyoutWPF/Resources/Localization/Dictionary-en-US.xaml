@@ -10,7 +10,7 @@
 <System:String x:Key="AcrylicBlurOpacityDescription">Adjust the transparency strength of the Acrylic window container for the flyout and related windows (default: 175)</System:String>
 <System:String x:Key="AcrylicBlurOpacityPerk">Acrylic Blur Opacity</System:String>
 <System:String x:Key="AcrylicBlurOpacityTitle">Acrylic Blur Opacity</System:String>
-<System:String x:Key="AcrylicWindowDescription">Apply native Acrylic transparency to the flyout window container. Turning it off restores Mica and does not change the artistic background style.</System:String>
+<System:String x:Key="AcrylicWindowDescription">Apply native Acrylic transparency to the flyout container. The visual background style still renders the artwork or fallback gradient underneath; turning Acrylic off restores Mica.</System:String>
 <System:String x:Key="AcrylicWindowTitle">Acrylic Window</System:String>
 <System:String x:Key="AdvancedSettingsTitle">Advanced Settings</System:String>
 <System:String x:Key="AllFuturePremiumFeatures">All future Premium features</System:String>
@@ -235,6 +235,7 @@ or leave a review on Microsoft Store!</System:String>
 <System:String x:Key="NextUpStayDurationDescription">(default: 2000 ms)</System:String>
 <System:String x:Key="NextUpStayDurationTitle">Next Up Stay Duration</System:String>
 <System:String x:Key="NextUpWindow_UpNextText">Up next:</System:String>
+<System:String x:Key="NextUpWindow_NowPlayingText">Now playing:</System:String>
 <System:String x:Key="NextUpWindow_SongTitlePlaceholder">Song Title</System:String>
 <System:String x:Key="NextUpWindow_ArtistNamePlaceholder">Artist Name</System:String>
 <System:String x:Key="PauseOtherMediaDescription">When you play or focus on new media, other active sessions are automatically paused</System:String>
@@ -393,15 +394,15 @@ Note: As an open-source project, these features are also available for free via 
 <System:String x:Key="ManageLibrary_DeleteFolder">Remove Folder</System:String>
 <System:String x:Key="ManageLibrary_DeleteExclusion">Remove Exclusion</System:String>
 <System:String x:Key="MediaFlyout_BackgroundStyleTitle">Background Visual Style</System:String>
-<System:String x:Key="MediaFlyout_BackgroundStyleDescription">Choose how the current music's artwork (or its fallback gradient) will be processed to generate the visual background. This setting affects the main Flyout, HomePage, and TaskbarVisualizerControl.</System:String>
+<System:String x:Key="MediaFlyout_BackgroundStyleDescription">Choose how the current music's artwork (or its fallback gradient) will be processed to generate the visual background. This setting affects the main Flyout, HomePage, TaskbarWidgetControl, and TaskbarVisualizerControl.</System:String>
 <System:String x:Key="MediaFlyout_BackgroundBlurOption1Desc">No background blur. Displays the base color of the player.</System:String>
 <System:String x:Key="MediaFlyout_BackgroundBlurOption2Desc">Radial glow emulating the backlight of the artwork.</System:String>
 <System:String x:Key="MediaFlyout_BackgroundBlurOption3Desc">Soft light gradient ascending from the bottom.</System:String>
 <System:String x:Key="MediaFlyout_BackgroundBlurOption4Desc">Uniform blur across the window surface.</System:String>
 <System:String x:Key="MediaFlyout_AcrylicWindowTitle">Acrylic Window</System:String>
-<System:String x:Key="MediaFlyout_AcrylicWindowDescription">Configure native transparency for the flyout container. This setting only affects actual windows like the floating player, Next Up, and Lock Keys.</System:String>
+<System:String x:Key="MediaFlyout_AcrylicWindowDescription">Configure the native Acrylic/Mica container layer. It works with the visual background style: Acrylic lets the processed background show through at the selected opacity, while Mica uses the system base material.</System:String>
 <System:String x:Key="MediaFlyout_AcrylicPerk">Translucent flyout container</System:String>
-<System:String x:Key="MediaFlyout_AcrylicPerkDescription">When enabled, Windows applies Acrylic to the actual window frame. If disabled, the container falls back to Mica. HomePage and TaskbarVisualizerControl do not change with this setting.</System:String>
+<System:String x:Key="MediaFlyout_AcrylicPerkDescription">When enabled, Windows applies Acrylic to the real flyout container and blends its transparency with the selected visual background style. Opacity controls how strongly that Acrylic layer is perceived. If disabled, the container falls back to Mica; HomePage, TaskbarWidgetControl, and TaskbarVisualizerControl keep and refresh their own dynamic backgrounds.</System:String>
 <System:String x:Key="Lib_LoadingLibrary">Loading library...</System:String>
 <System:String x:Key="ColorPicker_SelectedColor">Selected Color</System:String>
 <System:String x:Key="ColorPicker_QuickColors">Quick Colors</System:String>

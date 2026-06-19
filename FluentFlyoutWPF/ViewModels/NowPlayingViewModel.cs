@@ -1,6 +1,3 @@
-// Copyright © 2024-2026 The FluentFlyout Authors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,6 +7,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyoutWPF.Classes.Messages;
 using FluentFlyoutWPF.Models;
 using FluentFlyoutWPF.Classes;
 using FluentFlyoutWPF.Classes.Services;
@@ -24,7 +23,15 @@ public partial class NowPlayingViewModel : ObservableObject
 {
     private bool _isUserSeeking;
     private System.Threading.CancellationTokenSource? _syncCts;
-    public UserSettings Settings => SettingsManager.Current;
+    private readonly IDialogService _dialogService;
+    private readonly IPlaybackService _playbackService;
+    private readonly IExternalMediaService _externalMediaService;
+    private readonly ISettingsService _settingsService;
+    private readonly ILibraryService _libraryService;
+    private readonly IWindowService _windowService;
+    private readonly IPlaybackSourceResolver _playbackSourceResolver;
+
+    public UserSettings Settings => _settingsService.Current;
 
     [ObservableProperty]
     private string title;
@@ -32,19 +39,31 @@ public partial class NowPlayingViewModel : ObservableObject
     [ObservableProperty]
     private string artist;
 
-    private readonly IDialogService _dialogService;
-
-    public NowPlayingViewModel(IDialogService dialogService)
+    public NowPlayingViewModel(
+        IDialogService dialogService,
+        IPlaybackService playbackService,
+        IExternalMediaService externalMediaService,
+        ISettingsService settingsService,
+        ILibraryService libraryService,
+        IWindowService windowService,
+        IPlaybackSourceResolver playbackSourceResolver)
     {
         _dialogService = dialogService;
-        MusicPlayerService.Instance.PlaybackError += async (s, msg) =>
+        _playbackService = playbackService;
+        _externalMediaService = externalMediaService;
+        _settingsService = settingsService;
+        _libraryService = libraryService;
+        _windowService = windowService;
+        _playbackSourceResolver = playbackSourceResolver;
+
+        _playbackService.PlaybackError += async (s, msg) =>
         {
             var titleStr = System.Windows.Application.Current.TryFindResource("Edit_ErrorTitle")?.ToString() ?? "Error";
             await _dialogService.ShowErrorAsync(titleStr, msg);
         };
         title = System.Windows.Application.Current.Resources["Player_NoTrack"] as string ?? "No track playing";
         artist = System.Windows.Application.Current.Resources["Player_SelectTrackMsg"] as string ?? "Select a track from the library";
-        volume = MusicPlayerService.Instance.Volume;
+        volume = _playbackService.Volume;
         playPauseSymbol = Wpf.Ui.Controls.SymbolRegular.Play24;
         playPauseCompactSymbol = Wpf.Ui.Controls.SymbolRegular.Play16;
         shuffleSymbol = Wpf.Ui.Controls.SymbolRegular.ArrowShuffleOff24;
@@ -59,34 +78,39 @@ public partial class NowPlayingViewModel : ObservableObject
         shuffleForeground = GetDefaultForeground();
         repeatForeground = GetDefaultForeground();
 
-        // Auto-sync with MusicPlayerService
-        MusicPlayerService.Instance.TrackChanged += (s, e) => SyncWithPlayer();
-        MusicPlayerService.Instance.PropertyChanged += (s, e) => 
+        // Auto-sync with PlaybackService
+        _playbackService.TrackChanged += (s, e) => SyncWithPlayer();
+        _playbackService.PropertyChanged += (s, e) => 
         {
-            if (e.PropertyName == nameof(MusicPlayerService.IsPlaying) || 
-                e.PropertyName == nameof(MusicPlayerService.CurrentTrack))
+            if (e.PropertyName == nameof(IPlaybackService.IsPlaying) || 
+                e.PropertyName == nameof(IPlaybackService.CurrentTrack))
             {
                 SyncWithPlayer();
             }
-            else if (e.PropertyName == nameof(MusicPlayerService.CurrentPosition))
+            else if (e.PropertyName == nameof(IPlaybackService.CurrentPosition))
             {
                 UpdatePosition();
             }
-            else if (e.PropertyName == nameof(MusicPlayerService.CurrentLyricLine))
+            else if (e.PropertyName == nameof(IPlaybackService.CurrentLyricLine))
             {
-                ActiveLyricLine = MusicPlayerService.Instance.CurrentLyricLine;
+                ActiveLyricLine = _playbackService.CurrentLyricLine;
                 Lyrics = ActiveLyricLine?.Text ?? string.Empty;
             }
-            else if (e.PropertyName == nameof(MusicPlayerService.Volume))
+            else if (e.PropertyName == nameof(IPlaybackService.Volume))
             {
-                Volume = MusicPlayerService.Instance.Volume;
+                Volume = _playbackService.Volume;
             }
         };
 
         // Auto-sync with ExternalMediaService
-        ExternalMediaService.Instance.MediaPropertyChanged += (session, props) => SyncWithPlayer();
-        ExternalMediaService.Instance.PlaybackStateChanged += (session, info) => SyncWithPlayer();
-        ExternalMediaService.Instance.TimelinePropertyChanged += (session, props) => UpdatePosition();
+        _externalMediaService.MediaPropertyChanged += (session, props) => SyncWithPlayer();
+        _externalMediaService.PlaybackStateChanged += (session, info) => SyncWithPlayer();
+        _externalMediaService.TimelinePropertyChanged += (session, props) => UpdatePosition();
+
+        WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
+        {
+            System.Windows.Application.Current?.Dispatcher.Invoke(UpdateForegrounds);
+        });
 
         SyncWithPlayer();
     }
@@ -108,11 +132,11 @@ public partial class NowPlayingViewModel : ObservableObject
         await Task.Yield();
         if (ct.IsCancellationRequested) return;
 
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
 
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            var track = MusicPlayerService.Instance.CurrentTrack;
+            var track = _playbackService.CurrentTrack;
             if (track != null)
             {
                 if (ct.IsCancellationRequested) return;
@@ -120,22 +144,22 @@ public partial class NowPlayingViewModel : ObservableObject
                 Artist = track.FullArtistDisplay;
                 HasTrack = true;
                 CurrentTrack = track;
-                CoverImage = track.AlbumArt ?? LibraryManager.Instance.GetAlbumArt(track, 400);
+                CoverImage = track.AlbumArt ?? _libraryService.GetAlbumArt(track, 400);
                 CoverUrl = track.CoverUrl;
                 BackdropImage = CoverImage ?? MediaBackdropStyleService.GetFallbackImageSource();
-                IsPlaying = MusicPlayerService.Instance.IsPlaying;
+                IsPlaying = _playbackService.IsPlaying;
                 TotalTime = track.Duration.ToString(@"mm\:ss");
                 SeekMaximum = track.Duration.TotalSeconds;
-                HasLyrics = SyncLyricsCollection(MusicPlayerService.Instance.CurrentLyrics);
-                ActiveLyricLine = MusicPlayerService.Instance.CurrentLyricLine;
+                HasLyrics = SyncLyricsCollection(_playbackService.CurrentLyrics);
+                ActiveLyricLine = _playbackService.CurrentLyricLine;
                 Lyrics = ActiveLyricLine?.Text ?? string.Empty;
                 UpdatePosition();
                 UpdatePlaybackVisualState(IsPlaying);
                 UpdateShuffleRepeatState(
-                    SettingsManager.Current.ShuffleEnabled || IsShuffleEnabled,
-                    MusicPlayerService.Instance.IsShuffleEnabled,
-                    SettingsManager.Current.RepeatEnabled || RepeatMode != RepeatMode.None,
-                    MusicPlayerService.Instance.RepeatMode);
+                    Settings.ShuffleEnabled || IsShuffleEnabled,
+                    _playbackService.IsShuffleEnabled,
+                    Settings.RepeatEnabled || RepeatMode != RepeatMode.None,
+                    _playbackService.RepeatMode);
                 return;
             }
         }
@@ -159,17 +183,25 @@ public partial class NowPlayingViewModel : ObservableObject
                 IsPlaying = props.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
                 
                 var timeline = session.ControlSession.GetTimelineProperties();
-                TotalTime = timeline.EndTime.ToString(@"mm\:ss");
-                SeekMaximum = timeline.EndTime.TotalSeconds;
+                if (timeline != null)
+                {
+                    TotalTime = timeline.EndTime.ToString(@"mm\:ss");
+                    SeekMaximum = timeline.EndTime.TotalSeconds;
+                }
+                else
+                {
+                    TotalTime = "0:00";
+                    SeekMaximum = 100;
+                }
                 HasLyrics = SyncLyricsCollection([]);
                 ActiveLyricLine = null;
                 Lyrics = string.Empty;
                 UpdatePosition();
                 UpdatePlaybackVisualState(IsPlaying);
                 UpdateShuffleRepeatState(
-                    SettingsManager.Current.ShuffleEnabled,
+                    Settings.ShuffleEnabled,
                     props.IsShuffleActive ?? false,
-                    SettingsManager.Current.RepeatEnabled,
+                    Settings.RepeatEnabled,
                     props.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track
                         ? RepeatMode.One
                         : props.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List
@@ -196,7 +228,7 @@ public partial class NowPlayingViewModel : ObservableObject
         ActiveLyricLine = null;
         Lyrics = string.Empty;
         UpdatePlaybackVisualState(false, false);
-        UpdateShuffleRepeatState(SettingsManager.Current.ShuffleEnabled, false, SettingsManager.Current.RepeatEnabled, RepeatMode.None);
+        UpdateShuffleRepeatState(Settings.ShuffleEnabled, false, Settings.RepeatEnabled, RepeatMode.None);
     }
 
     public void UpdatePosition()
@@ -206,10 +238,10 @@ public partial class NowPlayingViewModel : ObservableObject
             return;
         }
 
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            var pos = MusicPlayerService.Instance.CurrentPosition;
+            var pos = _playbackService.CurrentPosition;
             SeekValue = pos.TotalSeconds;
             CurrentTime = pos.ToString(@"mm\:ss");
             CurrentPositionTimeSpan = pos;
@@ -218,9 +250,18 @@ public partial class NowPlayingViewModel : ObservableObject
         {
             var session = resolved.ExternalSession;
             var timeline = session.ControlSession.GetTimelineProperties();
-            SeekValue = timeline.Position.TotalSeconds;
-            CurrentTime = timeline.Position.ToString(@"mm\:ss");
-            CurrentPositionTimeSpan = timeline.Position;
+            if (timeline != null)
+            {
+                SeekValue = timeline.Position.TotalSeconds;
+                CurrentTime = timeline.Position.ToString(@"mm\:ss");
+                CurrentPositionTimeSpan = timeline.Position;
+            }
+            else
+            {
+                SeekValue = 0;
+                CurrentTime = "0:00";
+                CurrentPositionTimeSpan = TimeSpan.Zero;
+            }
         }
     }
 
@@ -258,12 +299,12 @@ public partial class NowPlayingViewModel : ObservableObject
 
     public void CommitSeek()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            if (MusicPlayerService.Instance.CurrentTrack != null)
+            if (_playbackService.CurrentTrack != null)
             {
-                MusicPlayerService.Instance.Seek(TimeSpan.FromSeconds(SeekValue));
+                _playbackService.Seek(TimeSpan.FromSeconds(SeekValue));
             }
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
@@ -279,10 +320,10 @@ public partial class NowPlayingViewModel : ObservableObject
         switch (target)
         {
             case LyricLine line:
-                MusicPlayerService.Instance.Seek(line.Time);
+                _playbackService.Seek(line.Time);
                 break;
             case LyricWord word:
-                MusicPlayerService.Instance.Seek(word.Time);
+                _playbackService.Seek(word.Time);
                 break;
         }
     }
@@ -338,6 +379,18 @@ public partial class NowPlayingViewModel : ObservableObject
                 RepeatIconOpacity = 0.4;
                 break;
         }
+
+        UpdateForegrounds();
+    }
+
+    public void UpdateForegrounds()
+    {
+        var dominantBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
+        var accentBrush = AccentColorResolver.ResolveAccentBrush(dominantBrush);
+        var defaultBrush = GetDefaultForeground();
+
+        ShuffleForeground = IsShuffleEnabled ? accentBrush : defaultBrush;
+        RepeatForeground = RepeatMode == RepeatMode.None ? defaultBrush : accentBrush;
     }
 
     public void ApplyRepeatShuffleForegrounds(Brush activeBrush, Brush inactiveBrush)
@@ -483,19 +536,19 @@ public partial class NowPlayingViewModel : ObservableObject
 
     partial void OnVolumeChanged(double value)
     {
-        if (Math.Abs(MusicPlayerService.Instance.Volume - value) > 0.001)
+        if (Math.Abs(_playbackService.Volume - value) > 0.001)
         {
-            MusicPlayerService.Instance.Volume = (float)value;
+            _playbackService.Volume = (float)value;
         }
     }
 
     [RelayCommand]
     private async Task PlayPause()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            MusicPlayerService.Instance.TogglePlayPause();
+            _playbackService.TogglePlayPause();
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
@@ -511,10 +564,10 @@ public partial class NowPlayingViewModel : ObservableObject
     [RelayCommand]
     private async Task SkipNext()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            MusicPlayerService.Instance.PlayNext();
+            _playbackService.PlayNext();
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
@@ -525,10 +578,10 @@ public partial class NowPlayingViewModel : ObservableObject
     [RelayCommand]
     private async Task SkipPrevious()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            MusicPlayerService.Instance.PlayPrevious();
+            _playbackService.PlayPrevious();
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
@@ -539,11 +592,11 @@ public partial class NowPlayingViewModel : ObservableObject
     [RelayCommand]
     private async Task ToggleShuffle()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            MusicPlayerService.Instance.IsShuffleEnabled = !MusicPlayerService.Instance.IsShuffleEnabled;
-            IsShuffleEnabled = MusicPlayerService.Instance.IsShuffleEnabled;
+            _playbackService.IsShuffleEnabled = !_playbackService.IsShuffleEnabled;
+            IsShuffleEnabled = _playbackService.IsShuffleEnabled;
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
@@ -556,18 +609,18 @@ public partial class NowPlayingViewModel : ObservableObject
     [RelayCommand]
     private async Task ToggleRepeat()
     {
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            var mode = MusicPlayerService.Instance.RepeatMode;
-            MusicPlayerService.Instance.RepeatMode = mode switch
+            var mode = _playbackService.RepeatMode;
+            _playbackService.RepeatMode = mode switch
             {
                 RepeatMode.None => RepeatMode.All,
                 RepeatMode.All => RepeatMode.One,
                 RepeatMode.One => RepeatMode.None,
                 _ => RepeatMode.None
             };
-            RepeatMode = MusicPlayerService.Instance.RepeatMode;
+            RepeatMode = _playbackService.RepeatMode;
         }
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
@@ -591,15 +644,15 @@ public partial class NowPlayingViewModel : ObservableObject
     [RelayCommand]
     private void EditLyrics()
     {
-        if (MusicPlayerService.Instance.CurrentTrack != null)
+        if (_playbackService.CurrentTrack != null)
         {
-            ServiceLocator.Windows.ShowEditTrack(MusicPlayerService.Instance.CurrentTrack, true);
+            _windowService.ShowEditTrack(_playbackService.CurrentTrack, true);
         }
     }
 
     [RelayCommand]
     private void OpenEqualizer()
     {
-        ServiceLocator.Windows.ShowEqualizer();
+        _windowService.ShowEqualizer();
     }
 }

@@ -49,12 +49,34 @@ public partial class SettingsShellViewModel : ObservableObject
             if (e.PropertyName == nameof(UserSettings.IsPremiumUnlocked)) OnPropertyChanged(nameof(IsPremiumUnlocked));
             if (e.PropertyName == nameof(UserSettings.PremiumPrice)) OnPropertyChanged(nameof(PremiumPrice));
             if (e.PropertyName == nameof(UserSettings.TaskbarVisualizerPosition)) OnPropertyChanged(nameof(TaskbarVisualizerPosition));
+
+            if (e.PropertyName == nameof(UserSettings.Startup))
+            {
+                SetStartup(Settings.Startup);
+            }
+            if (e.PropertyName == nameof(UserSettings.NIconHide))
+            {
+                SetNIconHide(Settings.NIconHide);
+            }
+        };
+
+        WindowBlurHelper.AcrylicSupportChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(IsAcrylicSupported));
+            OnPropertyChanged(nameof(AcrylicUnsupportedToolTip));
         };
     }
 
     public bool IsStoreVersion => Settings.IsStoreVersion;
     public bool IsPremiumUnlocked => Settings.IsPremiumUnlocked;
     public string PremiumPrice => Settings.PremiumPrice;
+    public bool IsAcrylicSupported => WindowBlurHelper.IsAcrylicSupported;
+    public string AcrylicUnsupportedToolTip =>
+        IsAcrylicSupported
+            ? string.Empty
+            : WindowBlurHelper.LastAcrylicFailureMessage is { Length: > 0 } message
+            ? $"Acrylic no esta disponible; se usara Mica. Detalle: {message}"
+            : "Acrylic no esta disponible en esta version/configuracion de Windows; se usara Mica.";
 
     public int TaskbarVisualizerPosition
     {
@@ -238,9 +260,19 @@ public partial class SettingsShellViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void ViewLogs()
+    public async Task ViewLogsAsync()
     {
-        _appShellService.OpenLogsFolder();
+        try
+        {
+            _appShellService.OpenLogsFolder();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to open logs folder");
+            var title = LocalizationManager.GetString("Edit_ErrorTitle") ?? "Error";
+            var message = $"{LocalizationManager.GetString("ViewLogsDescription") ?? "No se pudo abrir la carpeta de registros"}: {ex.Message}";
+            await _dialogService.ShowErrorAsync(title, message);
+        }
     }
 
     [RelayCommand]

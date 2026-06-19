@@ -182,7 +182,7 @@
                             </StackPanel>
                         </ui:CardControl.Header>
                         <ComboBox Name="LockKeysMonitorPreferenceComboBox"
-                                  SelectedIndex="{Binding LockKeysMonitorPreference}"
+                                  SelectedIndex="{Binding LockKeysMonitorPreference, Mode=TwoWay}"
                                   Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}">
                             <ComboBoxItem Content="{DynamicResource DefaultLockLayoutPosition}"/>
                             <ComboBoxItem Content="{DynamicResource MonitorWithFocusedWindow}"/>

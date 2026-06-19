@@ -10,12 +10,22 @@ using System.Windows.Media.Imaging;
 
 namespace FluentFlyoutWPF.Windows;
 
+public enum NextUpDisplayMode
+{
+    UpNext,
+    NowPlaying
+}
+
 /// <summary>
 /// Interaction logic for NextUpWindow.xaml
 /// </summary>
 public partial class NextUpWindow : MicaWindow
 {
-    public NextUpWindow(SettingsShellViewModel settingsViewModel, string title, string artist, BitmapImage thumbnail)
+    private readonly long _openedTick = System.Environment.TickCount64;
+    private bool _isClosing = false;
+    private readonly object _closeLock = new();
+
+    public NextUpWindow(SettingsShellViewModel settingsViewModel, string title, string artist, BitmapImage? thumbnail, NextUpDisplayMode displayMode = NextUpDisplayMode.UpNext, bool autoClose = true)
     {
         DataContext = settingsViewModel;
         WindowStartupLocation = WindowStartupLocation.Manual;
@@ -27,6 +37,15 @@ public partial class NextUpWindow : MicaWindow
         CustomWindowChrome.CaptionHeight = 0;
 
         WindowBlurHelper.ApplyWindowBackdrop(this);
+
+        if (displayMode == NextUpDisplayMode.NowPlaying)
+        {
+            UpNextTextBlock.Text = FindResource("NextUpWindow_NowPlayingText") as string ?? "Now playing:";
+        }
+        else
+        {
+            UpNextTextBlock.Text = FindResource("NextUpWindow_UpNextText") as string ?? "Up next:";
+        }
 
         var upNextWidth = StringWidth.GetStringWidth(UpNextTextBlock.Text);
         var titleWidth = StringWidth.GetStringWidth(title);
@@ -43,25 +62,71 @@ public partial class NextUpWindow : MicaWindow
 
         FlyoutAnimationService.OpenAnimation(this);
 
-        async Task WaitAsync()
+        if (autoClose)
         {
-            try
+            _ = Task.Run(async () =>
             {
                 await Task.Delay(SettingsManager.Current.NextUpDuration);
-                FlyoutAnimationService.CloseAnimation(this);
-                await Task.Delay(FlyoutAnimationService.GetDuration());
-                Close();
-            }
-            catch (Exception ex)
+                await CloseWithAnimationAsync(ignoreSafeguard: true);
+            });
+        }
+    }
+
+    public async Task CloseWithAnimationAsync(bool ignoreSafeguard = false)
+    {
+        lock (_closeLock)
+        {
+            if (_isClosing) return;
+            _isClosing = true;
+        }
+
+        if (!ignoreSafeguard)
+        {
+            long elapsed = System.Environment.TickCount64 - _openedTick;
+            long minDuration = SettingsManager.Current.NextUpDuration;
+            if (elapsed < minDuration)
             {
-                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Error in NextUpWindow close delay");
+                int delay = (int)(minDuration - elapsed);
+                if (delay > 0)
+                {
+                    await Task.Delay(delay);
+                }
             }
         }
 
-        _ = WaitAsync();
+        if (!Dispatcher.CheckAccess())
+        {
+            await Dispatcher.InvokeAsync(async () => await CloseWithAnimationInternalAsync());
+        }
+        else
+        {
+            await CloseWithAnimationInternalAsync();
+        }
     }
 
-    public void UpdateThumbnail(BitmapImage thumbnail)
+    private async Task CloseWithAnimationInternalAsync()
+    {
+        try
+        {
+            FlyoutAnimationService.CloseAnimation(this);
+            await Task.Delay(FlyoutAnimationService.GetDuration());
+            Close();
+        }
+        catch (System.Exception ex)
+        {
+            NLog.LogManager.GetCurrentClassLogger().Error(ex, "Error in NextUpWindow close animation");
+            try
+            {
+                Close();
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+    }
+
+    public void UpdateThumbnail(BitmapImage? thumbnail)
     {
         SongImage.ImageSource = thumbnail;
         if (SongImage.ImageSource == null) SongImagePlaceholder.Visibility = Visibility.Visible;
@@ -69,8 +134,9 @@ public partial class NextUpWindow : MicaWindow
     }
     private void ApplyAccentColor(System.Windows.Media.SolidColorBrush? brush)
     {
+        bool isDark = ThemeResourceHelper.IsDarkTheme();
         bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
-        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
+        var activeBrush = useAccent ? AccentColorResolver.ResolveReadableAccentBrush(brush, isDark) : null;
 
         if (useAccent && activeBrush != null)
         {

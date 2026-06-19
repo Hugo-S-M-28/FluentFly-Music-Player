@@ -1,6 +1,8 @@
 using FluentFlyout.Classes.Settings;
 using FluentFlyout.Classes.Utils;
 using FluentFlyoutWPF.Classes.Utils;
+using CommunityToolkit.Mvvm.Messaging;
+using FluentFlyoutWPF.Classes.Messages;
 using Microsoft.Win32;
 using NAudio.CoreAudioApi;
 using NAudio.Dsp;
@@ -132,6 +134,11 @@ namespace FluentFlyoutWPF.Classes
             SetBarCountInternal(SettingsManager.Current.TaskbarVisualizerBarCount);
             AudioDeviceMonitor.Instance.DefaultDeviceChanged += OnDefaultDeviceChanged;
             TryRegisterSystemEvents();
+
+            WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
+            {
+                _cachedAccentBrush = null;
+            });
         }
 
         private void TryRegisterSystemEvents()
@@ -906,6 +913,7 @@ namespace FluentFlyoutWPF.Classes
         {
             Stop();
 
+            WeakReferenceMessenger.Default.Unregister<UpdateAccentColorMessage>(this);
             AudioDeviceMonitor.Instance.DefaultDeviceChanged -= OnDefaultDeviceChanged;
             TryUnregisterSystemEvents();
 

@@ -168,7 +168,7 @@ public class ResponsiveLyricsContentWidthConverter : IValueConverter
                 : 72.0;
 
             double targetWidth = width - padding;
-            return Math.Clamp(targetWidth, 280.0, 1200.0);
+            return Math.Clamp(targetWidth, 280.0, 800.0);
         }
 
         return 640.0;

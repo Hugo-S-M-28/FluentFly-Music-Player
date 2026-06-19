@@ -131,4 +131,35 @@ public static class AccentColorResolver
             return false;
         }
     }
+
+    public static SolidColorBrush ResolveReadableAccentBrush(SolidColorBrush? brush, bool isDarkTheme)
+    {
+        var activeBrush = ResolveAccentBrush(brush);
+        return EnsureReadableBrush(activeBrush, isDarkTheme);
+    }
+
+    public static SolidColorBrush EnsureReadableBrush(SolidColorBrush inputBrush, bool isDarkTheme)
+    {
+        var color = inputBrush.Color;
+        double luminance = ((0.2126 * color.R) + (0.7152 * color.G) + (0.0722 * color.B)) / 255d;
+
+        if (isDarkTheme)
+        {
+            if (luminance < 0.16)
+            {
+                return Brushes.White;
+            }
+        }
+        else
+        {
+            if (luminance > 0.23)
+            {
+                var newBrush = new SolidColorBrush(Color.FromRgb(18, 18, 18));
+                newBrush.Freeze();
+                return newBrush;
+            }
+        }
+
+        return inputBrush;
+    }
 }

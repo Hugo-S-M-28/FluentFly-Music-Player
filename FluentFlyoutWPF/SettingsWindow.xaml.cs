@@ -243,10 +243,10 @@ public partial class SettingsWindow : FluentWindow
             return;
 
         if (e.OriginalSource is DependencyObject source &&
-            (FindVisualParent<Slider>(source) != null ||
-             FindVisualParent<ComboBox>(source) != null ||
-             FindVisualParent<ScrollBar>(source) != null ||
-             FindVisualParent<ListBox>(source) != null))
+            (VisualTreeHelperEx.FindAncestor<Slider>(source) != null ||
+             VisualTreeHelperEx.FindAncestor<ComboBox>(source) != null ||
+             VisualTreeHelperEx.FindAncestor<ScrollBar>(source) != null ||
+             VisualTreeHelperEx.FindAncestor<ListBox>(source) != null))
         {
             return;
         }
@@ -288,19 +288,6 @@ public partial class SettingsWindow : FluentWindow
                 Logger.Error(ex, "Error syncing settings page scroll viewport");
             }
         }), System.Windows.Threading.DispatcherPriority.Loaded);
-    }
-
-    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
-    {
-        while (child != null)
-        {
-            if (child is T typed)
-                return typed;
-
-            child = VisualTreeHelper.GetParent(child);
-        }
-
-        return null;
     }
 
     private void ApplyResolvedAccentToNavigation()

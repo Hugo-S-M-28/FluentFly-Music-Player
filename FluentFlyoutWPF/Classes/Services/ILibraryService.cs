@@ -10,4 +10,5 @@ public interface ILibraryService
     event EventHandler<TrackModel>? TrackMetadataUpdated;
     Task InitializeAsync();
     Task ScanLibraryAsync();
+    System.Windows.Media.Imaging.BitmapImage? GetAlbumArt(TrackModel track, int size);
 }

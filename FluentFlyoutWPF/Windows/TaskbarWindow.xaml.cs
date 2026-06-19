@@ -26,6 +26,7 @@ public partial class TaskbarWindow : Window
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly DispatcherTimer _timer;
+    private const int TaskbarWidgetVisualizerGap = 4;
     private readonly int _nativeWidgetsPadding = 216;
     private readonly double _scale = 0.9;
 
@@ -40,8 +41,11 @@ public partial class TaskbarWindow : Window
     private GlobalSystemMediaTransportControlsSessionPlaybackStatus? _lastPlaybackStatus;
     private DispatcherTimer? _autoHideTimer;
 
-    public TaskbarWindow(SettingsShellViewModel settingsViewModel)
+    public NowPlayingViewModel NowPlaying { get; }
+
+    public TaskbarWindow(SettingsShellViewModel settingsViewModel, NowPlayingViewModel nowPlayingViewModel)
     {
+        NowPlaying = nowPlayingViewModel;
         WindowHelper.SetNoActivate(this);
         InitializeComponent();
         WindowHelper.SetTopmost(this);
@@ -64,17 +68,44 @@ public partial class TaskbarWindow : Window
     private void ApplyTaskbarTheme()
     {
         var theme = Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme();
-        
-        foreach (var dict in this.Resources.MergedDictionaries)
+        ApplyThemeToDictionary(this.Resources, theme);
+        ApplyThemeToTree(this, theme);
+    }
+
+    private void ApplyThemeToDictionary(ResourceDictionary dictionary, Wpf.Ui.Appearance.ApplicationTheme theme)
+    {
+        foreach (var mergedDictionary in dictionary.MergedDictionaries)
         {
-            if (dict.GetType().Name == "ThemesDictionary")
+            if (mergedDictionary.GetType().Name == "ThemesDictionary")
             {
-                var themeProp = dict.GetType().GetProperty("Theme");
-                if (themeProp != null)
-                {
-                    themeProp.SetValue(dict, theme);
-                }
-                break;
+                var themeProperty = mergedDictionary.GetType().GetProperty("Theme");
+                themeProperty?.SetValue(mergedDictionary, theme);
+            }
+
+            if (mergedDictionary.MergedDictionaries.Count > 0)
+            {
+                ApplyThemeToDictionary(mergedDictionary, theme);
+            }
+        }
+    }
+
+    private void ApplyThemeToTree(DependencyObject root, Wpf.Ui.Appearance.ApplicationTheme theme)
+    {
+        if (root == null) return;
+
+        if (root is FrameworkElement frameworkElement)
+        {
+            if (frameworkElement.Resources != null && frameworkElement.Resources.MergedDictionaries.Count > 0)
+            {
+                ApplyThemeToDictionary(frameworkElement.Resources, theme);
+            }
+        }
+
+        foreach (var child in LogicalTreeHelper.GetChildren(root))
+        {
+            if (child is DependencyObject dependencyObject)
+            {
+                ApplyThemeToTree(dependencyObject, theme);
             }
         }
     }
@@ -375,6 +406,11 @@ public partial class TaskbarWindow : Window
             if (dpiScale <= 0)
                 return;
 
+            if (_lastSelectedMonitor != SettingsManager.Current.TaskbarWidgetSelectedMonitor)
+            {
+                ResetTaskbarElementCaches();
+            }
+
             // Get Taskbar dimensions
             RECT taskbarRect;
 
@@ -459,7 +495,7 @@ public partial class TaskbarWindow : Window
                 widgetLeft = 20;
 
                 if (SettingsManager.Current.TaskbarVisualizerEnabled && SettingsManager.Current.TaskbarVisualizerPosition == 0)
-                    widgetLeft += (int)(TaskbarVisualizer.Width * dpiScale) + 4;
+                    widgetLeft += (int)((TaskbarVisualizer.Width + TaskbarWidgetVisualizerGap) * dpiScale);
 
                 if (!SettingsManager.Current.TaskbarWidgetPadding)
                     break;
@@ -489,18 +525,37 @@ public partial class TaskbarWindow : Window
                 widgetLeft = (taskbarRect.Right - taskbarRect.Left - physicalWidth) / 2;
 
                 if (SettingsManager.Current.TaskbarVisualizerEnabled)
+                {
+                    int visualizerWidthPhysical = (int)(TaskbarVisualizer.Width * dpiScale);
+                    int gapPhysical = (int)(TaskbarWidgetVisualizerGap * dpiScale);
                     if (SettingsManager.Current.TaskbarVisualizerPosition == 0)
-                        widgetLeft += (int)(TaskbarVisualizer.Width * dpiScale) / 2 + 4;
+                        widgetLeft += (visualizerWidthPhysical + gapPhysical) / 2;
                     else
-                        widgetLeft -= (int)(TaskbarVisualizer.Width * dpiScale) / 2 - 4;
+                        widgetLeft -= (visualizerWidthPhysical + gapPhysical) / 2;
+                }
+
+                if (SettingsManager.Current.TaskbarWidgetPadding)
+                {
+                    widgetLeft = await ApplyCenterAutomaticPaddingAsync(
+                        taskbarHandle,
+                        taskbarRect,
+                        widgetLeft,
+                        widgetTop,
+                        physicalWidth,
+                        physicalHeight,
+                        dpiScale,
+                        isMainTaskbarSelected);
+                }
 
                 break;
 
             case 2: // right aligned next to system tray with tiny bit of padding
                 try
                 {
+                    int visualizerWidthPhys = (int)(TaskbarVisualizer.Width * dpiScale);
+                    int gapPhys = (int)(TaskbarWidgetVisualizerGap * dpiScale);
                     if (SettingsManager.Current.TaskbarVisualizerEnabled && SettingsManager.Current.TaskbarVisualizerPosition == 1)
-                        widgetLeft -= (int)(TaskbarVisualizer.Width * dpiScale) - 4;
+                        widgetLeft -= (visualizerWidthPhys + gapPhys);
 
                     // try to position next to widgets button if enabled
                     if (SettingsManager.Current.TaskbarWidgetPadding)
@@ -569,15 +624,186 @@ public partial class TaskbarWindow : Window
                 break;
         }
 
-        widgetLeft += SettingsManager.Current.TaskbarWidgetManualPadding;
+        widgetLeft += (int)Math.Round(SettingsManager.Current.TaskbarWidgetManualPadding * dpiScale);
 
         // Set widget position within canvas
         Canvas.SetLeft(Widget, widgetLeft / dpiScale);
         Canvas.SetTop(Widget, widgetTop / dpiScale);
-        Widget.Width = physicalWidth / dpiScale;
-        Widget.Height = physicalHeight / dpiScale;
+        Widget.Width = logicalWidth;
+        Widget.Height = logicalHeight;
 
-        return new Rect(Canvas.GetLeft(Widget) * dpiScale, Canvas.GetTop(Widget) * dpiScale, Widget.Width * dpiScale, Widget.Height * dpiScale);
+        return new Rect(Canvas.GetLeft(Widget) * dpiScale, Canvas.GetTop(Widget) * dpiScale, Widget.Width * dpiScale * _scale, Widget.Height * dpiScale);
+    }
+
+    private async Task<int> ApplyCenterAutomaticPaddingAsync(
+        IntPtr taskbarHandle,
+        RECT taskbarRect,
+        int widgetLeft,
+        int widgetTop,
+        int widgetWidth,
+        int widgetHeight,
+        double dpiScale,
+        bool isMainTaskbarSelected)
+    {
+        int taskbarWidth = taskbarRect.Right - taskbarRect.Left;
+        Rect groupBounds = GetWidgetGroupBounds(widgetLeft, widgetTop, widgetWidth, widgetHeight, dpiScale);
+
+        var (hasLeftReserved, leftReserved) = await TryGetReservedTaskbarBoundsAsync(
+            taskbarHandle,
+            taskbarRect,
+            isMainTaskbarSelected,
+            preferLeftSide: true);
+        var (hasRightReserved, rightReserved) = await TryGetReservedTaskbarBoundsAsync(
+            taskbarHandle,
+            taskbarRect,
+            isMainTaskbarSelected,
+            preferLeftSide: false);
+
+        bool leftCollision = hasLeftReserved && RectsOverlapHorizontally(groupBounds, leftReserved);
+        bool rightCollision = hasRightReserved && RectsOverlapHorizontally(groupBounds, rightReserved);
+
+        if (leftCollision && rightCollision)
+        {
+            Logger.Warn("Taskbar widget center padding collided with reserved taskbar areas on both sides.");
+        }
+
+        if (leftCollision)
+        {
+            widgetLeft += (int)Math.Ceiling(leftReserved.Right + 2 - groupBounds.Left);
+            groupBounds = GetWidgetGroupBounds(widgetLeft, widgetTop, widgetWidth, widgetHeight, dpiScale);
+        }
+
+        if (rightCollision || (hasRightReserved && RectsOverlapHorizontally(groupBounds, rightReserved)))
+        {
+            widgetLeft -= (int)Math.Ceiling(groupBounds.Right - (rightReserved.Left - 1));
+            groupBounds = GetWidgetGroupBounds(widgetLeft, widgetTop, widgetWidth, widgetHeight, dpiScale);
+        }
+
+        if (groupBounds.Left < 0)
+        {
+            widgetLeft += (int)Math.Ceiling(-groupBounds.Left);
+            groupBounds = GetWidgetGroupBounds(widgetLeft, widgetTop, widgetWidth, widgetHeight, dpiScale);
+        }
+
+        if (groupBounds.Right > taskbarWidth)
+        {
+            widgetLeft -= (int)Math.Ceiling(groupBounds.Right - taskbarWidth);
+        }
+
+        return widgetLeft;
+    }
+
+    private Rect GetWidgetGroupBounds(int widgetLeft, int widgetTop, int widgetWidth, int widgetHeight, double dpiScale)
+    {
+        double left = widgetLeft;
+        double right = widgetLeft + widgetWidth;
+
+        if (SettingsManager.Current.TaskbarVisualizerEnabled)
+        {
+            int visualizerWidth = (int)Math.Round(TaskbarVisualizer.Width * dpiScale);
+            int gap = (int)Math.Round(TaskbarWidgetVisualizerGap * dpiScale);
+
+            if (SettingsManager.Current.TaskbarVisualizerPosition == 0)
+            {
+                left -= visualizerWidth + gap;
+            }
+            else
+            {
+                right += visualizerWidth + gap;
+            }
+        }
+
+        return new Rect(left, widgetTop, Math.Max(0, right - left), widgetHeight);
+    }
+
+    private async Task<(bool found, Rect bounds)> TryGetReservedTaskbarBoundsAsync(
+        IntPtr taskbarHandle,
+        RECT taskbarRect,
+        bool isMainTaskbarSelected,
+        bool preferLeftSide)
+    {
+        int taskbarCenter = (taskbarRect.Right - taskbarRect.Left) / 2;
+
+        try
+        {
+            var (foundWidget, widgetRect) = await GetTaskbarWidgetRectAsync(taskbarHandle);
+            if (foundWidget)
+            {
+                Rect relativeWidgetRect = ToRelativeTaskbarRect(widgetRect, taskbarRect);
+                bool widgetIsLeft = relativeWidgetRect.Right < taskbarCenter;
+                bool widgetIsRight = relativeWidgetRect.Left > taskbarCenter;
+
+                if ((preferLeftSide && widgetIsLeft) || (!preferLeftSide && widgetIsRight))
+                {
+                    return (true, relativeWidgetRect);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Failed to query Widgets button bounds for taskbar padding.");
+            _widgetElement = null;
+        }
+
+        if (preferLeftSide)
+        {
+            return (false, Rect.Empty);
+        }
+
+        try
+        {
+            if (!isMainTaskbarSelected)
+            {
+                var (foundTray, secondaryTrayRect) = await GetSystemTrayRectAsync(taskbarHandle);
+                return foundTray
+                    ? (true, ToRelativeTaskbarRect(secondaryTrayRect, taskbarRect))
+                    : (false, Rect.Empty);
+            }
+
+            if (_trayHandle == IntPtr.Zero || _lastSelectedMonitor != SettingsManager.Current.TaskbarWidgetSelectedMonitor)
+            {
+                _trayHandle = FindWindowEx(taskbarHandle, IntPtr.Zero, "TrayNotifyWnd", null);
+            }
+
+            if (_trayHandle == IntPtr.Zero)
+            {
+                return (false, Rect.Empty);
+            }
+
+            GetWindowRect(_trayHandle, out RECT trayRectNative);
+            Rect mainTrayRect = new(trayRectNative.Left, trayRectNative.Top, trayRectNative.Right - trayRectNative.Left, trayRectNative.Bottom - trayRectNative.Top);
+            return (true, ToRelativeTaskbarRect(mainTrayRect, taskbarRect));
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Failed to query system tray bounds for taskbar padding.");
+            _trayElement = null;
+            _trayHandle = IntPtr.Zero;
+            return (false, Rect.Empty);
+        }
+    }
+
+    private static Rect ToRelativeTaskbarRect(Rect absoluteRect, RECT taskbarRect)
+    {
+        return new Rect(
+            absoluteRect.Left - taskbarRect.Left,
+            absoluteRect.Top - taskbarRect.Top,
+            absoluteRect.Width,
+            absoluteRect.Height);
+    }
+
+    private static bool RectsOverlapHorizontally(Rect first, Rect second)
+    {
+        return first.Left < second.Right && first.Right > second.Left;
+    }
+
+    private void ResetTaskbarElementCaches()
+    {
+        _trayHandle = IntPtr.Zero;
+        _widgetElement = null;
+        _trayElement = null;
+        _taskbarFrameElement = null;
+        _pendingAutomationTasks.Clear();
     }
 
     private Rect PositionVisualizer(IntPtr taskbarHandle, RECT taskbarRect, double dpiScale, bool isMainTaskbarSelected)
@@ -588,15 +814,21 @@ public partial class TaskbarWindow : Window
         int taskbarHeight = taskbarRect.Bottom - taskbarRect.Top;
         int visualizerTop = (taskbarHeight - (int)(TaskbarVisualizer.Height * dpiScale)) / 2 - 1; // -1 to align because Windows taskbar positions native elements slightly above the exact center
 
+        int visualizerWidthPhysical = (int)(TaskbarVisualizer.Width * dpiScale);
+        int gapPhysical = (int)(TaskbarWidgetVisualizerGap * dpiScale);
+
+        int widgetLeftPhysical = (int)(Canvas.GetLeft(Widget) * dpiScale);
+        int visualWidgetWidth = (int)(Widget.Width * _scale * dpiScale);
+
         int visualizerLeft = 0;
         switch (SettingsManager.Current.TaskbarVisualizerPosition)
         {
             case 0: // left aligned next to widget
-                visualizerLeft = (int)(Canvas.GetLeft(Widget) * dpiScale) - (int)(TaskbarVisualizer.Width * dpiScale);
+                visualizerLeft = widgetLeftPhysical - visualizerWidthPhysical - gapPhysical;
                 break;
 
             case 1: // right aligned next to widget
-                visualizerLeft = (int)(Canvas.GetLeft(Widget) * dpiScale) + (int)(Widget.Width * dpiScale);
+                visualizerLeft = widgetLeftPhysical + visualWidgetWidth + gapPhysical;
                 break;
         }
 
@@ -609,6 +841,12 @@ public partial class TaskbarWindow : Window
 
     public void UpdateUi(string title, string artist, BitmapImage? icon, GlobalSystemMediaTransportControlsSessionPlaybackStatus? playbackStatus, GlobalSystemMediaTransportControlsSessionPlaybackControls? playbackControls = null)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => UpdateUi(title, artist, icon, playbackStatus, playbackControls));
+            return;
+        }
+
         // Check premium status - hide widget if not unlocked
         if ((!SettingsManager.Current.TaskbarWidgetEnabled || !SettingsManager.Current.IsPremiumUnlocked))
         {

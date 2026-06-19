@@ -9,6 +9,7 @@
     xmlns:tray="http://schemas.lepo.co/wpfui/2022/xaml/tray"
     xmlns:controls="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
     xmlns:viewModels="clr-namespace:FluentFlyoutWPF.ViewModels"
+    xmlns:behaviors="clr-namespace:FluentFlyoutWPF.Classes.Behaviors"
     Height="150"
     Width="380"
     Top="-9999"
@@ -26,6 +27,7 @@
     Icon="/Resources/FluentFlyout2.ico"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -98,13 +100,16 @@
 
         <Grid>
             <Image x:Name="BackgroundImageBackground"
-                   Stretch="UniformToFill"
-                   Opacity="0"
+                   Stretch="Fill"
+                   Opacity="0.45"
                    IsHitTestVisible="False"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch"
                    RenderTransformOrigin="0.5,0.5"
-                   ClipToBounds="True">
+                   ClipToBounds="False"
+                   behaviors:MediaBackdropBehavior.Source="{Binding NowPlaying.BackdropImage}"
+                   behaviors:MediaBackdropBehavior.Preset="{Binding Settings.MediaFlyoutBackgroundBlur}"
+                   behaviors:MediaBackdropBehavior.Surface="Flyout">
                 <Image.Effect>
                     <BlurEffect Radius="0"/>
                 </Image.Effect>
@@ -140,7 +145,7 @@
                                        Symbol="MusicNote220"
                                        FontSize="40"
                                        Filled="True"
-                                       Visibility="{Binding IsPlaceholderVisible, Converter={StaticResource BoolToVisibleCollapsedConverter}}"/>
+                                       Visibility="{Binding NowPlaying.CoverImage, Converter={StaticResource NullToVisibleConverter}}"/>
                         <Border.Background>
                             <ImageBrush x:Name="SongImage"
                                         ImageSource="{Binding NowPlaying.CoverImage}"
@@ -156,9 +161,9 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition x:Name="BodyContentColumn"
-                                    Width="*"/>
+                                              Width="*"/>
                             <ColumnDefinition x:Name="BodyControlsColumn"
-                                    Width="Auto"/>
+                                              Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Name="SongInfoStackPanel"

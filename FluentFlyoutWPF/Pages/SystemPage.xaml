@@ -152,6 +152,8 @@
                                     Maximum="255"
                                     Value="{Binding AcrylicBlurOpacity, Mode=TwoWay}"
                                     IsEnabled="{Binding IsPremiumUnlocked}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    ToolTip="{DynamicResource PremiumLockedMessage}"
                                     TickFrequency="5"
                                     IsSnapToTickEnabled="True"
                                     Width="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"/>
@@ -232,22 +234,22 @@
                                                                 SnapsToDevicePixels="True">
                                                             <Border.Effect>
                                                                 <DropShadowEffect Color="Black"
-                                                                        Opacity="0.2"
+                                                                                  Opacity="0.2"
                                                                                   BlurRadius="6"
-                                                                        ShadowDepth="1"/>
+                                                                                  ShadowDepth="1"/>
                                                             </Border.Effect>
                                                             <ContentPresenter HorizontalAlignment="Center"
                                                                               VerticalAlignment="Center"/>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver"
-                                                                    Value="True">
+                                                                     Value="True">
                                                                 <Setter TargetName="SwatchBorder"
                                                                         Property="Opacity"
                                                                         Value="0.85"/>
                                                             </Trigger>
                                                             <Trigger Property="IsPressed"
-                                                                    Value="True">
+                                                                     Value="True">
                                                                 <Setter TargetName="SwatchBorder"
                                                                         Property="Opacity"
                                                                         Value="0.7"/>
@@ -260,7 +262,7 @@
                                     </Button.Style>
                                     <Button.Background>
                                         <SolidColorBrush x:Name="SwatchBrush"
-                                                Color="#808080"/>
+                                                         Color="#808080"/>
                                     </Button.Background>
                                 </Button>
 
@@ -287,14 +289,19 @@
                             <Popup x:Name="ColorPickerPopup"
                                    PlacementTarget="{Binding ElementName=ColorPickerToggleButton}"
                                    Placement="Bottom"
-                                   StaysOpen="True"
+                                   StaysOpen="False"
                                    AllowsTransparency="True"
                                    PopupAnimation="Fade"
                                    HorizontalOffset="-8"
                                    VerticalOffset="6">
-                                <localControls:ColorPickerControl
-                                    x:Name="EmbeddedColorPicker"
-                                    SelectedColorHex="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <ScrollViewer MaxWidth="{Binding ElementName=PageRoot, Path=ActualWidth, Converter={StaticResource ResponsiveInlineControlWidthConverter}, ConverterParameter=wide}"
+                                              MaxHeight="430"
+                                              HorizontalScrollBarVisibility="Auto"
+                                              VerticalScrollBarVisibility="Auto">
+                                    <localControls:ColorPickerControl
+                                        x:Name="EmbeddedColorPicker"
+                                        SelectedColorHex="{Binding CustomAccentColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </ScrollViewer>
                             </Popup>
 
                             <TextBlock Text="{Binding CustomAccentColorHexValidationMessage}"
@@ -382,9 +389,7 @@
                             </StackPanel>
                         </ui:CardControl.Header>
                         <controls:ToggleSwitch x:Name="StartupSwitch"
-                                               IsChecked="{Binding Startup, Mode=TwoWay}"
-                                               Command="{Binding DataContext.SetStartupCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                               CommandParameter="{Binding IsChecked, ElementName=StartupSwitch}"/>
+                                               IsChecked="{Binding Startup, Mode=TwoWay}"/>
                     </ui:CardControl>
                     <ui:CardControl Icon="{ui:SymbolIcon ArrowMinimize24}"
                                     Margin="0,0,0,3">
@@ -703,8 +708,8 @@
                         <controls:ToggleSwitch x:Name="NIconHideSwitch"
                                                IsChecked="{Binding NIconHide, Mode=TwoWay}"
                                                IsEnabled="{Binding IsPremiumUnlocked}"
-                                               Command="{Binding DataContext.SetNIconHideCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                               CommandParameter="{Binding IsChecked, ElementName=NIconHideSwitch}"/>
+                                               ToolTipService.ShowOnDisabled="True"
+                                               ToolTip="{DynamicResource PremiumLockedMessage}"/>
                     </ui:CardControl>
 
                     <!-- back up & restore section -->
@@ -749,7 +754,7 @@
                                            Opacity="0.5"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ui:Button Content="{DynamicResource ViewLogs}"
+                        <ui:Button Content="{DynamicResource TrayIcon_ViewLogsOption}"
                                    Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=Page}}"/>
                     </ui:CardControl>
 

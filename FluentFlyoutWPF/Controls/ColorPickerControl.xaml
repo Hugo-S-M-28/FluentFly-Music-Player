@@ -11,10 +11,11 @@
              Width="320"
              Height="430"
              Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}">
-    
+
     <UserControl.Resources>
         <!-- Swatch Button Template for premium rounded color circles -->
-        <Style x:Key="SwatchButtonStyle" TargetType="Button">
+        <Style x:Key="SwatchButtonStyle"
+                TargetType="Button">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -31,12 +32,20 @@
                                      Visibility="Collapsed"/>
                         </Grid>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HoverRing" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="SwatchEllipse" Property="Opacity" Value="0.9"/>
+                            <Trigger Property="IsMouseOver"
+                                    Value="True">
+                                <Setter TargetName="HoverRing"
+                                        Property="Visibility"
+                                        Value="Visible"/>
+                                <Setter TargetName="SwatchEllipse"
+                                        Property="Opacity"
+                                        Value="0.9"/>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="SwatchEllipse" Property="Opacity" Value="0.7"/>
+                            <Trigger Property="IsPressed"
+                                    Value="True">
+                                <Setter TargetName="SwatchEllipse"
+                                        Property="Opacity"
+                                        Value="0.7"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -52,15 +61,24 @@
             BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Selected color header -->
-                <RowDefinition Height="12"/>   <!-- Spacing -->
-                <RowDefinition Height="*"/>    <!-- Canvas & vertical sliders -->
-                <RowDefinition Height="12"/>   <!-- Spacing -->
-                <RowDefinition Height="Auto"/> <!-- RGB / A inputs -->
-                <RowDefinition Height="12"/>   <!-- Spacing -->
-                <RowDefinition Height="Auto"/> <!-- Preset Swatches -->
-                <RowDefinition Height="12"/>   <!-- Spacing -->
-                <RowDefinition Height="Auto"/> <!-- Action buttons -->
+                <RowDefinition Height="Auto"/>
+                <!-- Selected color header -->
+                <RowDefinition Height="12"/>
+                <!-- Spacing -->
+                <RowDefinition Height="*"/>
+                <!-- Canvas & vertical sliders -->
+                <RowDefinition Height="12"/>
+                <!-- Spacing -->
+                <RowDefinition Height="Auto"/>
+                <!-- RGB / A inputs -->
+                <RowDefinition Height="12"/>
+                <!-- Spacing -->
+                <RowDefinition Height="Auto"/>
+                <!-- Preset Swatches -->
+                <RowDefinition Height="12"/>
+                <!-- Spacing -->
+                <RowDefinition Height="Auto"/>
+                <!-- Action buttons -->
             </Grid.RowDefinitions>
 
             <!-- Row 0: Selected color header with editable Hex text box -->
@@ -102,11 +120,16 @@
             <!-- Row 2: Interaction Canvas and Sliders -->
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>   <!-- S/V Canvas -->
-                    <ColumnDefinition Width="12"/>  <!-- Spacing -->
-                    <ColumnDefinition Width="20"/>  <!-- Hue track -->
-                    <ColumnDefinition Width="12"/>  <!-- Spacing -->
-                    <ColumnDefinition Width="20"/>  <!-- Alpha track -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- S/V Canvas -->
+                    <ColumnDefinition Width="12"/>
+                    <!-- Spacing -->
+                    <ColumnDefinition Width="20"/>
+                    <!-- Hue track -->
+                    <ColumnDefinition Width="12"/>
+                    <!-- Spacing -->
+                    <ColumnDefinition Width="20"/>
+                    <!-- Alpha track -->
                 </Grid.ColumnDefinitions>
 
                 <!-- Column 0: Saturation-Value Canvas Area -->
@@ -129,17 +152,23 @@
                             <Rectangle Fill="{Binding HuePreviewBrush, ElementName=Root}"/>
                             <Rectangle>
                                 <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                        <GradientStop Color="#FFFFFFFF" Offset="0"/>
-                                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                    <LinearGradientBrush StartPoint="0,0.5"
+                                            EndPoint="1,0.5">
+                                        <GradientStop Color="#FFFFFFFF"
+                                                Offset="0"/>
+                                        <GradientStop Color="#00FFFFFF"
+                                                Offset="1"/>
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                             </Rectangle>
                             <Rectangle>
                                 <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                        <GradientStop Color="#00000000" Offset="0"/>
-                                        <GradientStop Color="#FF000000" Offset="1"/>
+                                    <LinearGradientBrush StartPoint="0.5,0"
+                                            EndPoint="0.5,1">
+                                        <GradientStop Color="#00000000"
+                                                Offset="0"/>
+                                        <GradientStop Color="#FF000000"
+                                                Offset="1"/>
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                             </Rectangle>
@@ -183,14 +212,22 @@
                             VerticalAlignment="Stretch">
                         <Rectangle Margin="0">
                             <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
-                                    <GradientStop Color="#FFFF0000" Offset="0"/>
-                                    <GradientStop Color="#FFFFFF00" Offset="0.17"/>
-                                    <GradientStop Color="#FF00FF00" Offset="0.33"/>
-                                    <GradientStop Color="#FF00FFFF" Offset="0.50"/>
-                                    <GradientStop Color="#FF0000FF" Offset="0.67"/>
-                                    <GradientStop Color="#FFFF00FF" Offset="0.83"/>
-                                    <GradientStop Color="#FFFF0000" Offset="1"/>
+                                <LinearGradientBrush StartPoint="0.5,1"
+                                        EndPoint="0.5,0">
+                                    <GradientStop Color="#FFFF0000"
+                                            Offset="0"/>
+                                    <GradientStop Color="#FFFFFF00"
+                                            Offset="0.17"/>
+                                    <GradientStop Color="#FF00FF00"
+                                            Offset="0.33"/>
+                                    <GradientStop Color="#FF00FFFF"
+                                            Offset="0.50"/>
+                                    <GradientStop Color="#FF0000FF"
+                                            Offset="0.67"/>
+                                    <GradientStop Color="#FFFF00FF"
+                                            Offset="0.83"/>
+                                    <GradientStop Color="#FFFF0000"
+                                            Offset="1"/>
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
                         </Rectangle>
@@ -234,8 +271,10 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
                         <Grid>
-                            <Rectangle Margin="0" Fill="{Binding CheckerPatternBrush, ElementName=Root}"/>
-                            <Rectangle Margin="0" Fill="{Binding AlphaGradientBrush, ElementName=Root}"/>
+                            <Rectangle Margin="0"
+                                    Fill="{Binding CheckerPatternBrush, ElementName=Root}"/>
+                            <Rectangle Margin="0"
+                                    Fill="{Binding AlphaGradientBrush, ElementName=Root}"/>
                         </Grid>
                     </Border>
                     <!-- Pill-style Alpha selection indicator -->
@@ -262,13 +301,20 @@
             <!-- Row 4: RGB and Alpha numeric inputs -->
             <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/> <!-- R -->
-                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
-                    <ColumnDefinition Width="*"/> <!-- G -->
-                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
-                    <ColumnDefinition Width="*"/> <!-- B -->
-                    <ColumnDefinition Width="8"/>   <!-- Spacing -->
-                    <ColumnDefinition Width="*"/> <!-- A -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- R -->
+                    <ColumnDefinition Width="8"/>
+                    <!-- Spacing -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- G -->
+                    <ColumnDefinition Width="8"/>
+                    <!-- Spacing -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- B -->
+                    <ColumnDefinition Width="8"/>
+                    <!-- Spacing -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- A -->
                 </Grid.ColumnDefinitions>
 
                 <!-- R Input -->
@@ -343,25 +389,89 @@
                            Margin="0,0,0,6"
                            Opacity="0.6"
                            Foreground="{Binding PickerTextPrimaryBrush, ElementName=Root}"/>
-                <UniformGrid Rows="1" Columns="9">
+                <UniformGrid Rows="1"
+                        Columns="9">
                     <!-- Red -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E81123" Tag="#E81123" Click="Swatch_Click" ToolTip="{DynamicResource Color_Red}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#E81123"
+                            Tag="#E81123"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Red}"
+                            HorizontalAlignment="Center"/>
                     <!-- Orange -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#F7630C" Tag="#F7630C" Click="Swatch_Click" ToolTip="{DynamicResource Color_Orange}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#F7630C"
+                            Tag="#F7630C"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Orange}"
+                            HorizontalAlignment="Center"/>
                     <!-- Yellow -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#FFB900" Tag="#FFB900" Click="Swatch_Click" ToolTip="{DynamicResource Color_Yellow}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#FFB900"
+                            Tag="#FFB900"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Yellow}"
+                            HorizontalAlignment="Center"/>
                     <!-- Green -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#107C41" Tag="#107C41" Click="Swatch_Click" ToolTip="{DynamicResource Color_Green}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#107C41"
+                            Tag="#107C41"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Green}"
+                            HorizontalAlignment="Center"/>
                     <!-- Teal -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#00B7C3" Tag="#00B7C3" Click="Swatch_Click" ToolTip="{DynamicResource Color_Teal}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#00B7C3"
+                            Tag="#00B7C3"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Teal}"
+                            HorizontalAlignment="Center"/>
                     <!-- Blue -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#0078D4" Tag="#0078D4" Click="Swatch_Click" ToolTip="{DynamicResource Color_Blue}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#0078D4"
+                            Tag="#0078D4"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Blue}"
+                            HorizontalAlignment="Center"/>
                     <!-- Purple -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#5010B4" Tag="#5010B4" Click="Swatch_Click" ToolTip="{DynamicResource Color_Purple}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#5010B4"
+                            Tag="#5010B4"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Purple}"
+                            HorizontalAlignment="Center"/>
                     <!-- Pink -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#E3008C" Tag="#E3008C" Click="Swatch_Click" ToolTip="{DynamicResource Color_Pink}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#E3008C"
+                            Tag="#E3008C"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Pink}"
+                            HorizontalAlignment="Center"/>
                     <!-- Grey -->
-                    <Button Style="{StaticResource SwatchButtonStyle}" Width="20" Height="20" Background="#7A7574" Tag="#7A7574" Click="Swatch_Click" ToolTip="{DynamicResource Color_Grey}" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource SwatchButtonStyle}"
+                            Width="20"
+                            Height="20"
+                            Background="#7A7574"
+                            Tag="#7A7574"
+                            Click="Swatch_Click"
+                            ToolTip="{DynamicResource Color_Grey}"
+                            HorizontalAlignment="Center"/>
                 </UniformGrid>
             </StackPanel>
 

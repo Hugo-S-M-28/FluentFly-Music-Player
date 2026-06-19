@@ -33,21 +33,23 @@ namespace FluentFlyoutWPF.Classes.Utils
 
                 if (useAccent && activeBrush != null)
                 {
+                    var readableBrush = AccentColorResolver.ResolveReadableAccentBrush(brush, isDarkTheme);
+
                     // Apply to Play/Pause button background
                     _mainWindow.ControlPlayPause.Background = activeBrush;
                     _mainWindow.ControlPlayPause.Foreground = ThemeResourceHelper.GetContrastBrush(activeBrush.Color);
                     _mainWindow.ControlPlayPause.BorderThickness = new Thickness(0);
                     
                     // Apply to control icons for consistent theme
-                    _mainWindow.SymbolBack.Foreground = activeBrush;
-                    _mainWindow.SymbolForward.Foreground = activeBrush;
+                    _mainWindow.SymbolBack.Foreground = readableBrush;
+                    _mainWindow.SymbolForward.Foreground = readableBrush;
                     _mainWindow.ControlBack.Foreground =
                         _mainWindow.ControlForward.Foreground =
                         _mainWindow.ControlRepeat.Foreground =
-                        _mainWindow.ControlShuffle.Foreground = activeBrush;
+                        _mainWindow.ControlShuffle.Foreground = readableBrush;
 
                     // Subtle background for other controls
-                    var subtleBrush = activeBrush.Clone();
+                    var subtleBrush = readableBrush.Clone();
                     subtleBrush.Opacity = isDarkTheme ? 0.18 : 0.28;
                     subtleBrush.Freeze();
                     _mainWindow.ControlBack.Background = 
@@ -57,10 +59,10 @@ namespace FluentFlyoutWPF.Classes.Utils
                     _mainWindow.ControlBack.BorderBrush =
                         _mainWindow.ControlForward.BorderBrush =
                         _mainWindow.ControlRepeat.BorderBrush =
-                        _mainWindow.ControlShuffle.BorderBrush = activeBrush;
+                        _mainWindow.ControlShuffle.BorderBrush = readableBrush;
                     
                     // Apply to Seekbar
-                    _mainWindow.Seekbar.Foreground = activeBrush;
+                    _mainWindow.Seekbar.Foreground = readableBrush;
 
                     // Apply to Glow effect
                     if (_mainWindow.SongImageGlow != null)
@@ -72,29 +74,9 @@ namespace FluentFlyoutWPF.Classes.Utils
                     }
                     
                     // Apply to placeholder
-                    _mainWindow.SongImagePlaceholder.Foreground = activeBrush;
+                    _mainWindow.SongImagePlaceholder.Foreground = readableBrush;
 
-                    var resolved = PlaybackSourceResolver.Resolve();
-                    bool isInternal = resolved.Kind == PlaybackSourceKind.Internal;
-                    bool isShuffle = false;
-                    bool isRepeatAll = false;
-                    bool isRepeatOne = false;
-
-                    if (isInternal)
-                    {
-                        isShuffle = MusicPlayerService.Instance.IsShuffleEnabled;
-                        isRepeatAll = MusicPlayerService.Instance.RepeatMode == Classes.RepeatMode.All;
-                        isRepeatOne = MusicPlayerService.Instance.RepeatMode == Classes.RepeatMode.One;
-                    }
-                    else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-                    {
-                        var playbackInfo = resolved.ExternalSession.ControlSession.GetPlaybackInfo();
-                        isShuffle = playbackInfo.IsShuffleActive ?? false;
-                        isRepeatAll = playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List;
-                        isRepeatOne = playbackInfo.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track;
-                    }
-
-                    _mainWindow.UpdateShuffleRepeatVisuals(isShuffle, isRepeatAll, isRepeatOne, isInternal);
+                    _mainWindow.ViewModel.NowPlaying.UpdateForegrounds();
                 }
                 else
                 {

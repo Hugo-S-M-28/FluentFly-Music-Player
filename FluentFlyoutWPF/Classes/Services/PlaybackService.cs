@@ -26,6 +26,12 @@ public sealed class PlaybackService : IPlaybackService
         remove => Player.TrackChanged -= value;
     }
 
+    public event EventHandler<UpcomingTrackEventArgs>? UpcomingTrackDue
+    {
+        add => Player.UpcomingTrackDue += value;
+        remove => Player.UpcomingTrackDue -= value;
+    }
+
     public event EventHandler<string>? PlaybackError
     {
         add => Player.PlaybackError += value;
@@ -44,6 +50,37 @@ public sealed class PlaybackService : IPlaybackService
         set => Player.IsShuffleEnabled = value;
     }
 
+    public bool IsPlaying
+    {
+        get => Player.IsPlaying;
+        set => Player.IsPlaying = value;
+    }
+
+    public TimeSpan CurrentPosition
+    {
+        get => Player.CurrentPosition;
+        set => Player.CurrentPosition = value;
+    }
+
+    public TimeSpan TotalDuration => Player.TotalDuration;
+
+    public float Volume
+    {
+        get => Player.Volume;
+        set => Player.Volume = value;
+    }
+
+    public RepeatMode RepeatMode
+    {
+        get => Player.RepeatMode;
+        set => Player.RepeatMode = value;
+    }
+
+    public bool CanGoNext => Player.CanGoNext;
+    public bool CanGoPrevious => Player.CanGoPrevious;
+    public LyricLine? CurrentLyricLine => Player.CurrentLyricLine;
+    public List<LyricLine> CurrentLyrics => Player.CurrentLyrics;
+
     public void AddToQueue(TrackModel track) => Player.AddToQueue(track);
     public void ClearQueuePreservingCurrent() => Player.ClearQueuePreservingCurrent();
     public Task ImportQueueAsync(string filePath) => Player.ImportQueueAsync(filePath);
@@ -56,4 +93,12 @@ public sealed class PlaybackService : IPlaybackService
     public void PlaySingle(TrackModel track, IReadOnlyList<TrackModel> visibleTracks) => Player.PlaySingle(track, visibleTracks.ToList());
     public void RemoveFromQueue(TrackModel track) => Player.RemoveFromQueue(track);
     public void Undo() => Player.Undo();
+
+    public void Play() => Player.Play();
+    public void Pause() => Player.Pause();
+    public void Stop() => Player.Stop();
+    public bool PlayNext() => Player.PlayNext();
+    public bool PlayPrevious() => Player.PlayPrevious();
+    public void TogglePlayPause() => Player.TogglePlayPause();
+    public void Seek(TimeSpan position) => Player.Seek(position);
 }

@@ -42,7 +42,7 @@ public partial class MainWindow : MicaWindow
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly SystemHookService _systemHookService = new();
-    private readonly ExternalMediaService _externalMediaService = ExternalMediaService.Instance;
+    private readonly IExternalMediaService _externalMediaService = App.GetRequiredService<IExternalMediaService>();
 
     internal CancellationTokenSource cts; // to close the flyout after a certain time
     internal long _lastFlyoutTime = 0;
@@ -61,31 +61,29 @@ public partial class MainWindow : MicaWindow
     private bool _alwaysDisplay = SettingsManager.Current.MediaFlyoutAlwaysDisplay;
     private bool _mediaSessionSupportsSeekbar = false; // default off to handle initialization
     private int _themeOption = SettingsManager.Current.AppTheme;
-    
+
     internal bool IsInternalPlayerActive => PlaybackSourceResolver.Resolve().Kind == PlaybackSourceKind.Internal;
 
     static Mutex singleton = new Mutex(true, "FluentFlyout"); // to prevent multiple instances of the app
-    private NextUpWindow? nextUpWindow = null; // to prevent multiple instances of NextUpWindow
-    private string currentTitle = ""; // to prevent NextUpWindow from showing the same song
-
     private readonly int _seekbarUpdateInterval = 300;
     private readonly Timer _positionTimer;
     private bool _isActive;
     private bool _isDragging;
     internal bool _isHiding = true;
 
-    private LockWindow? lockWindow;
     private DateTime _lastSelfUpdateTimestamp = DateTime.MinValue;
 
     private readonly TaskbarIntegrationCoordinator _taskbarCoordinator;
+    private readonly NextUpCoordinator _nextUpCoordinator;
+    private readonly LockKeyFlyoutCoordinator _lockKeyFlyoutCoordinator;
+    private readonly PlaybackSessionCoordinator _playbackSessionCoordinator;
     private readonly MainWindowAccentColorApplier _accentColorApplier;
     internal TaskbarWindow? taskbarWindow { get => _taskbarCoordinator?.TaskbarWindow; set { } }
     private string _lastTrackId = string.Empty;
     private ImageSource? _lastAlbumArt = null;
-    private bool? _lastIsPlaying = null;
 
     internal static volatile bool ExplorerRestarting = false;
-    
+
     public MainWindowViewModel ViewModel { get; }
 
     public MainWindow(MainWindowViewModel viewModel)
@@ -94,7 +92,35 @@ public partial class MainWindow : MicaWindow
         DataContext = ViewModel;
         WindowHelper.SetNoActivate(this); // prevents some fullscreen apps from minimizing
         InitializeComponent();
-        _taskbarCoordinator = new TaskbarIntegrationCoordinator(this);
+        var windowManager = App.GetRequiredService<IWindowManager>();
+        var playbackService = App.GetRequiredService<IPlaybackService>();
+        var playbackSourceResolver = App.GetRequiredService<IPlaybackSourceResolver>();
+        var libraryService = App.GetRequiredService<ILibraryService>();
+        var settingsService = App.GetRequiredService<ISettingsService>();
+
+        _taskbarCoordinator = new TaskbarIntegrationCoordinator(
+            this,
+            windowManager,
+            playbackService,
+            playbackSourceResolver,
+            libraryService);
+        _nextUpCoordinator = new NextUpCoordinator(
+            windowManager,
+            libraryService,
+            settingsService,
+            Dispatcher,
+            () => IsVisible);
+        _lockKeyFlyoutCoordinator = new LockKeyFlyoutCoordinator(windowManager);
+        _playbackSessionCoordinator = new PlaybackSessionCoordinator(
+            playbackService,
+            _externalMediaService,
+            HandleInternalTrackChanged,
+            _nextUpCoordinator.ShowInternalPreview,
+            HandleInternalPlaybackStateChanged,
+            CurrentSession_OnPlaybackStateChanged,
+            MediaManager_OnAnyMediaPropertyChanged,
+            MediaManager_OnAnyTimelinePropertyChanged,
+            MediaManager_OnAnySessionClosed);
         _accentColorApplier = new MainWindowAccentColorApplier(this);
         WindowHelper.SetTopmost(this); // more prevention of fullscreen apps minimizing
 
@@ -159,19 +185,12 @@ public partial class MainWindow : MicaWindow
             if (executablePath != null) key?.SetValue("FluentFlyout", executablePath);
         }
 
-        // display tray icon if enabled
-        if (!SettingsManager.Current.NIconHide && nIcon != null)
-        {
-            nIcon.Visibility = Visibility.Visible;
-        }
+        // Tray icon initialization is deferred to MicaWindow_Loaded
+        // where the window has a valid HWND and Register() can succeed
 
         cts = new CancellationTokenSource();
 
-        _externalMediaService.MediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
-        _externalMediaService.PlaybackStateChanged += CurrentSession_OnPlaybackStateChanged;
-        _externalMediaService.TimelinePropertyChanged += MediaManager_OnAnyTimelinePropertyChanged;
-        _externalMediaService.SessionClosed += MediaManager_OnAnySessionClosed;
-        _externalMediaService.Initialize();
+        _playbackSessionCoordinator.Initialize();
 
         HotKeyService.Instance.HotKeyPressed += OnHotKeyPressed;
 
@@ -190,13 +209,6 @@ public partial class MainWindow : MicaWindow
         _systemHookService.Initialize(this);
 
         _positionTimer = new Timer(SeekbarUpdateUi, null, Timeout.Infinite, Timeout.Infinite);
-        
-        // Subscribe to internal player events for reliable updates even when external SMTC is disabled
-        MusicPlayerService.Instance.TrackChanged += (s, e) => HandleInternalTrackChanged();
-        MusicPlayerService.Instance.PropertyChanged += (s, e) => {
-            if (e.PropertyName == "IsPlaying" || e.PropertyName == "CurrentTrack")
-                HandleInternalPlaybackStateChanged();
-        };
 
         if (_seekBarEnabled)
         {
@@ -214,7 +226,7 @@ public partial class MainWindow : MicaWindow
             // show settings to new users
             string previousVersion = SettingsManager.Current.LastKnownVersion;
             if (previousVersion == string.Empty)
-                 App.GetRequiredService<IWindowManager>().ShowSettings();
+                App.GetRequiredService<IWindowManager>().ShowSettings();
 
             try // update last known version. gets the version of the app, works only in release mode
             {
@@ -246,7 +258,6 @@ public partial class MainWindow : MicaWindow
 
         RegisterMessages();
         ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
-        SettingsManager.Current.PropertyChanged += Settings_PropertyChanged;
     }
 
     private void RegisterMessages()
@@ -263,7 +274,7 @@ public partial class MainWindow : MicaWindow
 
         WeakReferenceMessenger.Default.Register<RecreateTrayIconMessage>(this, (r, m) =>
         {
-            Dispatcher.Invoke(RecreateTrayIconSafely);
+            _ = Dispatcher.InvokeAsync(async () => await RecreateTrayIconAsync());
         });
 
         WeakReferenceMessenger.Default.Register<RequestApplicationShutdownMessage>(this, (r, m) =>
@@ -290,11 +301,7 @@ public partial class MainWindow : MicaWindow
 
         WeakReferenceMessenger.Default.Register<TrayIconStateMessage>(this, (r, m) =>
         {
-            Dispatcher.Invoke(() =>
-            {
-                if (m.Register) nIcon.Register();
-                else nIcon.Unregister();
-            });
+            _ = Dispatcher.InvokeAsync(async () => await RecreateTrayIconAsync());
         });
 
         WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
@@ -310,8 +317,8 @@ public partial class MainWindow : MicaWindow
             UpdateTaskbar();
             if (IsVisible)
             {
-                var status = MusicPlayerService.Instance.IsPlaying ? 
-                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+                var status = MusicPlayerService.Instance.IsPlaying ?
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
                 HandlePlayBackState(status);
                 UpdateUI();
@@ -336,39 +343,13 @@ public partial class MainWindow : MicaWindow
                 track.AlbumArt = thumbnail;
             }
 
-            if (SettingsManager.Current.NextUpEnabled && !FullscreenDetector.IsFullscreenApplicationRunning())
-            {
-                void createNewNextUpWindow()
-                {
-                    if (nextUpWindow == null)
-                    {
-                         nextUpWindow = new NextUpWindow(App.GetRequiredService<SettingsShellViewModel>(), track.Title, track.Artist, thumbnail!);
-                        currentTitle = track.Title;
-                        nextUpWindow.Closed += (s, e) => nextUpWindow = null;
-                    }
-                }
-
-                if (nextUpWindow == null && !IsVisible && currentTitle != track.Title)
-                {
-                    createNewNextUpWindow();
-                }
-                else if (nextUpWindow != null && currentTitle != track.Title)
-                {
-                    WindowHelper.SetVisibility(nextUpWindow, false);
-                    nextUpWindow.Close();
-                    createNewNextUpWindow();
-                }
-                else if (nextUpWindow != null)
-                {
-                    if (thumbnail != null) nextUpWindow.UpdateThumbnail(thumbnail);
-                }
-            }
+            _nextUpCoordinator.CloseIfOpen();
 
             if (IsVisible)
             {
                 UpdateUI();
-                var status = MusicPlayerService.Instance.IsPlaying ? 
-                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+                var status = MusicPlayerService.Instance.IsPlaying ?
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
                 HandlePlayBackState(status);
             }
@@ -415,30 +396,31 @@ public partial class MainWindow : MicaWindow
 
 
 
-    public void UpdateTaskbar() { _taskbarCoordinator?.UpdateTaskbar(); } private async void UpdateTaskbar_Deprecated()
+    public void UpdateTaskbar() { _taskbarCoordinator?.UpdateTaskbar(); }
+    private async void UpdateTaskbar_Deprecated()
     {
         if (IsInternalPlayerActive)
         {
             var track = MusicPlayerService.Instance.CurrentTrack;
             if (track != null)
             {
-                var playbackStatus = MusicPlayerService.Instance.IsPlaying ? 
-                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+                var playbackStatus = MusicPlayerService.Instance.IsPlaying ?
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
-                
+
                 if (track.AlbumArt == null && !string.IsNullOrEmpty(track.AlbumArtPath))
                     track.AlbumArt = LibraryManager.Instance.GetAlbumArt(track);
 
                 BitmapHelper.SetCurrentBitmap(track.AlbumArt);
                 ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
-                
+
                 taskbarWindow?.UpdateUi(track.Title, track.Artist, track.AlbumArt, playbackStatus, null);
                 return;
             }
         }
 
         var focusedSession = _externalMediaService.GetPreferredSession();
-        
+
         // If we have an external session
         if (_externalMediaService.MediaManager != null && _externalMediaService.MediaManager.IsStarted && focusedSession != null)
         {
@@ -457,17 +439,17 @@ public partial class MainWindow : MicaWindow
         if (SettingsManager.Current.InternalPlayerEnabled && MusicPlayerService.Instance.CurrentTrack != null)
         {
             var track = MusicPlayerService.Instance.CurrentTrack;
-            var playbackStatus = MusicPlayerService.Instance.IsPlaying ? 
-                GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+            var playbackStatus = MusicPlayerService.Instance.IsPlaying ?
+                GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                 GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
-            
+
             // Ensure image is loaded for dominant color extraction
             if (track.AlbumArt == null && !string.IsNullOrEmpty(track.AlbumArtPath))
                 track.AlbumArt = LibraryManager.Instance.GetAlbumArt(track);
 
             BitmapHelper.SetCurrentBitmap(track.AlbumArt);
             ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
-            
+
             taskbarWindow?.UpdateUi(track.Title, track.Artist, track.AlbumArt, playbackStatus, null);
             return;
         }
@@ -544,6 +526,12 @@ public partial class MainWindow : MicaWindow
         ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
         var resolvedPlaybackInfo = focusedSession.ControlSession.GetPlaybackInfo();
         taskbarWindow?.UpdateUi(songInfo.Title, songInfo.Artist, thumbnail, resolvedPlaybackInfo?.PlaybackStatus, resolvedPlaybackInfo?.Controls);
+        _nextUpCoordinator.RetryPendingExternal(
+            focusedSession.Id,
+            songInfo.Title,
+            songInfo.Artist,
+            thumbnail,
+            resolvedPlaybackInfo?.PlaybackStatus ?? GlobalSystemMediaTransportControlsSessionPlaybackStatus.Closed);
 
         if (IsVisible)
         {
@@ -568,6 +556,8 @@ public partial class MainWindow : MicaWindow
 #endif
         if (!SettingsManager.Current.SystemMediaControlEnabled)
             return;
+
+        _nextUpCoordinator.ClearPendingForSession(mediaSession.Id);
 
         var resolved = PlaybackSourceResolver.Resolve();
         if (resolved.Kind == PlaybackSourceKind.Internal)
@@ -598,10 +588,8 @@ public partial class MainWindow : MicaWindow
 
         string check = $"External_{selectedSession.Id}_{songInfo.Title}_{songInfo.Artist}_{playbackInfo.PlaybackStatus}";
         int checkThumbnail = BitmapHelper.GetStableThumbnailHash(songInfo.Thumbnail);
-        bool onlyThumbnailChanged = false;
         if (previousMediaProperty == check)
         {
-            onlyThumbnailChanged = true;
             if (previousMediaPropertyThumbnail == checkThumbnail)
                 return; // prevent multiple calls for the same song info
         }
@@ -615,40 +603,13 @@ public partial class MainWindow : MicaWindow
 
         pauseOtherMediaSessionsIfNeeded(selectedSession);
 
-        if (SettingsManager.Current.NextUpEnabled && !FullscreenDetector.IsFullscreenApplicationRunning()) // show NextUpWindow if enabled in settings
-        {
-            // Fix: Move all NextUpWindow logic inside Dispatcher.Invoke to prevent race conditions
-            Dispatcher.Invoke(() =>
-            {
-                void createNewNextUpWindow()
-                {
-                    if (nextUpWindow == null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                    {
-                         nextUpWindow = new NextUpWindow(App.GetRequiredService<SettingsShellViewModel>(), songInfo.Title, songInfo.Artist, thumbnail!);
-                        currentTitle = songInfo.Title;
-                        nextUpWindow.Closed += (s, e) => nextUpWindow = null; // set nextUpWindow to null when closed
-                    }
-                }
-
-                if (nextUpWindow == null && IsVisible == false && songInfo.Thumbnail != null && currentTitle != songInfo.Title)
-                {
-                    createNewNextUpWindow();
-                }
-                else if (nextUpWindow != null && !onlyThumbnailChanged)
-                {
-                    if (nextUpWindow != null)
-                    {
-                        WindowHelper.SetVisibility(nextUpWindow, false); // prevents rare flickering during rapid closing
-                        nextUpWindow.Close(); // must be cleared by the Closed event
-                    }
-                    createNewNextUpWindow();
-                }
-                else if (nextUpWindow != null && songInfo.Thumbnail != null)
-                {
-                    if (thumbnail != null) nextUpWindow?.UpdateThumbnail(thumbnail);
-                }
-            });
-        }
+        _nextUpCoordinator.ShowExternalNowPlaying(
+            selectedSession.Id,
+            songInfo.Title,
+            songInfo.Artist,
+            thumbnail,
+            playbackInfo.PlaybackStatus,
+            allowPending: true);
 
         if (IsVisible)
         {
@@ -675,8 +636,8 @@ public partial class MainWindow : MicaWindow
                 {
                     if (!IsActive || _isDragging) return;
                     UpdateSeekbarCurrentDuration(MusicPlayerService.Instance.CurrentPosition);
-                    var status = MusicPlayerService.Instance.IsPlaying ? 
-                        GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+                    var status = MusicPlayerService.Instance.IsPlaying ?
+                        GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                         GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
                     HandlePlayBackState(status);
                 });
@@ -755,31 +716,7 @@ public partial class MainWindow : MicaWindow
             TryShowMediaFlyoutDebounced();
         }
 
-        if (SettingsManager.Current.LockKeysEnabled
-            && !FullscreenDetector.IsFullscreenApplicationRunning()
-            && !isKeyDown) // WM_KEYUP equivalent
-        {
-            if (vkCode == 0x14) // Caps Lock
-            {
-                lockWindow ??= App.GetRequiredService<LockWindow>();
-                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_CapsLock").ToString(), Keyboard.IsKeyToggled(Key.CapsLock));
-            }
-            else if (vkCode == 0x90) // Num Lock
-            {
-                lockWindow ??= App.GetRequiredService<LockWindow>();
-                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_NumLock").ToString(), Keyboard.IsKeyToggled(Key.NumLock));
-            }
-            else if (vkCode == 0x91) // Scroll Lock
-            {
-                lockWindow ??= App.GetRequiredService<LockWindow>();
-                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_ScrollLock").ToString(), Keyboard.IsKeyToggled(Key.Scroll));
-            }
-            else if (vkCode == 0x2D && SettingsManager.Current.LockKeysInsertEnabled) // Insert
-            {
-                lockWindow ??= App.GetRequiredService<LockWindow>();
-                await lockWindow.ShowLockFlyoutAsync(FindResource("LockWindow_Insert").ToString(), Keyboard.IsKeyToggled(Key.Insert));
-            }
-        }
+        await _lockKeyFlyoutCoordinator.HandleHotKeyAsync(vkCode, isKeyDown);
     }
 
     // show the media flyout with debounce
@@ -835,22 +772,18 @@ public partial class MainWindow : MicaWindow
         }
 
         UpdateUI();
-        
+
         if (_seekBarEnabled)
         {
             if (focusedSession != null)
                 HandlePlayBackState(focusedSession.ControlSession.GetPlaybackInfo().PlaybackStatus);
             else if (hasInternalTrack)
-                HandlePlayBackState(MusicPlayerService.Instance.IsPlaying ? 
-                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
+                HandlePlayBackState(MusicPlayerService.Instance.IsPlaying ?
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing :
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused);
         }
 
-        if (nextUpWindow != null) // close NextUpWindow if it's open
-        {
-            nextUpWindow.Close();
-            nextUpWindow = null;
-        }
+        _nextUpCoordinator.CloseIfOpen(ignoreSafeguard: true);
 
         bool needsAnimation = Visibility != Visibility.Visible || _isHiding;
         Visibility = Visibility.Visible;
@@ -907,8 +840,7 @@ public partial class MainWindow : MicaWindow
 
     private void UpdateMediaFlyoutCloseButtonVisibility()
     {
-        MediaFlyoutCloseButton.Visibility = SettingsManager.Current.MediaFlyoutAlwaysDisplay && !SettingsManager.Current.CompactLayout ? Visibility.Visible : Visibility.Collapsed;
-        ControlClose.Visibility = SettingsManager.Current.MediaFlyoutAlwaysDisplay && SettingsManager.Current.CompactLayout ? Visibility.Visible : Visibility.Collapsed;
+        ViewModel.UpdateCloseButtonVisibility(SettingsManager.Current.MediaFlyoutAlwaysDisplay, SettingsManager.Current.CompactLayout);
     }
 
     internal void UpdatePlaybackStateTimer(GlobalSystemMediaTransportControlsSessionPlaybackStatus? status)
@@ -918,11 +850,7 @@ public partial class MainWindow : MicaWindow
 
     internal void CloseNextUpWindowIfOpen()
     {
-        if (nextUpWindow != null)
-        {
-            nextUpWindow.Close();
-            nextUpWindow = null;
-        }
+        _nextUpCoordinator.CloseIfOpen(ignoreSafeguard: true);
     }
 
     internal async void UpdateUI()
@@ -938,12 +866,12 @@ public partial class MainWindow : MicaWindow
 
         await Dispatcher.InvokeAsync(async () =>
         {
-            UpdateMediaFlyoutCloseButtonVisibility();
+            ViewModel.UpdateCloseButtonVisibility(SettingsManager.Current.MediaFlyoutAlwaysDisplay, SettingsManager.Current.CompactLayout);
 
             var resolved = PlaybackSourceResolver.Resolve();
             bool isInternal = resolved.Kind == PlaybackSourceKind.Internal;
             var focusedSession = resolved.ExternalSession;
-            
+
             if (isInternal)
             {
                 var track = MusicPlayerService.Instance.CurrentTrack;
@@ -951,37 +879,21 @@ public partial class MainWindow : MicaWindow
                 {
                     string trackId = track.FilePath + track.Title;
                     bool trackChanged = _lastTrackId != trackId;
-                    
+
                     if (trackChanged)
                     {
                         if (track.AlbumArt == null && !string.IsNullOrEmpty(track.AlbumArtPath))
                             track.AlbumArt = LibraryManager.Instance.GetAlbumArt(track);
-                        
+
                         var image = track.AlbumArt;
 
                         BitmapHelper.SetCurrentBitmap(image);
                         BitmapHelper.GetDominantColors(1);
                         ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
 
-                        var croppedImage = BitmapHelper.CropToSquare(image);
-                        BackgroundImageBackground.Source = croppedImage ?? MediaBackdropStyleService.GetFallbackImageSource();
-                        
                         _lastTrackId = trackId;
                         _lastAlbumArt = image;
                     }
-
-                    bool playingChanged = _lastIsPlaying != MusicPlayerService.Instance.IsPlaying;
-                    if (playingChanged || trackChanged)
-                    {
-                        ControlPlayPause.IsEnabled = true;
-                        ControlPlayPause.Opacity = 1;
-                        SymbolPlayPause.Symbol = MusicPlayerService.Instance.IsPlaying ? 
-                            Wpf.Ui.Controls.SymbolRegular.Pause16 : Wpf.Ui.Controls.SymbolRegular.Play16;
-                        _lastIsPlaying = MusicPlayerService.Instance.IsPlaying;
-                    }
-                    
-                    ControlBack.IsEnabled = ControlForward.IsEnabled = true;
-                    ControlBack.Opacity = ControlForward.Opacity = 1;
 
                     if (_seekBarEnabled)
                     {
@@ -992,35 +904,16 @@ public partial class MainWindow : MicaWindow
                         }
                     }
 
-
-                    
-                    SongImagePlaceholder.Visibility = SongImage.ImageSource == null ? Visibility.Visible : Visibility.Collapsed;
-                    MediaIdStackPanel.Visibility = Visibility.Collapsed;
-
-                    UpdateShuffleRepeatVisuals(
-                        MusicPlayerService.Instance.IsShuffleEnabled,
-                        MusicPlayerService.Instance.RepeatMode == FluentFlyoutWPF.Classes.RepeatMode.All,
-                        MusicPlayerService.Instance.RepeatMode == FluentFlyoutWPF.Classes.RepeatMode.One,
-                        true // forceVisible for internal player
-                    );
-                    
+                    ViewModel.ClearMediaIdentity();
                     return;
                 }
             }
 
             if (resolved.Kind != PlaybackSourceKind.External || focusedSession == null)
             {
-                SymbolPlayPause.Symbol = Wpf.Ui.Controls.SymbolRegular.Stop16;
-                ControlPlayPause.IsEnabled = false;
-                ControlPlayPause.Opacity = 0.35;
-                ControlBack.IsEnabled = ControlForward.IsEnabled = false;
-                ControlBack.Opacity = ControlForward.Opacity = 0.35;
-                SongImagePlaceholder.Visibility = Visibility.Visible;
                 _lastTrackId = string.Empty;
                 _lastAlbumArt = null;
-                _lastIsPlaying = null;
-                BackgroundImageBackground.Source = MediaBackdropStyleService.GetFallbackImageSource();
-                UpdateBackgroundBlur();
+                ViewModel.ClearMediaIdentity();
                 return;
             }
 
@@ -1029,38 +922,16 @@ public partial class MainWindow : MicaWindow
 
             var playbackInfo = controlSession.GetPlaybackInfo();
             var songInfo = await TryGetMediaPropertiesAsync(controlSession);
-            
+
             string extTrackId = (songInfo?.Title ?? "") + (songInfo?.Artist ?? "");
             bool extTrackChanged = _lastTrackId != extTrackId;
 
             if (extTrackChanged && songInfo != null)
             {
                 var image = BitmapHelper.GetThumbnail(songInfo.Thumbnail);
-
-                var croppedImage = BitmapHelper.CropToSquare(image);
-                BackgroundImageBackground.Source = croppedImage ?? MediaBackdropStyleService.GetFallbackImageSource();
-                
                 _lastTrackId = extTrackId;
                 _lastAlbumArt = image;
             }
-
-            if (playbackInfo != null)
-            {
-                bool isPlaying = playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
-                if (_lastIsPlaying != isPlaying || extTrackChanged)
-                {
-                    SymbolPlayPause.Symbol = isPlaying ? 
-                        Wpf.Ui.Controls.SymbolRegular.Pause16 : Wpf.Ui.Controls.SymbolRegular.Play16;
-                    ControlPlayPause.IsEnabled = true;
-                    ControlPlayPause.Opacity = 1;
-                    _lastIsPlaying = isPlaying;
-                }
-                
-                ControlBack.IsEnabled = ControlForward.IsEnabled = playbackInfo.Controls.IsNextEnabled;
-                ControlBack.Opacity = ControlForward.Opacity = playbackInfo.Controls.IsNextEnabled ? 1 : 0.35;
-            }
-
-            SongImagePlaceholder.Visibility = SongImage.ImageSource == null ? Visibility.Visible : Visibility.Collapsed;
 
             if (_seekBarEnabled && playbackInfo != null)
             {
@@ -1074,76 +945,18 @@ public partial class MainWindow : MicaWindow
                     _isHiding = true;
                     _ = ShowMediaFlyoutAsync(forceShow: true);
                 }
-
-                if (sessionSupportsSeekbar)
-                {
-                    Seekbar.Maximum = timeline.MaxSeekTime.TotalSeconds;
-                    SeekbarMaxDuration.Text = timeline.MaxSeekTime.ToString(timeline.MaxSeekTime.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
-                }
             }
-
-            bool isShuffle = playbackInfo?.IsShuffleActive ?? false;
-            bool isRepeatAll = playbackInfo?.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.List;
-            bool isRepeatOne = playbackInfo?.AutoRepeatMode == global::Windows.Media.MediaPlaybackAutoRepeatMode.Track;
-            
-            UpdateShuffleRepeatVisuals(isShuffle, isRepeatAll, isRepeatOne);
 
             if (SettingsManager.Current.PlayerInfoEnabled && !SettingsManager.Current.CompactLayout)
             {
-                MediaIdStackPanel.Visibility = Visibility.Visible;
                 (string title, ImageSource? Icon) = MediaPlayerData.getMediaPlayerData(focusedSession.Id);
-                MediaId.Text = title;
-                if (Icon != null)
-                {
-                    MediaIdIcon.Source = Icon;
-                    MediaIdIcon.Visibility = Visibility.Visible;
-                }
-                else MediaIdIcon.Visibility = Visibility.Collapsed;
-            }
-            else MediaIdStackPanel.Visibility = Visibility.Collapsed;
-        });
-    }
-
-    internal void UpdateShuffleRepeatVisuals(bool isShuffle, bool isRepeatAll, bool isRepeatOne, bool forceVisible = false)
-    {
-        var dominantBrush = BitmapHelper.SavedDominantColors.FirstOrDefault();
-        var accentBrush = AccentColorResolver.ResolveAccentBrush(dominantBrush);
-        var defaultBrush = Brushes.White;
-
-        // Shuffle
-        if ((forceVisible || SettingsManager.Current.ShuffleEnabled) && !SettingsManager.Current.CompactLayout)
-        {
-            ControlShuffle.Visibility = Visibility.Visible;
-            SymbolShuffle.Symbol = isShuffle ? Wpf.Ui.Controls.SymbolRegular.ArrowShuffle24 : Wpf.Ui.Controls.SymbolRegular.ArrowShuffleOff24;
-            SymbolShuffle.Foreground = isShuffle ? accentBrush : defaultBrush;
-            SymbolShuffle.Opacity = isShuffle ? 1.0 : 0.4;
-        }
-        else ControlShuffle.Visibility = Visibility.Collapsed;
-
-        // Repeat
-        if ((forceVisible || SettingsManager.Current.RepeatEnabled) && !SettingsManager.Current.CompactLayout)
-        {
-            ControlRepeat.Visibility = Visibility.Visible;
-            if (isRepeatOne)
-            {
-                SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeat124;
-                SymbolRepeat.Foreground = accentBrush;
-                SymbolRepeat.Opacity = 1.0;
-            }
-            else if (isRepeatAll)
-            {
-                SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAll24;
-                SymbolRepeat.Foreground = accentBrush;
-                SymbolRepeat.Opacity = 1.0;
+                ViewModel.SetMediaIdentity(title, Icon);
             }
             else
             {
-                SymbolRepeat.Symbol = Wpf.Ui.Controls.SymbolRegular.ArrowRepeatAllOff24;
-                SymbolRepeat.Foreground = defaultBrush;
-                SymbolRepeat.Opacity = 0.4;
+                ViewModel.ClearMediaIdentity();
             }
-        }
-        else ControlRepeat.Visibility = Visibility.Collapsed;
+        });
     }
 
     private void UpdateUILayout() // update the layout based on the settings
@@ -1168,8 +981,7 @@ public partial class MainWindow : MicaWindow
                 SongTitle.MaxHeight = 36;
                 SongArtist.TextWrapping = TextWrapping.NoWrap;
                 SongInfoStackPanel.MaxWidth = 152;
-                
-                MediaIdStackPanel.Visibility = Visibility.Collapsed;
+
                 SongImageBorder.Height = 48;
                 SongImageBorder.Width = 48;
                 SongImageBorder.Margin = new Thickness(0);
@@ -1178,7 +990,7 @@ public partial class MainWindow : MicaWindow
                 Grid.SetRow(SongInfoStackPanel, 0);
                 Grid.SetColumn(SongInfoStackPanel, 0);
                 Grid.SetColumnSpan(SongInfoStackPanel, 1);
-                
+
                 Grid.SetRow(ControlsStackPanel, 0);
                 Grid.SetColumn(ControlsStackPanel, 1);
                 Grid.SetColumnSpan(ControlsStackPanel, 1);
@@ -1209,7 +1021,7 @@ public partial class MainWindow : MicaWindow
                 Grid.SetRow(SongInfoStackPanel, 0);
                 Grid.SetColumn(SongInfoStackPanel, 0);
                 Grid.SetColumnSpan(SongInfoStackPanel, 2);
-                
+
                 Grid.SetRow(ControlsStackPanel, 1);
                 Grid.SetColumn(ControlsStackPanel, 0);
                 Grid.SetColumnSpan(ControlsStackPanel, 2);
@@ -1220,11 +1032,6 @@ public partial class MainWindow : MicaWindow
                 BodyGrid.Margin = new Thickness(12, 0, 0, 0);
                 BodyContentColumn.Width = new GridLength(1, GridUnitType.Star);
                 BodyControlsColumn.Width = GridLength.Auto;
-
-                // Only show MediaIdStackPanel when PlayerInfo is enabled
-                MediaIdStackPanel.Visibility = showPlayerInfo
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
             }
 
             if (SettingsManager.Current.CenterTitleArtist)
@@ -1244,10 +1051,8 @@ public partial class MainWindow : MicaWindow
                 SongArtist.TextAlignment = TextAlignment.Left;
             }
 
-            if (SettingsManager.Current.SeekbarEnabled || IsInternalPlayerActive)
-                SeekbarWrapper.Visibility = Visibility.Visible;
-            else
-                SeekbarWrapper.Visibility = Visibility.Collapsed;
+            ViewModel.IsSeekbarVisible = (SettingsManager.Current.SeekbarEnabled && _mediaSessionSupportsSeekbar) || IsInternalPlayerActive;
+            ViewModel.UpdateCloseButtonVisibility(SettingsManager.Current.MediaFlyoutAlwaysDisplay, SettingsManager.Current.CompactLayout);
 
             this.EnableBackdrop();
 
@@ -1339,40 +1144,21 @@ public partial class MainWindow : MicaWindow
         double ratio = (clickPosition.X - thumbWidth / 2) / (slider.ActualWidth - thumbWidth);
         ratio = Math.Max(0, Math.Min(1, ratio));
         double targetSeconds = ratio * slider.Maximum;
-        Dispatcher.Invoke(() =>
-        {
-            Seekbar.Value = targetSeconds;
-        });
+
+        ViewModel.BeginSeekFromShell();
+        ViewModel.PreviewSeekFromShell(targetSeconds);
     }
 
     private async void Seekbar_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        var seekPosition = TimeSpan.FromSeconds(Seekbar.Value);
-        var resolved = PlaybackSourceResolver.Resolve();
-
-        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-        {
-            var session = resolved.ExternalSession;
-            // Use 1 tick (100ns) instead of 0 to signal "go to start" — the SMTC API
-            // ignores a position of exactly 0 ticks (treats it as "no change").
-            long ticks = seekPosition.Ticks > 0 ? seekPosition.Ticks : 1;
-            await session.ControlSession.TryChangePlaybackPositionAsync(ticks);
-        }
-        else if (resolved.Kind == PlaybackSourceKind.Internal)
-        {
-            MusicPlayerService.Instance.Seek(seekPosition);
-        }
+        await ViewModel.CommitSeekFromShellAsync(Seekbar.Value);
         _isDragging = false;
     }
 
     private void Seekbar_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (!_isDragging) return;
-        var timespan = TimeSpan.FromSeconds(e.NewValue);
-        Dispatcher.Invoke(() =>
-        {
-            SeekbarCurrentDuration.Text = timespan.ToString(timespan.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
-        });
+        ViewModel.PreviewSeekFromShell(e.NewValue);
     }
 
     private void SeekbarUpdateUi(object? sender)
@@ -1389,7 +1175,7 @@ public partial class MainWindow : MicaWindow
             {
                 var currentPos = MusicPlayerService.Instance.CurrentPosition;
                 UpdateSeekbarCurrentDuration(currentPos);
-                
+
                 if (currentPos >= MusicPlayerService.Instance.TotalDuration)
                 {
                     HandlePlayBackState(GlobalSystemMediaTransportControlsSessionPlaybackStatus.Closed);
@@ -1417,12 +1203,12 @@ public partial class MainWindow : MicaWindow
     {
         Dispatcher.Invoke(() =>
         {
-            Seekbar.Value = pos.TotalSeconds;
-            SeekbarCurrentDuration.Text = pos.ToString(pos.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
-            
+            var max = TimeSpan.FromSeconds(ViewModel.NowPlaying.SeekMaximum);
+            ViewModel.NowPlaying.UpdateTimeline(pos, max);
+
             if (_taskbarCoordinator.TaskbarWindow?.Widget != null)
             {
-                _taskbarCoordinator.TaskbarWindow.Widget.UpdateProgress(pos.TotalSeconds, Seekbar.Maximum);
+                _taskbarCoordinator.TaskbarWindow.Widget.UpdateProgress(pos.TotalSeconds, ViewModel.NowPlaying.SeekMaximum);
             }
         });
     }
@@ -1462,7 +1248,7 @@ public partial class MainWindow : MicaWindow
                     Logger.Info("Explorer stabilized, resuming taskbar integration");
 
                     // Now it is safe to recreate tray icon
-                    RecreateTrayIconSafely();
+                    await RecreateTrayIconAsync();
                 }
                 else
                 {
@@ -1497,35 +1283,15 @@ public partial class MainWindow : MicaWindow
         return false;
     }
 
-    private void RecreateTrayIconSafely()
+    private static readonly TrayIconCoordinator _trayIconCoordinator = new();
+
+    /// <summary>
+    /// Recreates the tray icon with retry logic for Explorer restart scenarios
+    /// where the Shell may not be ready immediately.
+    /// </summary>
+    private Task RecreateTrayIconAsync(int maxAttempts = 3, int delayMs = 500)
     {
-        try
-        {
-            nIcon.Visibility = Visibility.Collapsed;
-
-            if (!SettingsManager.Current.NIconHide)
-            {
-                if (SettingsManager.Current.NIconSymbol == true)
-                {
-                    var iconUri = new Uri(WindowsThemeHelper.GetCurrentWindowsTheme() == WindowsTheme.Dark
-                        ? "pack://application:,,,/Resources/TrayIcons/FluentFlyoutWhite.png"
-                        : "pack://application:,,,/Resources/TrayIcons/FluentFlyoutBlack.png");
-                    nIcon.Icon = new BitmapImage(iconUri);
-                }
-                else
-                {
-                    var iconUi = new Uri("pack://application:,,,/Resources/FluentFlyout2.ico");
-                    nIcon.Icon = new BitmapImage(iconUi);
-                }
-
-                nIcon.Visibility = Visibility.Visible;
-                nIcon.Register();
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to recreate tray icon safely");
-        }
+        return _trayIconCoordinator.RecreateTrayIconAsync(nIcon, maxAttempts, delayMs);
     }
 
     private void CleanupResources()
@@ -1547,6 +1313,7 @@ public partial class MainWindow : MicaWindow
             HotKeyService.Instance.HotKeyPressed -= OnHotKeyPressed;
             HotKeyService.Instance.Dispose();
 
+            _playbackSessionCoordinator?.Dispose();
             _systemHookService.Dispose();
             _externalMediaService.Stop();
 
@@ -1555,19 +1322,13 @@ public partial class MainWindow : MicaWindow
             SystemVolumeService.Instance.Dispose();
             LibraryManager.Instance.Dispose();
 
-            SettingsManager.Current.PropertyChanged -= Settings_PropertyChanged;
-
             WeakReferenceMessenger.Default.UnregisterAll(this);
 
-            // clean up other resources
-            if (lockWindow?.IsLoaded == true)
-                lockWindow.Close();
-
-            if (nextUpWindow?.IsLoaded == true)
-                nextUpWindow.Close();
+            _lockKeyFlyoutCoordinator?.Dispose();
+            _nextUpCoordinator?.Dispose();
 
             _taskbarCoordinator?.Dispose();
-                // Handled by taskbar coordinator dispose
+            // Handled by taskbar coordinator dispose
 
             // dispose mutex
             singleton?.Dispose();
@@ -1627,9 +1388,16 @@ public partial class MainWindow : MicaWindow
             await LicenseManager.Instance.InitializeAsync();
 
             // Sync license status from LicenseManager to SettingsManager
+            // IsPremiumUnlocked is [XmlIgnore] so it doesn't trigger save
             SettingsManager.Current.IsPremiumUnlocked = LicenseManager.Instance.IsPremiumUnlocked;
+            // IsStoreVersion setter triggers OnPropertyChanged -> auto-save, no explicit SaveSettings needed
             SettingsManager.Current.IsStoreVersion = LicenseManager.Instance.IsStoreVersion;
-            SettingsManager.SaveSettings();
+
+            if (!SettingsManager.Current.IsPremiumUnlocked && SettingsManager.Current.NIconHide)
+            {
+                SettingsManager.Current.NIconHide = false;
+                Logger.Info("Tray icon hide setting was disabled because Premium is not unlocked");
+            }
 
             Logger.Info($"License synced on startup - Store: {SettingsManager.Current.IsStoreVersion}, Premium: {SettingsManager.Current.IsPremiumUnlocked}");
         }
@@ -1640,10 +1408,26 @@ public partial class MainWindow : MicaWindow
 
         ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
         _taskbarCoordinator.Initialize();
-        // Handled in coordinator init
+
+        // Initialize SMTC now that the window has a valid HWND. The window handle is
+        // required by Windows.Media.SystemMediaTransportControls; calling
+        // GetForCurrentView() before this point raises 0x80070578 (Invalid window handle).
+        try
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            SmtcService.Initialize(hwnd);
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Failed to obtain HWND for SMTC initialization");
+        }
+
+        // Initialize tray icon after window has a valid HWND (deferred from constructor)
+        await RecreateTrayIconAsync();
     }
 
-    public void RecreateTaskbarWindow() { _taskbarCoordinator?.RecreateTaskbarWindow(); } private void RecreateTaskbarWindow_Deprecated()
+    public void RecreateTaskbarWindow() { _taskbarCoordinator?.RecreateTaskbarWindow(); }
+    private void RecreateTaskbarWindow_Deprecated()
     {
         try
         {
@@ -1687,7 +1471,7 @@ public partial class MainWindow : MicaWindow
     {
         return _externalMediaService.PauseOtherSessions(currentMediaSession);
     }
-    
+
     internal void ToggleBlur()
     {
         if (SettingsManager.Current.MediaFlyoutAcrylicWindowEnabled)
@@ -1705,114 +1489,5 @@ public partial class MainWindow : MicaWindow
         // Use the updated ShowMediaFlyout method with toggle mode to close the flyout
         _ = ShowMediaFlyoutAsync(toggleMode: true);
     }
-
-    internal void ApplyAccentColor(SolidColorBrush? brush, bool notifyOthers = false) { _accentColorApplier.ApplyAccentColor(brush, notifyOthers); } private void ApplyAccentColor_Deprecated(SolidColorBrush? brush, bool notifyOthers = false)
-    {
-        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
-        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
-
-        Action action = () =>
-        {
-            if (useAccent && activeBrush != null)
-            {
-                // Apply to Play/Pause button background
-                ControlPlayPause.Background = activeBrush;
-                
-                // Apply to control icons for consistent theme
-                SymbolBack.Foreground = activeBrush;
-                SymbolForward.Foreground = activeBrush;
-
-                // Subtle background for other controls
-                var subtleBrush = activeBrush.Clone();
-                subtleBrush.Opacity = 0.15;
-                subtleBrush.Freeze();
-                ControlBack.Background = ControlForward.Background = ControlRepeat.Background = ControlShuffle.Background = subtleBrush;
-                
-                // Apply to Seekbar
-                Seekbar.Foreground = activeBrush;
-
-                // Apply to Glow effect
-                if (SongImageGlow != null)
-                {
-                    SongImageGlow.Color = activeBrush.Color;
-                    SongImageGlow.Opacity = 0.6;
-                    SongImageGlow.BlurRadius = 25;
-                    SongImageGlow.ShadowDepth = 0;
-                }
-                
-                // Apply to placeholder
-                SongImagePlaceholder.Foreground = activeBrush;
-
-                // For Repeat and Shuffle, we re-run the visuals
-                UpdateShuffleRepeatVisuals(
-                    IsInternalPlayerActive ? MusicPlayerService.Instance.IsShuffleEnabled : false,
-                    IsInternalPlayerActive ? MusicPlayerService.Instance.RepeatMode == Classes.RepeatMode.All : false,
-                    IsInternalPlayerActive ? MusicPlayerService.Instance.RepeatMode == Classes.RepeatMode.One : false,
-                    IsInternalPlayerActive
-                );
-            }
-            else
-            {
-                // Reset to neutral theme brush
-                var neutralBrush = ThemeResourceHelper.GetSecondaryTextSolidBrush();
-                ControlPlayPause.Background = neutralBrush;
-                ControlBack.ClearValue(BackgroundProperty);
-                ControlForward.ClearValue(BackgroundProperty);
-                ControlRepeat.ClearValue(BackgroundProperty);
-                ControlShuffle.ClearValue(BackgroundProperty);
-                
-                SymbolBack.Foreground = neutralBrush;
-                SymbolForward.Foreground = neutralBrush;
-                
-                Seekbar.Foreground = neutralBrush;
-                
-                if (SongImageGlow != null)
-                {
-                    SongImageGlow.Opacity = 0;
-                    SongImageGlow.ShadowDepth = 0;
-                }
-
-                SongImagePlaceholder.Foreground = neutralBrush;
-            }
-
-            if (notifyOthers)
-            {
-                WeakReferenceMessenger.Default.Send(new UpdateAccentColorMessage());
-            }
-        };
-
-        if (Dispatcher.CheckAccess())
-        {
-            action();
-        }
-        else
-        {
-            _ = Dispatcher.InvokeAsync(action);
-        }
-    }
-
-    private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(UserSettings.MediaFlyoutBackgroundBlur))
-        {
-            if (Dispatcher.CheckAccess())
-            {
-                UpdateBackgroundBlur();
-            }
-            else
-            {
-                _ = Dispatcher.InvokeAsync(UpdateBackgroundBlur);
-            }
-        }
-    }
-
-    private void UpdateBackgroundBlur()
-    {
-        var blurOption = SettingsManager.Current.MediaFlyoutBackgroundBlur;
-        MediaBackdropStyleService.ApplyPresetToImage(
-            BackgroundImageBackground,
-            blurOption,
-            MediaBackdropSurface.Flyout,
-            BackgroundImageBackground.Source);
-    }
+    internal void ApplyAccentColor(SolidColorBrush? brush, bool notifyOthers = false) { _accentColorApplier.ApplyAccentColor(brush, notifyOthers); }
 }

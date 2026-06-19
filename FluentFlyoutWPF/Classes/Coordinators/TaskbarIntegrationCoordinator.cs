@@ -17,14 +17,26 @@ public class TaskbarIntegrationCoordinator : IDisposable
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private readonly MainWindow _mainWindow;
-    private readonly IWindowManager _windowManager = App.GetRequiredService<IWindowManager>();
+    private readonly IWindowManager _windowManager;
+    private readonly IPlaybackService _playbackService;
+    private readonly IPlaybackSourceResolver _playbackSourceResolver;
+    private readonly ILibraryService _libraryService;
     private TaskbarWindow? _taskbarWindow;
 
     public TaskbarWindow? TaskbarWindow => _taskbarWindow;
 
-    public TaskbarIntegrationCoordinator(MainWindow mainWindow)
+    public TaskbarIntegrationCoordinator(
+        MainWindow mainWindow,
+        IWindowManager windowManager,
+        IPlaybackService playbackService,
+        IPlaybackSourceResolver playbackSourceResolver,
+        ILibraryService libraryService)
     {
         _mainWindow = mainWindow;
+        _windowManager = windowManager;
+        _playbackService = playbackService;
+        _playbackSourceResolver = playbackSourceResolver;
+        _libraryService = libraryService;
     }
 
     public void Initialize()
@@ -72,22 +84,32 @@ public class TaskbarIntegrationCoordinator : IDisposable
     {
         if (_taskbarWindow == null) return;
 
-        var resolved = PlaybackSourceResolver.Resolve();
+        var resolved = _playbackSourceResolver.Resolve();
 
         if (resolved.Kind == PlaybackSourceKind.Internal)
         {
-            var track = MusicPlayerService.Instance.CurrentTrack;
+            var track = _playbackService.CurrentTrack;
             if (track != null)
             {
-                var playbackStatus = MusicPlayerService.Instance.IsPlaying ? 
+                var playbackStatus = _playbackService.IsPlaying ? 
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing : 
                     GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused;
                 
                 if (track.AlbumArt == null && !string.IsNullOrEmpty(track.AlbumArtPath))
-                    track.AlbumArt = LibraryManager.Instance.GetAlbumArt(track, 400);
+                    track.AlbumArt = _libraryService.GetAlbumArt(track, 400);
 
-                BitmapHelper.SetCurrentBitmap(track.AlbumArt);
-                _mainWindow.ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
+                var colorResult = await PlaybackAccentColorService.Instance.ProcessPlaybackAccentColorAsync(
+                    PlaybackSourceKind.Internal,
+                    "InternalPlayer",
+                    track.Title,
+                    track.Artist ?? string.Empty,
+                    null,
+                    track.AlbumArt).ConfigureAwait(false);
+
+                if (!colorResult.IsCurrent)
+                    return;
+
+                _mainWindow.ApplyAccentColor(colorResult.AccentBrush, true);
                 
                 _taskbarWindow.UpdateUi(track.Title, track.FullArtistDisplay, track.AlbumArt, playbackStatus, null);
                 return;
@@ -96,12 +118,23 @@ public class TaskbarIntegrationCoordinator : IDisposable
         else if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
         {
             var focusedSession = resolved.ExternalSession;
-            var songInfo = await TryGetMediaPropertiesAsync(focusedSession.ControlSession);
+            var songInfo = await TryGetMediaPropertiesAsync(focusedSession.ControlSession).ConfigureAwait(false);
             if (songInfo != null)
             {
                 var playbackInfo = focusedSession.ControlSession.GetPlaybackInfo();
-                var thumbnail = await BitmapHelper.GetThumbnailAsync(songInfo.Thumbnail);
-                _mainWindow.ApplyAccentColor(BitmapHelper.GetDominantColors(1).FirstOrDefault(), true);
+                var colorResult = await PlaybackAccentColorService.Instance.ProcessPlaybackAccentColorAsync(
+                    PlaybackSourceKind.External,
+                    focusedSession.Id,
+                    songInfo.Title,
+                    songInfo.Artist,
+                    songInfo.Thumbnail,
+                    null).ConfigureAwait(false);
+
+                if (!colorResult.IsCurrent)
+                    return;
+
+                var thumbnail = await BitmapHelper.GetThumbnailAsync(songInfo.Thumbnail).ConfigureAwait(false);
+                _mainWindow.ApplyAccentColor(colorResult.AccentBrush, true);
                 _taskbarWindow.UpdateUi(songInfo.Title, songInfo.Artist, thumbnail, playbackInfo.PlaybackStatus, playbackInfo.Controls);
                 return;
             }

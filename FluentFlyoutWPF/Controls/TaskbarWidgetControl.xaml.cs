@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using Windows.Media.Control;
 using Wpf.Ui.Controls;
 using FluentFlyoutWPF.Classes;
+using FluentFlyoutWPF.Classes.Behaviors;
 using FluentFlyoutWPF.Classes.Utils;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentFlyoutWPF.Classes.Messages;
@@ -26,21 +27,37 @@ namespace FluentFlyout.Controls;
 /// </summary>
 public partial class TaskbarWidgetControl : UserControl
 {
+    public static readonly DependencyProperty BackdropImageProperty =
+        DependencyProperty.Register(
+            nameof(BackdropImage),
+            typeof(ImageSource),
+            typeof(TaskbarWidgetControl),
+            new PropertyMetadata(null, OnBackdropImageChanged));
+
+    public ImageSource? BackdropImage
+    {
+        get => (ImageSource?)GetValue(BackdropImageProperty);
+        set => SetValue(BackdropImageProperty, value);
+    }
+
+    public TaskbarWidgetViewModel ViewModel { get; }
+
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-    private readonly double _scale = 0.9;
-    private readonly int _nativeWidgetsPadding = 216;
+    private const double WidgetScale = 0.9;
+    private const double OuterHorizontalMargin = 8;
+    private const double CoverWidth = 36;
+    private const double CoverTextGap = 8;
+    private const double TextControlsGap = 8;
+    private const double ControlButtonWidth = 32;
+    private const int ControlCount = 3;
+    private const double MaxVisualWidgetWidth = 216;
 
     // Cached width calculations
     private string _cachedTitleText = string.Empty;
     private string _cachedArtistText = string.Empty;
     private double _cachedTitleWidth = 0;
     private double _cachedArtistWidth = 0;
-    private double _lastProgressCurrentSeconds;
-    private double _lastProgressTotalSeconds;
-    private readonly DispatcherTimer _progressTimer;
-
-    private bool _isPaused;
 
     public TaskbarWidgetControl()
     {
@@ -48,14 +65,22 @@ public partial class TaskbarWidgetControl : UserControl
 
         if (!DesignerProperties.GetIsInDesignMode(this))
         {
-            // Keep runtime bindings aligned with the shared settings view model.
-            DataContext = App.GetRequiredService<SettingsShellViewModel>();
+            ViewModel = App.GetRequiredService<TaskbarWidgetViewModel>();
+            DataContext = ViewModel;
+        }
+        else
+        {
+            ViewModel = new TaskbarWidgetViewModel();
+            DataContext = ViewModel;
         }
 
-        WeakReferenceMessenger.Default.Register<UpdateAccentColorMessage>(this, (r, m) =>
+        ViewModel.PropertyChanged += (s, e) =>
         {
-            Dispatcher.Invoke(() => ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault()));
-        });
+            if (e.PropertyName == nameof(TaskbarWidgetViewModel.ProgressRatio))
+            {
+                Dispatcher.Invoke(UpdateProgressVisual);
+            }
+        };
 
         MainBorder.SizeChanged += (s, e) =>
         {
@@ -64,12 +89,6 @@ public partial class TaskbarWidgetControl : UserControl
             UpdateProgressVisual();
         };
 
-        _progressTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250)
-        };
-        _progressTimer.Tick += ProgressTimer_Tick;
-        _progressTimer.Start();
         Unloaded += TaskbarWidgetControl_Unloaded;
 
         // for hover animation
@@ -79,41 +98,47 @@ public partial class TaskbarWidgetControl : UserControl
             MainBorder.Background.Opacity = 0;
         }
 
-        Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)); ;
+        Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
         
         // Initialize control order
         ReorderControls();
     }
 
-    private void ProgressTimer_Tick(object? sender, EventArgs e)
+    private static void OnBackdropImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        RefreshProgressFromPlaybackSource();
+        if (d is TaskbarWidgetControl control)
+        {
+            control.ViewModel.BackdropImage = e.NewValue as ImageSource;
+        }
     }
 
     private void TaskbarWidgetControl_Unloaded(object sender, RoutedEventArgs e)
     {
-        _progressTimer.Stop();
-        _progressTimer.Tick -= ProgressTimer_Tick;
+        ViewModel.Dispose();
         Unloaded -= TaskbarWidgetControl_Unloaded;
     }
 
     public void ReorderControls()
     {
-        // Remove ControlsStackPanel from MainStackPanel
-        MainStackPanel.Children.Remove(ControlsStackPanel);
+        bool controlsEnabled = SettingsManager.Current.TaskbarWidgetControlsEnabled;
 
-        // Reorder based on position setting
         if (SettingsManager.Current.TaskbarWidgetControlsPosition == 0)
         {
             // Left: Controls, Image, Info
-            MainStackPanel.Children.Insert(0, ControlsStackPanel);
-            ControlsStackPanel.Margin = new Thickness(2, 0, 6, 0); // for some reason margins are weird on left side
+            Grid.SetColumn(ControlsStackPanel, 0);
+            LeftControlsColumn.Width = new GridLength(controlsEnabled ? 96 : 0);
+            LeftControlsGapColumn.Width = new GridLength(controlsEnabled ? 8 : 0);
+            RightControlsColumn.Width = new GridLength(0);
+            TextControlsGapColumn.Width = new GridLength(0);
         }
         else
         {
             // Right: Image, Info, Controls
-            MainStackPanel.Children.Add(ControlsStackPanel);
-            ControlsStackPanel.Margin = new Thickness(8, 0, 0, 0);
+            Grid.SetColumn(ControlsStackPanel, 6);
+            LeftControlsColumn.Width = new GridLength(0);
+            LeftControlsGapColumn.Width = new GridLength(0);
+            RightControlsColumn.Width = new GridLength(controlsEnabled ? 96 : 0);
+            TextControlsGapColumn.Width = new GridLength(controlsEnabled ? 8 : 0);
         }
     }
 
@@ -124,6 +149,19 @@ public partial class TaskbarWidgetControl : UserControl
 
         SolidColorBrush targetBackgroundBrush = Application.Current.TryFindResource("ControlFillColorSecondaryBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(197, 255, 255, 255)) { Opacity = 0.075 };
         SolidColorBrush targetBorderBrush = Application.Current.TryFindResource("SurfaceStrokeColorDefaultBrush") as SolidColorBrush ?? new SolidColorBrush(Color.FromArgb(93, 255, 255, 255)) { Opacity = 0.25 };
+
+        if (!SettingsManager.Current.TaskbarWidgetAnimated)
+        {
+            // Clear any active animations first
+            MainBorder.Background?.BeginAnimation(SolidColorBrush.ColorProperty, null);
+            MainBorder.Background?.BeginAnimation(SolidColorBrush.OpacityProperty, null);
+            
+            var newBrush = new SolidColorBrush(targetBackgroundBrush.Color);
+            newBrush.Opacity = targetBackgroundBrush.Opacity;
+            MainBorder.Background = newBrush;
+            TopBorder.BorderBrush = targetBorderBrush;
+            return;
+        }
 
         // Animate background
         var backgroundAnimation = new ColorAnimation
@@ -140,11 +178,13 @@ public partial class TaskbarWidgetControl : UserControl
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
 
-        // rare case where background is not a SolidColorBrush after SetupWindow
-        if (MainBorder.Background is not SolidColorBrush)
+        // rare case where background is not a SolidColorBrush after SetupWindow or is frozen
+        if (MainBorder.Background is not SolidColorBrush || MainBorder.Background.IsFrozen)
         {
-            MainBorder.Background = new SolidColorBrush(Colors.Transparent);
-            MainBorder.Background.Opacity = 0;
+            var currentBrush = MainBorder.Background as SolidColorBrush;
+            var newBrush = new SolidColorBrush(currentBrush?.Color ?? Colors.Transparent);
+            newBrush.Opacity = currentBrush?.Opacity ?? 0;
+            MainBorder.Background = newBrush;
         }
 
         MainBorder.Background.BeginAnimation(SolidColorBrush.ColorProperty, backgroundAnimation);
@@ -156,6 +196,19 @@ public partial class TaskbarWidgetControl : UserControl
     private void Grid_MouseLeave(object sender, MouseEventArgs e)
     {
         if (string.IsNullOrEmpty(SongTitle.Text + SongArtist.Text)) return;
+
+        if (!SettingsManager.Current.TaskbarWidgetAnimated)
+        {
+            // Clear any active animations first
+            MainBorder.Background?.BeginAnimation(SolidColorBrush.ColorProperty, null);
+            MainBorder.Background?.BeginAnimation(SolidColorBrush.OpacityProperty, null);
+
+            var newBrush = new SolidColorBrush(Colors.Transparent);
+            newBrush.Opacity = 0;
+            MainBorder.Background = newBrush;
+            TopBorder.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            return;
+        }
 
         // Animate back to transparent
         var backgroundAnimation = new ColorAnimation
@@ -172,6 +225,14 @@ public partial class TaskbarWidgetControl : UserControl
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
         };
 
+        if (MainBorder.Background is not SolidColorBrush || MainBorder.Background.IsFrozen)
+        {
+            var currentBrush = MainBorder.Background as SolidColorBrush;
+            var newBrush = new SolidColorBrush(currentBrush?.Color ?? Colors.Transparent);
+            newBrush.Opacity = currentBrush?.Opacity ?? 0;
+            MainBorder.Background = newBrush;
+        }
+
         MainBorder.Background?.BeginAnimation(SolidColorBrush.ColorProperty, backgroundAnimation);
         MainBorder.Background?.BeginAnimation(SolidColorBrush.OpacityProperty, backgroundOpacityAnimation);
 
@@ -181,15 +242,17 @@ public partial class TaskbarWidgetControl : UserControl
     private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
 
-        // toggle main flyout when clicked
-        WeakReferenceMessenger.Default.Send(new ShowMediaFlyoutMessage(toggleMode: true, forceShow: true));
+        if (ViewModel.OpenFlyoutCommand.CanExecute(null))
+        {
+            ViewModel.OpenFlyoutCommand.Execute(null);
+        }
     }
 
     public (double logicalWidth, double logicalHeight) CalculateSize(double dpiScale)
     {
         // calculate widget width - use cached values if text hasn't changed
-        string currentTitle = SongTitle.Text;
-        string currentArtist = SongArtist.Text;
+        string currentTitle = ViewModel.Title;
+        string currentArtist = ViewModel.Artist;
 
         if (!string.Equals(currentTitle, _cachedTitleText, StringComparison.Ordinal))
         {
@@ -202,20 +265,18 @@ public partial class TaskbarWidgetControl : UserControl
             _cachedArtistText = currentArtist;
         }
 
-        double logicalWidth = Math.Max(_cachedTitleWidth, _cachedArtistWidth) + 55; // add margin for cover image
-        // maximum width limit, same as Windows native widget
-        logicalWidth = Math.Min(logicalWidth, _nativeWidgetsPadding / _scale);
+        bool controlsEnabled = SettingsManager.Current.TaskbarWidgetControlsEnabled && ViewModel.ControlsVisibility == Visibility.Visible;
+        double textWidth = Math.Max(_cachedTitleWidth, _cachedArtistWidth);
+        double controlsWidth = controlsEnabled ? (ControlButtonWidth * ControlCount) : 0;
 
-        SongTitle.Width = Math.Max(logicalWidth - 58, 0);
-        SongArtist.Width = Math.Max(logicalWidth - 58, 0);
+        double reservedWidth = OuterHorizontalMargin + CoverWidth + CoverTextGap + controlsWidth + (controlsEnabled ? TextControlsGap : 0);
+        double visualWidth = Math.Min(textWidth + reservedWidth, MaxVisualWidgetWidth);
+        double availableTextWidth = Math.Max(0, visualWidth - reservedWidth);
 
-        // add space for playback controls if enabled and visible
-        if (SettingsManager.Current.TaskbarWidgetControlsEnabled && ControlsStackPanel.Visibility == Visibility.Visible)
-        {
-            logicalWidth += (int)(102);
-        }
+        SongTitle.Width = availableTextWidth;
+        SongArtist.Width = availableTextWidth;
 
-
+        double logicalWidth = visualWidth / WidgetScale;
         double logicalHeight = 40; // default height
 
         return (logicalWidth, logicalHeight);
@@ -228,145 +289,33 @@ public partial class TaskbarWidgetControl : UserControl
             // no media playing, hide UI
             Dispatcher.Invoke(() =>
             {
+                ViewModel.ClearPlayback();
                 if (SettingsManager.Current.TaskbarWidgetHideCompletely)
                 {
                     Visibility = Visibility.Collapsed;
                     return;
                 }
 
-                ControlsStackPanel.Visibility = Visibility.Collapsed;
-                SongTitle.Text = string.Empty;
-                SongArtist.Text = string.Empty;
-                SongInfoStackPanel.Visibility = Visibility.Collapsed;
-                SongInfoStackPanel.ToolTip = string.Empty;
-                SongImagePlaceholder.Symbol = SymbolRegular.MusicNote220;
-                SongImagePlaceholder.Visibility = Visibility.Visible;
-                SongImage.ImageSource = null;
-                BackgroundImage.Source = null;
-                SongImageBorder.Margin = new Thickness(0, 0, 0, -3); // align music note better when no cover
-
                 MainBorder.Background = new SolidColorBrush(Colors.Transparent);
                 MainBorder.Background.Opacity = 0;
                 TopBorder.BorderBrush = Brushes.Transparent;
-                _lastProgressCurrentSeconds = 0;
-                _lastProgressTotalSeconds = 0;
                 ProgressLine.Width = 0;
-                ProgressLine.Visibility = Visibility.Collapsed;
-
-                ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
 
                 Visibility = Visibility.Visible;
             });
             return;
         }
 
-        _isPaused = false;
-        if (playbackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-        {
-            _isPaused = true;
-        }
-
-        // adjust UI based on available controls
         Dispatcher.Invoke(() =>
         {
-            if (SettingsManager.Current.TaskbarWidgetControlsEnabled && playbackControls != null)
+            bool trackChanged = ViewModel.UpdatePlayback(title, artist, icon, playbackStatus, playbackControls);
+            if (trackChanged && SettingsManager.Current.TaskbarWidgetAnimated)
             {
-                PreviousButton.IsHitTestVisible = playbackControls.IsPreviousEnabled;
-                PlayPauseButton.IsHitTestVisible = playbackControls.IsPauseEnabled || playbackControls.IsPlayEnabled;
-                NextButton.IsHitTestVisible = playbackControls.IsNextEnabled;
-
-                PreviousButton.Opacity = playbackControls.IsPreviousEnabled ? 1 : 0.5;
-                PlayPauseButton.Opacity = (playbackControls.IsPauseEnabled || playbackControls.IsPlayEnabled) ? 1 : 0.5;
-                NextButton.Opacity = playbackControls.IsNextEnabled ? 1 : 0.5;
-            }
-            else if (SettingsManager.Current.TaskbarWidgetControlsEnabled)
-            {
-                // Fallback for the internal player
-                bool hasPrevious = MusicPlayerService.Instance.CanGoPrevious;
-                bool hasNext = MusicPlayerService.Instance.CanGoNext;
-
-                PreviousButton.IsHitTestVisible = hasPrevious;
-                PlayPauseButton.IsHitTestVisible = true; // Internal player can always toggle play/pause
-                NextButton.IsHitTestVisible = hasNext;
-
-                PreviousButton.Opacity = hasPrevious ? 1 : 0.5;
-                PlayPauseButton.Opacity = 1;
-                NextButton.Opacity = hasNext ? 1 : 0.5;
-            }
-            else
-            {
-                PreviousButton.IsHitTestVisible = false;
-                PlayPauseButton.IsHitTestVisible = false;
-                NextButton.IsHitTestVisible = false;
-
-                PreviousButton.Opacity = 0.5;
-                NextButton.Opacity = 0.5;
-                PlayPauseButton.Opacity = 0.5;
-            }
-        });
-
-        Dispatcher.Invoke(() =>
-        {
-            if (SongTitle.Text != title && SongArtist.Text != artist)
-            {
-                // changed info
-                if (SettingsManager.Current.TaskbarWidgetAnimated)
-                {
-                    AnimateEntrance();
-                }
+                AnimateEntrance();
             }
 
-            SongTitle.Text = !string.IsNullOrEmpty(title) ? title : "-";
-            SongArtist.Text = !string.IsNullOrEmpty(artist) ? artist : "-";
-
-            // Update tooltip with song info
-            SongInfoStackPanel.ToolTip = string.Empty;
-            SongInfoStackPanel.ToolTip += !string.IsNullOrEmpty(title) ? title : string.Empty;
-            SongInfoStackPanel.ToolTip += !string.IsNullOrEmpty(artist) ? "\n\n" + artist : string.Empty;
-
-            if (SettingsManager.Current.TaskbarWidgetControlsEnabled)
-            {
-                PlayPauseIcon.Symbol = _isPaused ? SymbolRegular.Play24 : SymbolRegular.Pause24;
-            }
-
-            if (icon != null)
-            {
-                if (_isPaused)
-                { // show pause icon overlay
-                    SongImagePlaceholder.Symbol = SymbolRegular.Pause24;
-                    SongImagePlaceholder.Visibility = Visibility.Visible;
-                    SongImage.Opacity = 0.4;
-                }
-                else
-                {
-                    SongImagePlaceholder.Visibility = Visibility.Collapsed;
-                    SongImage.Opacity = 1;
-                }
-                SongImage.ImageSource = icon;
-                BackgroundImage.Source = icon;
-                SongImageBorder.Margin = new Thickness(0, 0, 0, -2); // align image better when cover is present
-            }
-            else
-            {
-                SongImagePlaceholder.Symbol = SymbolRegular.MusicNote220;
-                SongImagePlaceholder.Visibility = Visibility.Visible;
-                SongImage.ImageSource = null;
-                BackgroundImage.Source = null;
-            }
-
-            ApplyAccentColor(BitmapHelper.SavedDominantColors.FirstOrDefault());
-
-            SongTitle.Visibility = Visibility.Visible;
-            SongArtist.Visibility = !string.IsNullOrEmpty(artist) ? Visibility.Visible : Visibility.Collapsed; // hide artist if it's not available
-            SongInfoStackPanel.Visibility = Visibility.Visible;
-            BackgroundImage.Visibility = SettingsManager.Current.TaskbarWidgetBackgroundBlur ? Visibility.Visible : Visibility.Collapsed;
-
-            // on top of XAML visibility binding (XAML binding only hides when disabled in settings)
-            ControlsStackPanel.Visibility = SettingsManager.Current.TaskbarWidgetControlsEnabled
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            RefreshProgressFromPlaybackSource();
+            ViewModel.RefreshProgressFromPlaybackSource();
+            UpdateProgressVisual();
             Visibility = Visibility.Visible;
         });
     }
@@ -378,7 +327,7 @@ public partial class TaskbarWidgetControl : UserControl
             int msDuration = FlyoutAnimationService.GetDuration();
 
             // opacity and left to right animation for SongInfoStackPanel
-            DoubleAnimation opacityAnimation = new()
+            DoubleAnimation opacityAnimation1 = new()
             {
                 From = 0.0,
                 To = 1.0,
@@ -386,7 +335,7 @@ public partial class TaskbarWidgetControl : UserControl
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
 
-            DoubleAnimation translateAnimation = new()
+            DoubleAnimation translateAnimation1 = new()
             {
                 From = -10,
                 To = 0,
@@ -394,20 +343,37 @@ public partial class TaskbarWidgetControl : UserControl
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
 
-            // Apply animations
-            SongInfoStackPanel.BeginAnimation(OpacityProperty, opacityAnimation);
-            TranslateTransform translateTransform = new();
-            SongInfoStackPanel.RenderTransform = translateTransform;
-            translateTransform.BeginAnimation(TranslateTransform.XProperty, translateAnimation);
+            // Apply animations to SongInfoStackPanel
+            SongInfoStackPanel.BeginAnimation(OpacityProperty, opacityAnimation1);
+            TranslateTransform translateTransform1 = new();
+            SongInfoStackPanel.RenderTransform = translateTransform1;
+            translateTransform1.BeginAnimation(TranslateTransform.XProperty, translateAnimation1);
 
             // don't play ControlsStackPanel animation if it's not enabled
             if (!SettingsManager.Current.TaskbarWidgetControlsEnabled)
                 return;
 
-            ControlsStackPanel.BeginAnimation(OpacityProperty, opacityAnimation);
+            // Separate animation instances for ControlsStackPanel
+            DoubleAnimation opacityAnimation2 = new()
+            {
+                From = 0.0,
+                To = 1.0,
+                Duration = TimeSpan.FromMilliseconds(msDuration),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            DoubleAnimation translateAnimation2 = new()
+            {
+                From = -10,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(msDuration),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            ControlsStackPanel.BeginAnimation(OpacityProperty, opacityAnimation2);
             TranslateTransform translateTransform2 = new();
             ControlsStackPanel.RenderTransform = translateTransform2;
-            translateTransform2.BeginAnimation(TranslateTransform.XProperty, translateAnimation);
+            translateTransform2.BeginAnimation(TranslateTransform.XProperty, translateAnimation2);
         }
         catch (Exception ex)
         {
@@ -415,137 +381,10 @@ public partial class TaskbarWidgetControl : UserControl
         }
     }
 
-    // event handlers for media control buttons
-    private async void Previous_Click(object sender, RoutedEventArgs e)
-    {
-        var resolved = PlaybackSourceResolver.Resolve();
-        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-        {
-            await resolved.ExternalSession.ControlSession.TrySkipPreviousAsync();
-        }
-        else if (resolved.Kind == PlaybackSourceKind.Internal)
-        {
-            MusicPlayerService.Instance.PlayPrevious();
-        }
-    }
-
-    private async void PlayPause_Click(object sender, RoutedEventArgs e)
-    {
-        var resolved = PlaybackSourceResolver.Resolve();
-        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-        {
-            if (_isPaused) await resolved.ExternalSession.ControlSession.TryPlayAsync();
-            else await resolved.ExternalSession.ControlSession.TryPauseAsync();
-        }
-        else if (resolved.Kind == PlaybackSourceKind.Internal)
-        {
-            MusicPlayerService.Instance.TogglePlayPause();
-        }
-    }
-
-    private async void Next_Click(object sender, RoutedEventArgs e)
-    {
-        var resolved = PlaybackSourceResolver.Resolve();
-        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-        {
-            await resolved.ExternalSession.ControlSession.TrySkipNextAsync();
-        }
-        else if (resolved.Kind == PlaybackSourceKind.Internal)
-        {
-            MusicPlayerService.Instance.PlayNext();
-        }
-    }
-
-    private void ApplyAccentColor(SolidColorBrush? brush)
-    {
-        bool useAccent = AccentColorResolver.ShouldUseAccent(brush);
-        var activeBrush = AccentColorResolver.ResolveAccentBrush(brush);
-        var neutralBrush = ThemeResourceHelper.GetSecondaryTextSolidBrush();
-        var displayBrush = useAccent ? activeBrush : neutralBrush;
-
-        Action action = () =>
-        {
-            PreviousIcon.Foreground = displayBrush;
-            PlayPauseIcon.Foreground = displayBrush;
-            NextIcon.Foreground = displayBrush;
-            SongImagePlaceholder.Foreground = displayBrush;
-            ProgressLine.Fill = displayBrush;
-        };
-
-        if (Dispatcher.CheckAccess())
-        {
-            action();
-        }
-        else
-        {
-            _ = Dispatcher.InvokeAsync(action);
-        }
-    }
-
     public void UpdateProgress(double currentSeconds, double totalSeconds)
     {
-        _lastProgressCurrentSeconds = Math.Max(0, currentSeconds);
-        _lastProgressTotalSeconds = Math.Max(0, totalSeconds);
-
-        if (_lastProgressTotalSeconds <= 0)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ProgressLine.Width = 0;
-                ProgressLine.Visibility = Visibility.Collapsed;
-            });
-            return;
-        }
-
+        ViewModel.UpdateProgress(currentSeconds, totalSeconds);
         Dispatcher.Invoke(UpdateProgressVisual);
-    }
-
-    private void RefreshProgressFromPlaybackSource()
-    {
-        if (!IsVisible || string.IsNullOrEmpty(SongTitle.Text))
-            return;
-
-        var resolved = PlaybackSourceResolver.Resolve();
-        if (resolved.Kind == PlaybackSourceKind.External && resolved.ExternalSession != null)
-        {
-            var preferredSession = resolved.ExternalSession;
-            var timeline = preferredSession.ControlSession.GetTimelineProperties();
-            var playbackInfo = preferredSession.ControlSession.GetPlaybackInfo();
-            var currentPosition = timeline.Position;
-
-            if (playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-            {
-                currentPosition += DateTime.Now - timeline.LastUpdatedTime.DateTime;
-            }
-
-            var totalDuration = timeline.MaxSeekTime.TotalSeconds > 0
-                ? timeline.MaxSeekTime
-                : timeline.EndTime;
-
-            if (totalDuration <= TimeSpan.Zero)
-            {
-                UpdateProgress(0, 0);
-                return;
-            }
-
-            if (currentPosition > totalDuration)
-            {
-                currentPosition = totalDuration;
-            }
-
-            UpdateProgress(currentPosition.TotalSeconds, totalDuration.TotalSeconds);
-            return;
-        }
-
-        if (resolved.Kind == PlaybackSourceKind.Internal)
-        {
-            UpdateProgress(
-                MusicPlayerService.Instance.CurrentPosition.TotalSeconds,
-                MusicPlayerService.Instance.TotalDuration.TotalSeconds);
-            return;
-        }
-
-        UpdateProgress(0, 0);
     }
 
     private void UpdateProgressVisual()
@@ -554,17 +393,12 @@ public partial class TaskbarWidgetControl : UserControl
             ? RootGrid.ActualWidth
             : (ActualWidth > 0 ? ActualWidth : MainBorder.ActualWidth);
 
-        if (_lastProgressTotalSeconds <= 0 || availableWidth <= 0)
+        if (ViewModel.ProgressRatio <= 0 || availableWidth <= 0)
         {
             ProgressLine.Width = 0;
-            ProgressLine.Visibility = Visibility.Collapsed;
             return;
         }
 
-        if (ProgressLine.Visibility != Visibility.Visible)
-            ProgressLine.Visibility = Visibility.Visible;
-
-        double ratio = Math.Clamp(_lastProgressCurrentSeconds / _lastProgressTotalSeconds, 0, 1);
-        ProgressLine.Width = availableWidth * ratio;
+        ProgressLine.Width = availableWidth * ViewModel.ProgressRatio;
     }
 }

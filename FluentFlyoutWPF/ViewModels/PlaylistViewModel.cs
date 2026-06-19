@@ -101,9 +101,17 @@ public partial class PlaylistViewModel : ObservableObject
 
             if (identical)
             {
+                // Ensure DisplayIndex is always populated even when the list did not change
+                // (e.g. first call after app start where items are already in sync)
+                for (int i = 0; i < PlaylistItems.Count; i++)
+                {
+                    PlaylistItems[i].DisplayIndex = i + 1;
+                }
+
                 UpdateQueueSummary();
                 return;
             }
+
         }
 
         var sourceSet = new HashSet<TrackModel>(source, TrackReferenceEqualityComparer.Instance);
@@ -155,6 +163,11 @@ public partial class PlaylistViewModel : ObservableObject
         while (PlaylistItems.Count > source.Count)
         {
             PlaylistItems.RemoveAt(PlaylistItems.Count - 1);
+        }
+
+        for (int i = 0; i < PlaylistItems.Count; i++)
+        {
+            PlaylistItems[i].DisplayIndex = i + 1;
         }
 
         UpdateQueueSummary();
